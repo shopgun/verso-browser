@@ -1,0 +1,41 @@
+{
+  "name": "verso-browser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/verso.coffee",
+  "watch": {
+    "build": {
+      "patterns": [
+        "lib"
+      ],
+      "extensions": [
+        "coffee"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "./node_modules/coffeelint/bin/coffeelint lib/ -r lib/",
+    "build": "browserify lib/verso.coffee --extension .coffee --transform coffeeify --standalone Verso | derequire > dist/verso.js",
+    "start": "python -m SimpleHTTPServer 8001",
+    "watch": "npm-watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shopgun/verso-browser.git"
+  },
+  "author": "Morten Bo <morten@etilbudsavis.dk> (http://etilbudsavis.dk/)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shopgun/verso-browser/issues"
+  },
+  "homepage": "https://github.com/shopgun/verso-browser#readme",
+  "devDependencies": {
+    "browserify": "^13.0.1",
+    "browserify-derequire": "^0.9.4",
+    "coffeeify": "^2.0.1",
+    "coffeelint": "^1.15.7",
+    "derequire": "^2.0.3",
+    "hammerjs": "^2.0.8",
+    "npm-watch": "^0.1.5"
+  }
+}
