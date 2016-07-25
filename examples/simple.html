@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Verso</title>
+        <script src="../dist/verso.js"></script>
+    </head>
+    <body>
+        <article id="demo" class="verso">
+            <section class="verso__page">
+                <h1>First page</h1>
+            </section>
+
+            <section class="verso__page">
+                <h1>Second page</h1>
+            </section>
+
+            <section class="verso__page">
+                <h1>Third page</h1>
+            </section>
+
+            <section class="verso__page">
+                <h1>Fourth page</h1>
+            </section>
+
+            <section class="verso__page">
+                <h1>Fifth page</h1>
+            </section>
+        </article>
+
+        <script>
+            var el = document.getElementById('demo');
+            var verso = new Verso(el, {
+
+            });
+
+            verso.render();
+        </script>
+    </body>
+</html>
