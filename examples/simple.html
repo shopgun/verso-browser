@@ -4,26 +4,34 @@
         <meta charset="utf-8">
         <title>Verso</title>
         <script src="../dist/verso.js"></script>
+        <style>
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+            }
+        </style>
     </head>
     <body>
         <article id="demo" class="verso">
-            <section class="verso__page">
+            <section class="verso__page verso--previous">
                 <h1>First page</h1>
             </section>
 
-            <section class="verso__page">
+            <section class="verso__page verso--before">
                 <h1>Second page</h1>
             </section>
 
-            <section class="verso__page">
+            <section id="meh" class="verso__page verso--current">
                 <h1>Third page</h1>
             </section>
 
-            <section class="verso__page">
+            <section id="lol" class="verso__page verso--next">
                 <h1>Fourth page</h1>
             </section>
 
-            <section class="verso__page">
+            <section class="verso__page verso--after">
                 <h1>Fifth page</h1>
             </section>
         </article>
@@ -34,7 +42,7 @@
 
             });
 
-            verso.render();
+            verso.init();
         </script>
     </body>
 </html>
