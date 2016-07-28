@@ -2,7 +2,7 @@
   "name": "verso-browser",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/verso.coffee",
+  "main": "verso.js",
   "watch": {
     "build": {
       "patterns": [
@@ -16,7 +16,7 @@
   },
   "scripts": {
     "test": "./node_modules/coffeelint/bin/coffeelint lib/ -r lib/",
-    "build": "node build.js > dist/verso.js",
+    "build": "node build.js > verso.js",
     "start": "python -m SimpleHTTPServer 8001",
     "watch": "npm-watch"
   },
@@ -24,7 +24,7 @@
     "type": "git",
     "url": "git+https://github.com/shopgun/verso-browser.git"
   },
-  "author": "Morten Bo <morten@etilbudsavis.dk> (http://etilbudsavis.dk/)",
+  "author": "Morten Bo Rønsholdt <mr@shopgun.com> (https://shopgun.com/)",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/shopgun/verso-browser/issues"
