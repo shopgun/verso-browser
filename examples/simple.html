@@ -19,24 +19,35 @@
                 text-align: center;
             }
 
-            #page1 {
-                background: steelblue;
+            .image {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-repeat: no-repeat;
+                background-position: center center;
+                background-size: contain;
             }
 
-            #page2 {
-                background: deeppink;
+            #page1 .image {
+                background-image: url("https://akamai.shopgun.com/img/catalog/view/c091NT3-1.jpg");
             }
 
-            #page3 {
-                background: chocolate;
+            #page2 .image {
+                background-image: url("https://akamai.shopgun.com/img/catalog/view/c091NT3-2.jpg");
             }
 
-            #page4 {
-                background: cyan;
+            #page3 .image {
+                background-image: url("https://akamai.shopgun.com/img/catalog/view/c091NT3-3.jpg");
             }
 
-            #page5 {
-                background: salmon;
+            #page4 .image {
+                background-image: url("https://akamai.shopgun.com/img/catalog/view/c091NT3-4.jpg");
+            }
+
+            #page5 .image {
+                background-image: url("https://akamai.shopgun.com/img/catalog/view/c091NT3-5.jpg");
             }
         </style>
     </head>
@@ -44,24 +55,24 @@
         <article id="demo" class="verso">
             <section id="page1" class="verso__page">
                 <div class="verso__scale">
-                    <span>First scaleable page</span>
+                    <div class="image"></div>
                 </div>
             </section>
 
             <section id="page2" class="verso__page">
-                <span>Second page</span>
+                <div class="image"></div>
             </section>
 
             <section id="page3" class="verso__page">
-                <span>Third page</span>
+                <div class="image"></div>
             </section>
 
             <section id="page4" class="verso__page">
-                <span>Fourth page</span>
+                <div class="image"></div>
             </section>
 
             <section id="page5" class="verso__page">
-                <span>Fifth page</span>
+                <div class="image"></div>
             </section>
 
             <div class="verso__progress">
@@ -76,7 +87,9 @@
 
         <script>
             var el = document.getElementById('demo');
-            var verso = new Verso.View(el, { pageIndex: 1 });
+            var verso = new Verso.View(el, {
+                transition: 'horizontal-slide'
+            });
             var navigation = new Verso.Navigation(verso);
             var progress = new Verso.Progress(verso);
             var status = new Verso.Status(verso);

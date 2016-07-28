@@ -10,7 +10,10 @@ module.exports = class Interactivity
         for key, value of @defaults
             @[key] = options[key] ? value
 
+        @verso.on 'change', @setupHammer.bind(@)
+
         @bindKeys()
+        @setupHammer()
 
         return
 
@@ -22,5 +25,18 @@ module.exports = class Interactivity
                 @verso.next()
 
             return
+
+        return
+
+    setupHammer: ->
+        # el = @verso.pages[@verso.pageIndex]
+
+        # if @hammer?
+        #     @hammer.stop true
+        #     @hammer.destroy()
+
+        # @hammer = new Hammer.Manager el
+        #     .on 'doubletap', @doubletap.bind @
+        #     .on 'pinchstart', @pinchstart
 
         return

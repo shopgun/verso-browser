@@ -22,12 +22,12 @@ module.exports = class Verso extends Events
 
         @trigger 'beforeInit'
 
-        @el.dataset.ready = 'true'
+        @updateState()
+
         @el.dataset.transition = @transition
+        @el.dataset.ready = 'true'
         @el.setAttribute 'tabindex', -1
         @el.focus()
-
-        @updateState()
 
         @initialized = true
 
