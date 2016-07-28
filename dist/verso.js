@@ -36,7 +36,7 @@ module.exports = Events = (function() {
 
 
 },{}],2:[function(_dereq_,module,exports){
-module.exports=".verso {\n  position: relative;\n  min-height: 100%;\n  margin: 0 auto;\n  overflow: hidden;\n  overflow-y: auto;\n  visibility: visible;\n}\n.verso > .verso__page {\n  absolute: top left;\n  right: 0;\n  bottom: 0;\n  z-index: 1;\n}\n.verso > .verso--current {\n  z-index: 2;\n}\n.verso > .verso--before,\n.verso > .verso--after {\n  display: none;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page {\n  transition: transform 300ms ease-in-out;\n  position: absolute;\n  top: 0;\n  left: 0;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso--previous {\n  transform: translate3d(-100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso--before {\n  transform: translate3d(-200%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso--next {\n  transform: translate3d(100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso--after {\n  transform: translate3d(200%, 0, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page {\n  transition: transform 300ms ease-in-out;\n  position: absolute;\n  top: 0;\n  left: 0;\n}\n.verso[data-transition=\"vertical-slide\"] > .verso--previous {\n  transform: translate3d(0, -100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso--before {\n  transform: translate3d(0, -200%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso--next {\n  transform: translate3d(0, 100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso--after {\n  transform: translate3d(0, 200%, 0);\n}\n"
+module.exports=".verso {\n  position: relative;\n  min-height: 100%;\n  margin: 0 auto;\n  overflow: hidden;\n  overflow-y: auto;\n}\n.verso > .verso__page {\n  absolute: top left;\n  right: 0;\n  bottom: 0;\n  z-index: 1;\n}\n.verso > .verso__page[data-state=\"current\"] {\n  z-index: 2;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page {\n  transition: transform 300ms ease-in-out;\n  position: absolute;\n  top: 0;\n  left: 0;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"previous\"] {\n  transform: translate3d(-100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"before\"] {\n  transform: translate3d(-200%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"next\"] {\n  transform: translate3d(100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"after\"] {\n  transform: translate3d(200%, 0, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page {\n  transition: transform 300ms ease-in-out;\n  position: absolute;\n  top: 0;\n  left: 0;\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"previous\"] {\n  transform: translate3d(0, -100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"before\"] {\n  transform: translate3d(0, -200%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"next\"] {\n  transform: translate3d(0, 100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"after\"] {\n  transform: translate3d(0, 200%, 0);\n}\n"
 },{}],3:[function(_dereq_,module,exports){
 var css, insertCss;
 
@@ -62,26 +62,63 @@ module.exports = Verso = (function(superClass) {
     keysNext: [13, 32, 34, 39, 40],
     transition: 'horizontal-slide',
     swipeDirection: 'horizontal',
-    swipeTolerance: 60
+    swipeTolerance: 60,
+    pageIndex: 0
   };
 
-  function Verso(el, options) {
+  function Verso(el1, options) {
     var key, ref, ref1, value;
-    this.el = el;
+    this.el = el1;
     if (options == null) {
       options = {};
     }
+    Verso.__super__.constructor.call(this);
     ref = this.defaults;
     for (key in ref) {
       value = ref[key];
       this[key] = (ref1 = options[key]) != null ? ref1 : value;
     }
-    this.pages = this.el.querySelectorAll('.verso__page');
+    this.pages = Array.prototype.slice.call(this.el.querySelectorAll('.verso__page'), 0);
     this.el.dataset.transition = this.transition;
+    this.go(this.pageIndex);
     return;
   }
 
-  Verso.prototype.init = function() {};
+  Verso.prototype.go = function(pageIndex) {
+    if (isNaN(pageIndex) || pageIndex < 0 || pageIndex > this.getPageCount() - 1) {
+      throw new Error('Page index is not valid');
+    }
+    this.pageIndex = pageIndex;
+    return this.updateState();
+  };
+
+  Verso.prototype.getPageCount = function() {
+    return this.pages.length;
+  };
+
+  Verso.prototype.updateState = function() {
+    this.pages.forEach(function(el) {
+      console.log(el);
+      el.dataset.state = '';
+    });
+    this.pages[this.pageIndex].dataset.state = 'current';
+    if (this.pageIndex > 0) {
+      this.pages[this.pageIndex - 1].dataset.state = 'previous';
+    }
+    if (this.pageIndex + 1 < this.getPageCount()) {
+      this.pages[this.pageIndex + 1].dataset.state = 'next';
+    }
+    if (this.pageIndex > 1) {
+      this.pages.slice(0, this.pageIndex - 1).forEach(function(el) {
+        return el.dataset.state = 'before';
+      });
+    }
+    if (this.pageIndex + 2 < this.getPageCount()) {
+      this.pages.slice(this.pageIndex + 2).forEach(function(el) {
+        return el.dataset.state = 'after';
+      });
+    }
+  };
 
   return Verso;
 

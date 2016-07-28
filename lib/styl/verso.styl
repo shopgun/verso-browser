@@ -4,7 +4,6 @@
     margin 0 auto
     overflow hidden
     overflow-y auto
-    visibility visible
 
     > .verso__page
         absolute top left
@@ -12,9 +11,5 @@
         bottom 0
         z-index 1
 
-    > .verso--current
-        z-index 2
-
-    > .verso--before,
-    > .verso--after
-        display none
+        &[data-state="current"]
+            z-index 2

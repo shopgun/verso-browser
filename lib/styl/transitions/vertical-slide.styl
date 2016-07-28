@@ -5,14 +5,14 @@
         top 0
         left 0
 
-    > .verso--previous
-        transform translate3d(0, -100%, 0)
+        &[data-state="previous"]
+            transform translate3d(0, -100%, 0)
 
-    > .verso--before
-        transform translate3d(0, -200%, 0)
+        &[data-state="before"]
+            transform translate3d(0, -200%, 0)
 
-    > .verso--next
-        transform translate3d(0, 100%, 0)
+        &[data-state="next"]
+            transform translate3d(0, 100%, 0)
 
-    > .verso--after
-        transform translate3d(0, 200%, 0)
+        &[data-state="after"]
+            transform translate3d(0, 200%, 0)
