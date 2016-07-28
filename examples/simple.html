@@ -10,46 +10,60 @@
                 margin: 0;
                 padding: 0;
                 height: 100%;
+                overflow: hidden;
+            }
+
+            #page1 {
+                background: steelblue;
+            }
+
+            #page2 {
+                background: deeppink;
+            }
+
+            #page3 {
+                background: chocolate;
+            }
+
+            #page4 {
+                background: cyan;
+            }
+
+            #page5 {
+                background: salmon;
             }
         </style>
     </head>
     <body>
         <article id="demo" class="verso">
-            <section class="verso__page">
-                <h1>First page</h1>
+            <section id="page1" class="verso__page">
+                <span>First page</span>
             </section>
 
-            <section class="verso__page">
-                <h1>Second page</h1>
+            <section id="page2" class="verso__page">
+                <span>Second page</span>
             </section>
 
-            <section class="verso__page">
-                <h1>Third page</h1>
+            <section id="page3" class="verso__page">
+                <span>Third page</span>
             </section>
 
-            <section class="verso__page">
-                <h1>Fourth page</h1>
+            <section id="page4" class="verso__page">
+                <span>Fourth page</span>
             </section>
 
-            <section class="verso__page">
-                <h1>Fifth page</h1>
+            <section id="page5" class="verso__page">
+                <span>Fifth page</span>
             </section>
         </article>
 
         <script>
             var el = document.getElementById('demo');
-            var verso = new Verso(el, {
-                pageIndex: 4,
-                transition: 'vertical-slide'
-            });
+            var verso = new Verso(el);
 
             verso.on('pagechange', function (e) {
                 console.log(e);
             });
-
-            setTimeout(function () {
-                verso.go(2);
-            }, 1000);
         </script>
     </body>
 </html>

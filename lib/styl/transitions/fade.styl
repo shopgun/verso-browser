@@ -1,0 +1,11 @@
+.verso[data-transition="fade"] > .verso__page
+    transition opacity 300ms ease-in-out 0ms
+
+    &[data-state="current"]
+        opacity 1
+
+    &[data-state="previous"],
+    &[data-state="before"],
+    &[data-state="next"],
+    &[data-state="after"]
+        opacity 0
