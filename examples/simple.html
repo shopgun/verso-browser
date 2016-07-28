@@ -61,9 +61,23 @@
             var el = document.getElementById('demo');
             var verso = new Verso(el);
 
-            verso.on('pagechange', function (e) {
-                console.log(e);
+            verso.on('beforeInit', function () {
+                console.log('before init');
             });
+
+            verso.on('init', function () {
+                console.log('init');
+            });
+
+            verso.on('beforeChange', function (from, to) {
+                console.log('before change', from + '->' + to);
+            });
+
+            verso.on('change', function (from, to) {
+                console.log('change', from + '->' + to);
+            });
+
+            verso.init();
         </script>
     </body>
 </html>

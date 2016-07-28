@@ -9,6 +9,8 @@ module.exports = class Verso extends Events
         swipeTolerance: 60
         pageIndex: 0
 
+    initialized: false
+
     constructor: (@el, options = {}) ->
         super()
 
@@ -16,20 +18,41 @@ module.exports = class Verso extends Events
             @[key] = options[key] ? value
 
         @pages = Array.prototype.slice.call @el.querySelectorAll('.verso__page'), 0
-        @el.dataset.transition = @transition
-
-        @go @pageIndex
-        @bindKeys()
-
-        @el.className += ' ready'
 
         return
+
+    init: ->
+        return if @initialized is true
+
+        @trigger 'beforeInit'
+
+        @el.dataset.ready = ''
+        @el.dataset.transition = @transition
+        @el.setAttribute 'tabindex', -1
+        @el.focus()
+
+        @updateState()
+        @bindKeys()
+        @initialized = true
+
+        @trigger 'init'
+
+        @
 
     go: (pageIndex) ->
         return if isNaN(pageIndex) or pageIndex < 0 or pageIndex > @getPageCount() - 1
 
-        @pageIndex = pageIndex
+        from = @pageIndex
+        to = pageIndex
+
+        @trigger 'beforeChange', from, to
+
+        @pageIndex = to
         @updateState()
+
+        @trigger 'change', from, to
+
+        return
 
     prev: ->
         @go @pageIndex - 1
@@ -45,7 +68,7 @@ module.exports = class Verso extends Events
         @pages.length
 
     bindKeys: ->
-        document.addEventListener 'keyup', (e) =>
+        @el.addEventListener 'keyup', (e) =>
             if e.keyCode in @keysPrev
                 @prev()
             else if e.keyCode in @keysNext

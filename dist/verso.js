@@ -36,7 +36,7 @@ module.exports = Events = (function() {
 
 
 },{}],2:[function(_dereq_,module,exports){
-module.exports=".verso {\n  position: relative;\n  min-height: 100%;\n  margin: 0 auto;\n  overflow: hidden;\n  visibility: hidden;\n}\n.verso.ready {\n  visibility: visible;\n}\n.verso > .verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 1;\n}\n.verso > .verso__page[data-state=\"current\"] {\n  z-index: 2;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page {\n  -webkit-transition: -webkit-transform 300ms ease-in-out;\n  -moz-transition: -moz-transform 300ms ease-in-out;\n  -o-transition: -o-transform 300ms ease-in-out;\n  -ms-transition: -ms-transform 300ms ease-in-out;\n  transition: transform 300ms ease-in-out;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"previous\"] {\n  -webkit-transform: translate3d(-100%, 0, 0);\n  -moz-transform: translate3d(-100%, 0, 0);\n  -o-transform: translate3d(-100%, 0, 0);\n  -ms-transform: translate3d(-100%, 0, 0);\n  transform: translate3d(-100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"before\"] {\n  -webkit-transform: translate3d(-200%, 0, 0);\n  -moz-transform: translate3d(-200%, 0, 0);\n  -o-transform: translate3d(-200%, 0, 0);\n  -ms-transform: translate3d(-200%, 0, 0);\n  transform: translate3d(-200%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"next\"] {\n  -webkit-transform: translate3d(100%, 0, 0);\n  -moz-transform: translate3d(100%, 0, 0);\n  -o-transform: translate3d(100%, 0, 0);\n  -ms-transform: translate3d(100%, 0, 0);\n  transform: translate3d(100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"after\"] {\n  -webkit-transform: translate3d(200%, 0, 0);\n  -moz-transform: translate3d(200%, 0, 0);\n  -o-transform: translate3d(200%, 0, 0);\n  -ms-transform: translate3d(200%, 0, 0);\n  transform: translate3d(200%, 0, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page {\n  -webkit-transition: -webkit-transform 300ms ease-in-out;\n  -moz-transition: -moz-transform 300ms ease-in-out;\n  -o-transition: -o-transform 300ms ease-in-out;\n  -ms-transition: -ms-transform 300ms ease-in-out;\n  transition: transform 300ms ease-in-out;\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"previous\"] {\n  -webkit-transform: translate3d(0, -100%, 0);\n  -moz-transform: translate3d(0, -100%, 0);\n  -o-transform: translate3d(0, -100%, 0);\n  -ms-transform: translate3d(0, -100%, 0);\n  transform: translate3d(0, -100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"before\"] {\n  -webkit-transform: translate3d(0, -200%, 0);\n  -moz-transform: translate3d(0, -200%, 0);\n  -o-transform: translate3d(0, -200%, 0);\n  -ms-transform: translate3d(0, -200%, 0);\n  transform: translate3d(0, -200%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"next\"] {\n  -webkit-transform: translate3d(0, 100%, 0);\n  -moz-transform: translate3d(0, 100%, 0);\n  -o-transform: translate3d(0, 100%, 0);\n  -ms-transform: translate3d(0, 100%, 0);\n  transform: translate3d(0, 100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"after\"] {\n  -webkit-transform: translate3d(0, 200%, 0);\n  -moz-transform: translate3d(0, 200%, 0);\n  -o-transform: translate3d(0, 200%, 0);\n  -ms-transform: translate3d(0, 200%, 0);\n  transform: translate3d(0, 200%, 0);\n}\n.verso[data-transition=\"fade\"] > .verso__page {\n  -webkit-transition: opacity 300ms ease-in-out 0ms;\n  -moz-transition: opacity 300ms ease-in-out 0ms;\n  -o-transition: opacity 300ms ease-in-out 0ms;\n  -ms-transition: opacity 300ms ease-in-out 0ms;\n  transition: opacity 300ms ease-in-out 0ms;\n}\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"current\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"previous\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"before\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"next\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"after\"] {\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n"
+module.exports=".verso {\n  position: relative;\n  min-height: 100%;\n  margin: 0 auto;\n  overflow: hidden;\n  visibility: hidden;\n}\n.verso[data-ready] {\n  visibility: visible;\n}\n.verso > .verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 1;\n}\n.verso > .verso__page[data-state=\"current\"] {\n  z-index: 2;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page {\n  -webkit-transition: -webkit-transform 300ms ease-in-out;\n  -moz-transition: -moz-transform 300ms ease-in-out;\n  -o-transition: -o-transform 300ms ease-in-out;\n  -ms-transition: -ms-transform 300ms ease-in-out;\n  transition: transform 300ms ease-in-out;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"previous\"] {\n  -webkit-transform: translate3d(-100%, 0, 0);\n  -moz-transform: translate3d(-100%, 0, 0);\n  -o-transform: translate3d(-100%, 0, 0);\n  -ms-transform: translate3d(-100%, 0, 0);\n  transform: translate3d(-100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"before\"] {\n  -webkit-transform: translate3d(-200%, 0, 0);\n  -moz-transform: translate3d(-200%, 0, 0);\n  -o-transform: translate3d(-200%, 0, 0);\n  -ms-transform: translate3d(-200%, 0, 0);\n  transform: translate3d(-200%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"next\"] {\n  -webkit-transform: translate3d(100%, 0, 0);\n  -moz-transform: translate3d(100%, 0, 0);\n  -o-transform: translate3d(100%, 0, 0);\n  -ms-transform: translate3d(100%, 0, 0);\n  transform: translate3d(100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"after\"] {\n  -webkit-transform: translate3d(200%, 0, 0);\n  -moz-transform: translate3d(200%, 0, 0);\n  -o-transform: translate3d(200%, 0, 0);\n  -ms-transform: translate3d(200%, 0, 0);\n  transform: translate3d(200%, 0, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page {\n  -webkit-transition: -webkit-transform 300ms ease-in-out;\n  -moz-transition: -moz-transform 300ms ease-in-out;\n  -o-transition: -o-transform 300ms ease-in-out;\n  -ms-transition: -ms-transform 300ms ease-in-out;\n  transition: transform 300ms ease-in-out;\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"previous\"] {\n  -webkit-transform: translate3d(0, -100%, 0);\n  -moz-transform: translate3d(0, -100%, 0);\n  -o-transform: translate3d(0, -100%, 0);\n  -ms-transform: translate3d(0, -100%, 0);\n  transform: translate3d(0, -100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"before\"] {\n  -webkit-transform: translate3d(0, -200%, 0);\n  -moz-transform: translate3d(0, -200%, 0);\n  -o-transform: translate3d(0, -200%, 0);\n  -ms-transform: translate3d(0, -200%, 0);\n  transform: translate3d(0, -200%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"next\"] {\n  -webkit-transform: translate3d(0, 100%, 0);\n  -moz-transform: translate3d(0, 100%, 0);\n  -o-transform: translate3d(0, 100%, 0);\n  -ms-transform: translate3d(0, 100%, 0);\n  transform: translate3d(0, 100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"after\"] {\n  -webkit-transform: translate3d(0, 200%, 0);\n  -moz-transform: translate3d(0, 200%, 0);\n  -o-transform: translate3d(0, 200%, 0);\n  -ms-transform: translate3d(0, 200%, 0);\n  transform: translate3d(0, 200%, 0);\n}\n.verso[data-transition=\"fade\"] > .verso__page {\n  -webkit-transition: opacity 300ms ease-in-out 0ms;\n  -moz-transition: opacity 300ms ease-in-out 0ms;\n  -o-transition: opacity 300ms ease-in-out 0ms;\n  -ms-transition: opacity 300ms ease-in-out 0ms;\n  transition: opacity 300ms ease-in-out 0ms;\n}\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"current\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"previous\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"before\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"next\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"after\"] {\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n"
 },{}],3:[function(_dereq_,module,exports){
 var css, insertCss;
 
@@ -67,6 +67,8 @@ module.exports = Verso = (function(superClass) {
     pageIndex: 0
   };
 
+  Verso.prototype.initialized = false;
+
   function Verso(el1, options) {
     var key, ref, ref1, value;
     this.el = el1;
@@ -80,19 +82,36 @@ module.exports = Verso = (function(superClass) {
       this[key] = (ref1 = options[key]) != null ? ref1 : value;
     }
     this.pages = Array.prototype.slice.call(this.el.querySelectorAll('.verso__page'), 0);
-    this.el.dataset.transition = this.transition;
-    this.go(this.pageIndex);
-    this.bindKeys();
-    this.el.className += ' ready';
     return;
   }
 
+  Verso.prototype.init = function() {
+    if (this.initialized === true) {
+      return;
+    }
+    this.trigger('beforeInit');
+    this.el.dataset.ready = '';
+    this.el.dataset.transition = this.transition;
+    this.el.setAttribute('tabindex', -1);
+    this.el.focus();
+    this.updateState();
+    this.bindKeys();
+    this.initialized = true;
+    this.trigger('init');
+    return this;
+  };
+
   Verso.prototype.go = function(pageIndex) {
+    var from, to;
     if (isNaN(pageIndex) || pageIndex < 0 || pageIndex > this.getPageCount() - 1) {
       return;
     }
-    this.pageIndex = pageIndex;
-    return this.updateState();
+    from = this.pageIndex;
+    to = pageIndex;
+    this.trigger('beforeChange', from, to);
+    this.pageIndex = to;
+    this.updateState();
+    this.trigger('change', from, to);
   };
 
   Verso.prototype.prev = function() {
@@ -108,7 +127,7 @@ module.exports = Verso = (function(superClass) {
   };
 
   Verso.prototype.bindKeys = function() {
-    document.addEventListener('keyup', (function(_this) {
+    this.el.addEventListener('keyup', (function(_this) {
       return function(e) {
         var ref, ref1;
         if (ref = e.keyCode, indexOf.call(_this.keysPrev, ref) >= 0) {
