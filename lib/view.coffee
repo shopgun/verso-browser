@@ -65,13 +65,28 @@ module.exports = class Verso extends Events
 
     updateState: ->
         @pages[@pageIndex].dataset.state = 'current'
-        @pages[@pageIndex - 1].dataset.state = 'previous' if @pageIndex > 0
-        @pages[@pageIndex + 1].dataset.state = 'next' if @pageIndex + 1 < @getPageCount()
+        @pages[@pageIndex].setAttribute 'aria-hidden', false
+
+        if @pageIndex > 0
+            @pages[@pageIndex - 1].dataset.state = 'previous'
+            @pages[@pageIndex - 1].setAttribute 'aria-hidden', true
+
+        if @pageIndex + 1 < @getPageCount()
+            @pages[@pageIndex + 1].dataset.state = 'next'
+            @pages[@pageIndex + 1].setAttribute 'aria-hidden', true
 
         if @pageIndex > 1
-            @pages.slice(0, @pageIndex - 1).forEach (el) -> el.dataset.state = 'before'
+            @pages.slice(0, @pageIndex - 1).forEach (el) ->
+                el.dataset.state = 'before'
+                el.setAttribute 'aria-hidden', true
+
+                return
 
         if @pageIndex + 2 < @getPageCount()
-            @pages.slice(@pageIndex + 2).forEach (el) -> el.dataset.state = 'after'
+            @pages.slice(@pageIndex + 2).forEach (el) ->
+                el.dataset.state = 'after'
+                el.setAttribute 'aria-hidden', true
+
+                return
 
         return

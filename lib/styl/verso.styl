@@ -18,7 +18,11 @@
         &[data-state="current"]
             z-index 2
 
-        > .verso__scale
-            absolute top left
-            right 0
-            bottom 0
+        &[data-scroll-view="true"]
+            overflow auto
+            overflow-scrolling touch
+
+            > .verso__scroll-child
+                transform scale(3)
+                transform-origin 50% 0%
+                overflow hidden
