@@ -15,7 +15,7 @@ module.exports = class Status
         formatter = if typeof @formatter is 'function' then @formatter else @defaultFormatter
         value = formatter el, index, count
 
-        @el.innerText = value
+        @el.textContent = value
 
         return
 

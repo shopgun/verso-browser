@@ -8,21 +8,21 @@
     &[data-ready="true"]
         visibility visible
 
-    > .verso__page
-        absolute top left
-        right 0
-        bottom 0
-        z-index 1
-        overflow hidden
+.verso__page
+    absolute top left
+    right 0
+    bottom 0
+    z-index 1
+    overflow hidden
 
-        &[data-state="current"]
-            z-index 2
+    &[data-state="current"]
+        z-index 2
 
-        &[data-scroll-view="true"]
-            overflow auto
-            overflow-scrolling touch
+    &[data-scroll-view="true"]
+        overflow auto
+        overflow-scrolling touch
 
-            > .verso__scroll-child
-                transform scale(3)
-                transform-origin 50% 0%
-                overflow hidden
+.verso__scroll-child
+    transform scale(1)
+    transform-origin 50% 0%
+    overflow hidden

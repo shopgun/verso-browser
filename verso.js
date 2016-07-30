@@ -44,6 +44,7 @@ Hammer = _dereq_('hammerjs');
 
 module.exports = Interactivity = (function() {
   Interactivity.prototype.defaults = {
+    pan: true,
     swipeDirection: 'horizontal',
     swipeVelocity: 0.3,
     swipeThreshold: 10,
@@ -63,28 +64,34 @@ module.exports = Interactivity = (function() {
       value = ref[key];
       this[key] = (ref1 = options[key]) != null ? ref1 : value;
     }
-    this.gestures = {
-      scale: 1,
-      initialX: 0
-    };
+    this.pinching = false;
+    this.panning = false;
+    this.scale = 1;
+    this.panPageIndex = -1;
+    this.panCurrentTransform = null;
     this.bindEvents();
     return;
   }
 
   Interactivity.prototype.bindEvents = function() {
     this.verso.el.addEventListener('keyup', this.keyup.bind(this), false);
-    this.hammer = new Hammer.Manager(this.verso.el).on('doubletap', this.doubletap.bind(this)).on('pinchstart', this.pinchstart.bind(this)).on('pinchmove', this.pinchmove.bind(this)).on('pinchend', this.pinchend.bind(this)).on('panstart', this.panstart.bind(this)).on('panmove', this.panmove.bind(this)).on('panend', this.panend.bind(this));
+    this.hammer = new Hammer.Manager(this.verso.el).on('doubletap', this.doubletap.bind(this)).on('pinchmove', this.pinchmove.bind(this)).on('pinchend', this.pinchend.bind(this)).on('panstart', this.panstart.bind(this)).on('panmove', this.panmove.bind(this)).on('panend', this.panend.bind(this)).on('pancancel', this.panend.bind(this));
     this.hammer.add(new Hammer.Pinch());
-    this.hammer.add(new Hammer.Pan());
+    this.hammer.add(new Hammer.Pan({
+      threshold: 0
+    }));
     this.hammer.add(new Hammer.Tap({
       event: 'doubletap',
       taps: 2
     }));
-    this.hammer.add(new Hammer.Tap({
-      event: 'singletap'
-    }));
-    this.hammer.get('doubletap').recognizeWith('singletap');
-    this.hammer.get('singletap').requireFailure('doubletap');
+  };
+
+  Interactivity.prototype.getTransform = function(el) {
+    var style, transform, values;
+    style = window.getComputedStyle(el, null);
+    transform = style['transform'];
+    values = transform !== 'none' ? transform.split('(')[1].split(')')[0].split(',') : null;
+    return values;
   };
 
   Interactivity.prototype.keyup = function(e) {
@@ -100,10 +107,6 @@ module.exports = Interactivity = (function() {
     console.log('doubletap', e);
   };
 
-  Interactivity.prototype.pinchstart = function(e) {
-    console.log('pinchstart', e);
-  };
-
   Interactivity.prototype.pinchmove = function(e) {
     console.log('pinchmove', e);
   };
@@ -113,28 +116,94 @@ module.exports = Interactivity = (function() {
   };
 
   Interactivity.prototype.panstart = function(e) {
-    console.log('panstart', e);
+    var pageEl;
+    if (this.pan === false || this.scale !== 1) {
+      return;
+    }
+    if (e.changedPointers[0].pageX <= 20 || e.changedPointers[0].pageX >= window.innerWidth - 20) {
+      return;
+    }
+    pageEl = e.target;
+    while (!pageEl.className.match(/\bverso__page\b/) && (pageEl.parentNode != null)) {
+      pageEl = pageEl.parentNode;
+    }
+    this.panPageIndex = this.verso.pages.indexOf(pageEl);
+    this.panCurrentTransform = this.getTransform(pageEl);
+    this.verso.el.dataset.panning = true;
+    this.panning = true;
+    this.panmove(e);
   };
 
   Interactivity.prototype.panmove = function(e) {
-    console.log('panmove', e);
+    var currEl, deltaX, deltaY, height, matrixX, matrixY, nextEl, prevEl, width, x, y;
+    if (this.panning === false) {
+      return;
+    }
+    prevEl = this.verso.pages[this.panPageIndex - 1];
+    currEl = this.verso.pages[this.panPageIndex];
+    nextEl = this.verso.pages[this.panPageIndex + 1];
+    width = this.verso.el.offsetWidth;
+    height = this.verso.el.offsetHeight;
+    deltaX = e.deltaX;
+    deltaY = e.deltaY;
+    matrixX = this.transform != null ? +this.transform[4] : 0;
+    matrixY = this.transform != null ? +this.transform[5] : 0;
+    x = {
+      prev: 0,
+      curr: 0,
+      next: 0
+    };
+    y = {
+      prev: 0,
+      curr: 0,
+      next: 0
+    };
+    if (this.swipeDirection === 'horizontal') {
+      x.prev = -width + matrixX + deltaX;
+      x.curr = matrixX + deltaX;
+      x.next = width + matrixX + deltaX;
+    } else if (this.swipeDirection === 'vertical') {
+      y.prev = -height + matrixY + deltaY;
+      y.curr = matrixY + deltaY;
+      y.next = height + matrixY + deltaY;
+    }
+    if (prevEl != null) {
+      prevEl.style.transform = "translate3d(" + x.prev + "px, " + y.prev + "px, 0)";
+    }
+    currEl.style.transform = "translate3d(" + x.curr + "px, " + y.curr + "px, 0)";
+    if (nextEl != null) {
+      nextEl.style.transform = "translate3d(" + x.next + "px, " + y.next + "px, 0)";
+    }
   };
 
   Interactivity.prototype.panend = function(e) {
-    console.log('panend', e);
+    var currEl, nextEl, prevEl;
+    if (this.panning === true) {
+      prevEl = this.verso.pages[this.panPageIndex - 1];
+      currEl = this.verso.pages[this.panPageIndex];
+      nextEl = this.verso.pages[this.panPageIndex + 1];
+      this.verso.el.dataset.panning = false;
+      if (prevEl != null) {
+        prevEl.style.transform = '';
+      }
+      currEl.style.transform = '';
+      if (nextEl != null) {
+        nextEl.style.transform = '';
+      }
+    }
     if (this.swipeDirection === 'horizontal' && Math.abs(e.overallVelocityX) >= this.swipeVelocity) {
       if (Math.abs(e.deltaX) >= this.swipeThreshold) {
-        if (e.direction === Hammer.DIRECTION_LEFT) {
+        if (e.offsetDirection === Hammer.DIRECTION_LEFT) {
           this.verso.next();
-        } else if (e.direction === Hammer.DIRECTION_RIGHT) {
+        } else if (e.offsetDirection === Hammer.DIRECTION_RIGHT) {
           this.verso.prev();
         }
       }
     } else if (this.swipeDirection === 'vertical' && Math.abs(e.overallVelocityY) >= this.swipeVelocity) {
       if (Math.abs(e.deltaY) >= this.swipeThreshold) {
-        if (e.direction === Hammer.DIRECTION_UP) {
+        if (e.offsetDirection === Hammer.DIRECTION_UP) {
           this.verso.next();
-        } else if (e.direction === Hammer.DIRECTION_DOWN) {
+        } else if (e.offsetDirection === Hammer.DIRECTION_DOWN) {
           this.verso.prev();
         }
       }
@@ -229,7 +298,7 @@ module.exports = Status = (function() {
     el = this.verso.pages[index];
     formatter = typeof this.formatter === 'function' ? this.formatter : this.defaultFormatter;
     value = formatter(el, index, count);
-    this.el.innerText = value;
+    this.el.textContent = value;
   };
 
   Status.prototype.defaultFormatter = function(el, index, count) {
@@ -242,7 +311,7 @@ module.exports = Status = (function() {
 
 
 },{}],6:[function(_dereq_,module,exports){
-module.exports=".verso {\n  position: relative;\n  min-height: 100%;\n  margin: 0 auto;\n  overflow: hidden;\n  visibility: hidden;\n}\n.verso[data-ready=\"true\"] {\n  visibility: visible;\n}\n.verso > .verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 1;\n  overflow: hidden;\n}\n.verso > .verso__page[data-state=\"current\"] {\n  z-index: 2;\n}\n.verso > .verso__page[data-scroll-view=\"true\"] {\n  overflow: auto;\n  -webkit-overflow-scrolling: touch;\n  overflow-scrolling: touch;\n}\n.verso > .verso__page[data-scroll-view=\"true\"] > .verso__scroll-child {\n  -webkit-transform: scale(3);\n  -moz-transform: scale(3);\n  -o-transform: scale(3);\n  -ms-transform: scale(3);\n  transform: scale(3);\n  -webkit-transform-origin: 50% 0%;\n  -moz-transform-origin: 50% 0%;\n  -o-transform-origin: 50% 0%;\n  -ms-transform-origin: 50% 0%;\n  transform-origin: 50% 0%;\n  overflow: hidden;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 300ms;\n  -moz-transition: opacity ease 300ms;\n  -o-transition: opacity ease 300ms;\n  -ms-transition: opacity ease 300ms;\n  transition: opacity ease 300ms;\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width ease-in 300ms;\n  -moz-transition: width ease-in 300ms;\n  -o-transition: width ease-in 300ms;\n  -ms-transition: width ease-in 300ms;\n  transition: width ease-in 300ms;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n.verso[data-transition=\"none\"] .verso-progress__inner {\n  -webkit-transition: none;\n  -moz-transition: none;\n  -o-transition: none;\n  -ms-transition: none;\n  transition: none;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page {\n  -webkit-transition: -webkit-transform 300ms ease-in-out;\n  -moz-transition: -moz-transform 300ms ease-in-out;\n  -o-transition: -o-transform 300ms ease-in-out;\n  -ms-transition: -ms-transform 300ms ease-in-out;\n  transition: transform 300ms ease-in-out;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"previous\"] {\n  -webkit-transform: translate3d(-100%, 0, 0);\n  -moz-transform: translate3d(-100%, 0, 0);\n  -o-transform: translate3d(-100%, 0, 0);\n  -ms-transform: translate3d(-100%, 0, 0);\n  transform: translate3d(-100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"before\"] {\n  -webkit-transform: translate3d(-200%, 0, 0);\n  -moz-transform: translate3d(-200%, 0, 0);\n  -o-transform: translate3d(-200%, 0, 0);\n  -ms-transform: translate3d(-200%, 0, 0);\n  transform: translate3d(-200%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"next\"] {\n  -webkit-transform: translate3d(100%, 0, 0);\n  -moz-transform: translate3d(100%, 0, 0);\n  -o-transform: translate3d(100%, 0, 0);\n  -ms-transform: translate3d(100%, 0, 0);\n  transform: translate3d(100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"after\"] {\n  -webkit-transform: translate3d(200%, 0, 0);\n  -moz-transform: translate3d(200%, 0, 0);\n  -o-transform: translate3d(200%, 0, 0);\n  -ms-transform: translate3d(200%, 0, 0);\n  transform: translate3d(200%, 0, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page {\n  -webkit-transition: -webkit-transform 300ms ease-in-out;\n  -moz-transition: -moz-transform 300ms ease-in-out;\n  -o-transition: -o-transform 300ms ease-in-out;\n  -ms-transition: -ms-transform 300ms ease-in-out;\n  transition: transform 300ms ease-in-out;\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"previous\"] {\n  -webkit-transform: translate3d(0, -100%, 0);\n  -moz-transform: translate3d(0, -100%, 0);\n  -o-transform: translate3d(0, -100%, 0);\n  -ms-transform: translate3d(0, -100%, 0);\n  transform: translate3d(0, -100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"before\"] {\n  -webkit-transform: translate3d(0, -200%, 0);\n  -moz-transform: translate3d(0, -200%, 0);\n  -o-transform: translate3d(0, -200%, 0);\n  -ms-transform: translate3d(0, -200%, 0);\n  transform: translate3d(0, -200%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"next\"] {\n  -webkit-transform: translate3d(0, 100%, 0);\n  -moz-transform: translate3d(0, 100%, 0);\n  -o-transform: translate3d(0, 100%, 0);\n  -ms-transform: translate3d(0, 100%, 0);\n  transform: translate3d(0, 100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"after\"] {\n  -webkit-transform: translate3d(0, 200%, 0);\n  -moz-transform: translate3d(0, 200%, 0);\n  -o-transform: translate3d(0, 200%, 0);\n  -ms-transform: translate3d(0, 200%, 0);\n  transform: translate3d(0, 200%, 0);\n}\n.verso[data-transition=\"fade\"] > .verso__page {\n  -webkit-transition: opacity 300ms ease-in-out 0ms;\n  -moz-transition: opacity 300ms ease-in-out 0ms;\n  -o-transition: opacity 300ms ease-in-out 0ms;\n  -ms-transition: opacity 300ms ease-in-out 0ms;\n  transition: opacity 300ms ease-in-out 0ms;\n}\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"current\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"previous\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"before\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"next\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"after\"] {\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n"
+module.exports=".verso {\n  position: relative;\n  min-height: 100%;\n  margin: 0 auto;\n  overflow: hidden;\n  visibility: hidden;\n}\n.verso[data-ready=\"true\"] {\n  visibility: visible;\n}\n.verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 1;\n  overflow: hidden;\n}\n.verso__page[data-state=\"current\"] {\n  z-index: 2;\n}\n.verso__page[data-scroll-view=\"true\"] {\n  overflow: auto;\n  -webkit-overflow-scrolling: touch;\n  overflow-scrolling: touch;\n}\n.verso__scroll-child {\n  -webkit-transform: scale(1);\n  -moz-transform: scale(1);\n  -o-transform: scale(1);\n  -ms-transform: scale(1);\n  transform: scale(1);\n  -webkit-transform-origin: 50% 0%;\n  -moz-transform-origin: 50% 0%;\n  -o-transform-origin: 50% 0%;\n  -ms-transform-origin: 50% 0%;\n  transform-origin: 50% 0%;\n  overflow: hidden;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 300ms;\n  -moz-transition: opacity ease 300ms;\n  -o-transition: opacity ease 300ms;\n  -ms-transition: opacity ease 300ms;\n  transition: opacity ease 300ms;\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width 200ms ease-in;\n  -moz-transition: width 200ms ease-in;\n  -o-transition: width 200ms ease-in;\n  -ms-transition: width 200ms ease-in;\n  transition: width 200ms ease-in;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n.verso[data-panning=\"true\"] > .verso__page {\n  -webkit-transition: none !important;\n  -moz-transition: none !important;\n  -o-transition: none !important;\n  -ms-transition: none !important;\n  transition: none !important;\n}\n.verso[data-transition=\"none\"] .verso-progress__inner {\n  -webkit-transition: none;\n  -moz-transition: none;\n  -o-transition: none;\n  -ms-transition: none;\n  transition: none;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page {\n  -webkit-transition: -webkit-transform 200ms linear;\n  -moz-transition: -moz-transform 200ms linear;\n  -o-transition: -o-transform 200ms linear;\n  -ms-transition: -ms-transform 200ms linear;\n  transition: transform 200ms linear;\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"previous\"] {\n  -webkit-transform: translate3d(-100%, 0, 0);\n  -moz-transform: translate3d(-100%, 0, 0);\n  -o-transform: translate3d(-100%, 0, 0);\n  -ms-transform: translate3d(-100%, 0, 0);\n  transform: translate3d(-100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"before\"] {\n  -webkit-transform: translate3d(-200%, 0, 0);\n  -moz-transform: translate3d(-200%, 0, 0);\n  -o-transform: translate3d(-200%, 0, 0);\n  -ms-transform: translate3d(-200%, 0, 0);\n  transform: translate3d(-200%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"next\"] {\n  -webkit-transform: translate3d(100%, 0, 0);\n  -moz-transform: translate3d(100%, 0, 0);\n  -o-transform: translate3d(100%, 0, 0);\n  -ms-transform: translate3d(100%, 0, 0);\n  transform: translate3d(100%, 0, 0);\n}\n.verso[data-transition=\"horizontal-slide\"] > .verso__page[data-state=\"after\"] {\n  -webkit-transform: translate3d(200%, 0, 0);\n  -moz-transform: translate3d(200%, 0, 0);\n  -o-transform: translate3d(200%, 0, 0);\n  -ms-transform: translate3d(200%, 0, 0);\n  transform: translate3d(200%, 0, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page {\n  -webkit-transition: -webkit-transform 200ms linear;\n  -moz-transition: -moz-transform 200ms linear;\n  -o-transition: -o-transform 200ms linear;\n  -ms-transition: -ms-transform 200ms linear;\n  transition: transform 200ms linear;\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"previous\"] {\n  -webkit-transform: translate3d(0, -100%, 0);\n  -moz-transform: translate3d(0, -100%, 0);\n  -o-transform: translate3d(0, -100%, 0);\n  -ms-transform: translate3d(0, -100%, 0);\n  transform: translate3d(0, -100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"before\"] {\n  -webkit-transform: translate3d(0, -200%, 0);\n  -moz-transform: translate3d(0, -200%, 0);\n  -o-transform: translate3d(0, -200%, 0);\n  -ms-transform: translate3d(0, -200%, 0);\n  transform: translate3d(0, -200%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"next\"] {\n  -webkit-transform: translate3d(0, 100%, 0);\n  -moz-transform: translate3d(0, 100%, 0);\n  -o-transform: translate3d(0, 100%, 0);\n  -ms-transform: translate3d(0, 100%, 0);\n  transform: translate3d(0, 100%, 0);\n}\n.verso[data-transition=\"vertical-slide\"] > .verso__page[data-state=\"after\"] {\n  -webkit-transform: translate3d(0, 200%, 0);\n  -moz-transform: translate3d(0, 200%, 0);\n  -o-transform: translate3d(0, 200%, 0);\n  -ms-transform: translate3d(0, 200%, 0);\n  transform: translate3d(0, 200%, 0);\n}\n.verso[data-transition=\"fade\"] > .verso__page {\n  -webkit-transition: opacity 300ms ease-in-out;\n  -moz-transition: opacity 300ms ease-in-out;\n  -o-transition: opacity 300ms ease-in-out;\n  -ms-transition: opacity 300ms ease-in-out;\n  transition: opacity 300ms ease-in-out;\n}\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"current\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"previous\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"before\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"next\"],\n.verso[data-transition=\"fade\"] > .verso__page[data-state=\"after\"] {\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n"
 },{}],7:[function(_dereq_,module,exports){
 var css, insertCss;
 
