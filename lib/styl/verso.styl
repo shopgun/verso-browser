@@ -1,28 +1,29 @@
 .verso
     position relative
-    min-height 100%
-    margin 0 auto
+    height 100%
+    display none
+    outline 0
     overflow hidden
-    visibility hidden
+    box-sizing border-box
 
     &[data-ready="true"]
-        visibility visible
+        display block
+
+    *,
+    *:before,
+    *:after
+        box-sizing inherit
 
 .verso__page
     absolute top left
-    right 0
-    bottom 0
-    z-index 1
-    overflow hidden
+    width 100%
+    height 100%
 
-    &[data-state="current"]
-        z-index 2
+//     &[data-scroll-view="true"]
+//         overflow auto
+//         overflow-scrolling touch
 
-    &[data-scroll-view="true"]
-        overflow auto
-        overflow-scrolling touch
-
-.verso__scroll-child
-    transform scale(1)
-    transform-origin 50% 0%
-    overflow hidden
+// .verso__scroll-child
+//     transform-origin 50% 0%
+//     transition transform 200ms ease-in-out
+//     overflow hidden

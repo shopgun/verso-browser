@@ -1,11 +1,11 @@
-Hammer = require 'hammerjs'
-
 module.exports = class Interactivity
     defaults:
         pan: true
         swipeDirection: 'horizontal'
         swipeVelocity: 0.3
         swipeThreshold: 10
+        maxZoomScale: 3
+        minZoomScale: 1
         keysPrev: [8, 33, 37, 38] # Backspace, page up, left arrow, up arrow.
         keysNext: [13, 32, 34, 39, 40] # Enter, space, page down, right arrow, down arrow.
 
@@ -13,11 +13,9 @@ module.exports = class Interactivity
         for key, value of @defaults
             @[key] = options[key] ? value
 
-        @pinching = false
         @panning = false
-        @scale = 1
-        @panPageIndex = -1
-        @panCurrentTransform = null
+        @zoomScale = 1
+        @activePointers = []
 
         @bindEvents()
 
@@ -27,19 +25,11 @@ module.exports = class Interactivity
         # Keyboard.
         @verso.el.addEventListener 'keyup', @keyup.bind(@), false
 
-        # Gestures.
-        @hammer = new Hammer.Manager @verso.el
-            .on 'doubletap', @doubletap.bind @
-            .on 'pinchmove', @pinchmove.bind @
-            .on 'pinchend', @pinchend.bind @
-            .on 'panstart', @panstart.bind @
-            .on 'panmove', @panmove.bind @
-            .on 'panend', @panend.bind @
-            .on 'pancancel', @panend.bind @
-
-        @hammer.add new Hammer.Pinch()
-        @hammer.add new Hammer.Pan(threshold: 0)
-        @hammer.add new Hammer.Tap(event: 'doubletap', taps: 2)
+        # Pointers.
+        @verso.el.addEventListener 'touchstart', @pointerStart.bind(@), false
+        @verso.el.addEventListener 'touchmove', @pointerMove.bind(@), false
+        @verso.el.addEventListener 'touchend', @pointerEnd.bind(@), false
+        @verso.el.addEventListener 'touchcancel', @pointerEnd.bind(@), false
 
         return
 
@@ -50,6 +40,17 @@ module.exports = class Interactivity
 
         values
 
+    zoom: (scale, x, y) ->
+        pageEl = @verso.pages[@verso.pageIndex]
+        scrollChild = pageEl.querySelector '.verso__scroll-child'
+
+        if scrollChild?
+            scrollChild.style.transform = "scale3d(#{scale}, #{scale}, 1)"
+
+        @zoomScale = scale
+
+        return
+
     keyup: (e) =>
         if e.keyCode in @keysPrev
             @verso.prev()
@@ -58,24 +59,8 @@ module.exports = class Interactivity
 
         return
 
-    doubletap: (e) ->
-        console.log 'doubletap', e
-
-        return
-
-    pinchmove: (e) ->
-        console.log 'pinchmove', e
-
-        return
-
-    pinchend: (e) ->
-        console.log 'pinchend', e
-
-        return
-
-    panstart: (e) ->
-        return if @pan is false or @scale isnt 1
-        return if e.changedPointers[0].pageX <= 20 or e.changedPointers[0].pageX >= window.innerWidth - 20
+    pointerStart: (e) ->
+        e.preventDefault()
 
         pageEl = e.target
 
@@ -83,27 +68,33 @@ module.exports = class Interactivity
             pageEl = pageEl.parentNode
 
         @panPageIndex = @verso.pages.indexOf pageEl
-        @panCurrentTransform = @getTransform pageEl
+        @panCurrentTransform = @getTransform @verso.pages[@panPageIndex]
 
-        @verso.el.dataset.panning = true
+
         @panning = true
 
-        @panmove e
+        @startX = e.pageX
+
+        @pointerMove e
+
+        @verso.el.dataset.panning = true
 
         return
 
-    panmove: (e) ->
+    pointerMove: (e) ->
         return if @panning is false
+
+        e.preventDefault()
 
         prevEl = @verso.pages[@panPageIndex - 1]
         currEl = @verso.pages[@panPageIndex]
         nextEl = @verso.pages[@panPageIndex + 1]
         width = @verso.el.offsetWidth
         height = @verso.el.offsetHeight
-        deltaX = e.deltaX
+        deltaX = e.pageX - @startX
         deltaY = e.deltaY
-        matrixX = if @transform? then +@transform[4] else 0
-        matrixY = if @transform? then +@transform[5] else 0
+        matrixX = if @panCurrentTransform? then +@panCurrentTransform[4] else 0
+        matrixY = if @panCurrentTransform? then +@panCurrentTransform[5] else 0
         x =
             prev: 0
             curr: 0
@@ -122,13 +113,17 @@ module.exports = class Interactivity
             y.curr = matrixY + deltaY
             y.next = height + matrixY + deltaY
 
+        console.log @panCurrentTransform, x.curr
+
         prevEl.style.transform = "translate3d(#{x.prev}px, #{y.prev}px, 0)" if prevEl?
         currEl.style.transform = "translate3d(#{x.curr}px, #{y.curr}px, 0)"
         nextEl.style.transform = "translate3d(#{x.next}px, #{y.next}px, 0)" if nextEl?
 
         return
 
-    panend: (e) ->
+    pointerEnd: (e) ->
+        deltaX = e.pageX - @startX
+
         if @panning is true
             prevEl = @verso.pages[@panPageIndex - 1]
             currEl = @verso.pages[@panPageIndex]
@@ -140,17 +135,14 @@ module.exports = class Interactivity
             currEl.style.transform = ''
             nextEl.style.transform = '' if nextEl?
 
-        if @swipeDirection is 'horizontal' and Math.abs(e.overallVelocityX) >= @swipeVelocity
-            if Math.abs(e.deltaX) >= @swipeThreshold
-                if e.offsetDirection is Hammer.DIRECTION_LEFT
-                    @verso.next()
-                else if e.offsetDirection is Hammer.DIRECTION_RIGHT
-                    @verso.prev()
-        else if @swipeDirection is 'vertical' and Math.abs(e.overallVelocityY) >= @swipeVelocity
-            if Math.abs(e.deltaY) >= @swipeThreshold
-                if e.offsetDirection is Hammer.DIRECTION_UP
-                    @verso.next()
-                else if e.offsetDirection is Hammer.DIRECTION_DOWN
-                    @verso.prev()
+        if @swipeDirection is 'horizontal'
+            if deltaX <= -@swipeThreshold
+                @verso.next()
+            else if deltaX >= @swipeThreshold
+                @verso.prev()
+        else if @swipeDirection is 'vertical'
+            return
+
+
 
         return

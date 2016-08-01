@@ -1,11 +1,11 @@
-.verso[data-transition="horizontal-slide"] > .verso__page
+.verso[data-transition="horizontal-slide"] .verso__page
     transition transform 200ms linear
-
-    &[data-state="previous"]
-        transform translate3d(-100%, 0, 0)
 
     &[data-state="before"]
         transform translate3d(-200%, 0, 0)
+
+    &[data-state="previous"]
+        transform translate3d(-100%, 0, 0)
 
     &[data-state="next"]
         transform translate3d(100%, 0, 0)

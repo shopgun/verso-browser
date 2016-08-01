@@ -10,6 +10,5 @@
 - [x] Navigation module
 - [x] Status
 - [x] Progress
-- [ ] Make sure code is clean and nice
 
 https://www.raywenderlich.com/122139/uiscrollview-tutorial
