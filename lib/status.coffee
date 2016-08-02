@@ -10,7 +10,7 @@ module.exports = class Status
 
     updateStatus: ->
         index = @verso.pageIndex
-        count = @verso.getPageCount()
+        count = @verso.pages.count()
         el = @verso.pages[index]
         formatter = if typeof @formatter is 'function' then @formatter else @defaultFormatter
         value = formatter el, index, count

@@ -1,13 +1,9 @@
 .verso
     position relative
     height 100%
-    display none
     outline 0
     overflow hidden
     box-sizing border-box
-
-    &[data-ready="true"]
-        display block
 
     *,
     *:before,
@@ -18,6 +14,12 @@
     absolute top left
     width 100%
     height 100%
+    display none
+
+    &[data-state="previous"],
+    &[data-state="current"],
+    &[data-state="next"]
+        will-change transform
 
 //     &[data-scroll-view="true"]
 //         overflow auto

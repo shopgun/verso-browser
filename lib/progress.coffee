@@ -9,7 +9,7 @@ module.exports = class Progress
         return
 
     updateProgress: ->
-        progress = parseInt (@verso.pageIndex + 1) / @verso.getPageCount() * 100
+        progress = parseInt (@verso.pageIndex + 1) / @verso.pages.count() * 100
 
         @el.style.width = "#{progress}%"
 

@@ -18,7 +18,7 @@ module.exports = class Navigation
 
     updateNav: ->
         index = @verso.pageIndex
-        count = @verso.getPageCount()
+        count = @verso.pages.count()
 
         @prevEl.style.opacity = if index is 0 then 0 else 1
         @nextEl.style.opacity = if index is count - 1 then 0 else 1

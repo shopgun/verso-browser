@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <title>Verso</title>
-        <meta name="viewport" content="initial-scale=1.0001, minimum-scale=1.0001, maximum-scale=1.0001, user-scalable=no"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="../verso.js"></script>
         <style>
             html,
@@ -53,23 +53,23 @@
     </head>
     <body>
         <article id="demo" class="verso">
-            <section id="page1" class="verso__page">
+            <section id="page1" class="verso__page" data-transition-start="transform:translate(-100%,0%)" data-transition-middle="transform:translate(0%,0%)" data-transition-end="transform:translate(100%,0%)">
                 <div class="image"></div>
             </section>
 
-            <section id="page2" class="verso__page">
+            <section id="page2" class="verso__page" data-transition-start="transform:translate(-100%,0%)" data-transition-middle="transform:translate(0%,0%)" data-transition-end="transform:translate(100%,0%)">
                 <div class="image"></div>
             </section>
 
-            <section id="page3" class="verso__page">
+            <section id="page3" class="verso__page" data-transition-start="transform:translate(-100%,0%)" data-transition-middle="transform:translate(0%,0%)" data-transition-end="transform:translate(100%,0%)">
                 <div class="image"></div>
             </section>
 
-            <section id="page4" class="verso__page">
+            <section id="page4" class="verso__page" data-transition-start="transform:translate(-100%,0%)" data-transition-middle="transform:translate(0%,0%)" data-transition-end="transform:translate(100%,0%)">
                 <div class="image"></div>
             </section>
 
-            <section id="page5" class="verso__page">
+            <section id="page5" class="verso__page" data-transition-start="transform:translate(-100%,0%)" data-transition-middle="transform:translate(0%,0%)" data-transition-end="transform:translate(100%,0%)">
                 <div class="image"></div>
             </section>
 
@@ -91,15 +91,6 @@
             var navigation = new Verso.Navigation(verso);
             var progress = new Verso.Progress(verso);
             var status = new Verso.Status(verso);
-            var interactivity = new Verso.Interactivity(verso);
-
-            verso.on('beforeInit', function () {
-                console.log('before init');
-            });
-
-            verso.on('init', function () {
-                console.log('init');
-            });
 
             verso.on('beforeChange', function (from, to) {
                 console.log('before change', from + '->' + to);
@@ -112,12 +103,10 @@
             // setTimeout(function () {
             //     verso.next();
 
-            //     setTimeout(function () {
-            //         verso.next();
-            //     }, 1000);
-            // }, 100);
-
-            verso.init();
+            //     // setTimeout(function () {
+            //     //     verso.next();
+            //     // }, 1000);
+            // }, 300);
         </script>
     </body>
 </html>
