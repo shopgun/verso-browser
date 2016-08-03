@@ -26,11 +26,11 @@ module.exports = class Page
         @
 
     show: ->
-        @el.style.display = 'block'
+        @el.style.visibility = 'visible'
 
         @
 
     hide: ->
-        @el.style.display = 'none'
+        @el.style.visibility = 'hidden'
 
         @

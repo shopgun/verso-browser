@@ -13,9 +13,8 @@
     background-color rgba(#000, 0.3)
     color #fff
     cursor pointer
-    transition opacity ease 300ms
-    opacity 1
-    user-select none
+    transition opacity ease 200ms
+    opacity 0
 
     &:hover,
     &:focus
@@ -30,6 +29,9 @@
     &[data-direction="next"]
         right 0
 
-@media (pointer:coarse), (max-width: 1000px)
+    &[data-active="true"]
+        opacity 1
+
+@media (pointer: coarse), (max-width: 1000px)
     .verso__navigation
         display none

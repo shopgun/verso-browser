@@ -1,4 +1,4 @@
-requestAnimationFrame = window.requestAnimationFrame or window.mozRequestAnimationFrame or window.webkitRequestAnimationFrame or window.msRequestAnimationFrame
+Animation = require './animation'
 
 module.exports = class Pages
     constructor: (@pages = []) ->
@@ -31,64 +31,71 @@ module.exports = class Pages
 
     resume: ->
         @paused = false
-
-        requestAnimationFrame @step.bind(@)
+        @run()
 
         return
 
-    getPositionChange: (velocity = 1) ->
-        base = 2.3
-        change = base
-
-        change += @queue.length
-        change *= velocity
-
-        change
-
-    step: ->
+    run: ->
         return if @paused is true or @queue.length is 0
 
         item = @queue[0]
-        positionDirection = if item.isForward then -1 else 1
-        positionChange = @getPositionChange() * positionDirection
-        fromPosition = if item.fromPage? then item.fromPage.position else 0
-        toPosition = if item.toPage? then item.toPage.position else 0
-        fromTarget = 100 * positionDirection
-        toTarget = 0
-        isComplete = false
 
-        toPosition += positionChange
-        fromPosition = toPosition + fromTarget
+        item.animation.on 'update', =>
+            if item.isComplete() is true
+                item.animation.pause()
 
-        if (item.isForward and toPosition <= 0) or (not item.isForward and toPosition >= 0)
-            fromPosition = fromTarget
-            toPosition = 0
-            isComplete = true
+                @queue.shift()
+                @run()
 
-        if item.fromPage?
-            item.fromPage.updatePosition fromPosition
-            item.fromPage.updateTransform fromPosition
-
-            if isComplete
-                item.fromPage.hide()
-            else
-                item.fromPage.show()
-        item.toPage.updatePosition toPosition
-        item.toPage.updateTransform toPosition
-        item.toPage.show()
-
-        @queue.shift() if isComplete is true
-
-        requestAnimationFrame @step.bind(@)
+            return
+        item.animation.play()
 
         return
 
-    transition: (from, to) ->
-        @queue.push
-            isForward: to > from
-            fromPage: @at from
-            toPage: @at to
+    transition: (from, to, transition = {}) ->
+        isComplete = false
+        isForward = to > from
+        direction = if isForward then -1 else 1
+        fromPage = @at from
+        toPage = @at to
+        fromTarget = 100 * direction
+        toTarget = 0
+        animation = new Animation()
 
-        requestAnimationFrame @step.bind(@)
+        animation.on 'update', (delta, time) =>
+            distance = 100 * (delta / (transition.baseDuration / 1000))
+            distance += distance * Math.abs(transition.velocity) / 1000
+            distance += @queue.length
+
+            toPage.updatePosition toPage.position + distance * direction
+
+            if (isForward and toPage.position <= 0) or (not isForward and toPage.position >= 0)
+                toPage.updatePosition 0
+                isComplete = true
+
+            if fromPage?
+                fromPage.updatePosition toPage.position + 100 * direction
+
+            return
+
+        animation.on 'render', (delta) ->
+            if fromPage?
+                fromPage.updateTransform fromPage.position
+
+                if isComplete
+                    fromPage.hide()
+                else
+                    fromPage.show()
+
+            toPage.updateTransform toPage.position
+            toPage.show()
+
+            return
+
+        @queue.push
+            isComplete: -> isComplete
+            animation: animation
+
+        @run() if @queue.length is 1
 
         return

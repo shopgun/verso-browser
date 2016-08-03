@@ -11,6 +11,7 @@ module.exports = class Verso extends Events
         swipeDirection: 'horizontal'
         swipeVelocity: 0.3
         swipeThreshold: 10
+        transitionDuration: 200
         keysPrev: [8, 33, 37, 38] # Backspace, page up, left arrow, up arrow.
         keysNext: [13, 32, 34, 39, 40] # Enter, space, page down, right arrow, down arrow.
 
@@ -27,7 +28,7 @@ module.exports = class Verso extends Events
         @pinch =
             active: false
 
-        @hammer = new Hammer.Manager @el
+        @hammer = new Hammer.Manager @el.querySelector('.verso__pages')
         @hammer.add new Hammer.Pinch()
         @hammer.add new Hammer.Pan
             threshold: 0
@@ -49,38 +50,49 @@ module.exports = class Verso extends Events
         @hammer.on 'pinchmove', @pinchMove.bind @
         @hammer.on 'pinchend', @pinchEnd.bind @
 
+        @el.addEventListener 'keyup', @keyUp.bind(@), false
+        @el.setAttribute 'tabindex', -1
+
+        return
+
+    show: ->
         @updateState()
         @pages.at(@pageIndex).show()
 
-        @el.addEventListener 'keyup', @keyUp.bind(@), false
-        @el.setAttribute 'tabindex', -1
+        @el.dataset.shown = true
         @el.focus()
 
         return
 
-    go: (pageIndex) ->
+    go: (pageIndex, transition = {}) ->
         return if isNaN(pageIndex) or pageIndex < 0 or pageIndex > @pages.count() - 1 or pageIndex is @pageIndex
 
         from = @pageIndex
         to = pageIndex
+        defaultTransition =
+            velocity: 1
+            baseDuration: @transitionDuration
+
+        for key, value of defaultTransition
+            transition[key] = value if not transition[key]?
 
         @trigger 'beforeChange', from, to
 
         @pageIndex = to
         @updateState()
-        @pages.transition from, to
+        @pages.transition from, to, transition
 
         @trigger 'change', from, to
 
         return
 
-    prev: ->
-        @go @pageIndex - 1
+    prev: (transition) ->
+        @go @pageIndex - 1, transition
 
         return
 
-    next: ->
-        @go @pageIndex + 1
+    next: (transition) ->
+        @go @pageIndex + 1, transition
 
         return
 
@@ -142,8 +154,6 @@ module.exports = class Verso extends Events
         return
 
     panStart: (e) ->
-        e.preventDefault()
-
         return if e.changedPointers[0].pageX <= 20 or e.changedPointers[0].pageX >= window.innerWidth - 20
 
         pageEl = e.target
@@ -163,8 +173,6 @@ module.exports = class Verso extends Events
         return
 
     panMove: (e) ->
-        e.preventDefault()
-
         return if @pan.active isnt true
 
         prevPage = @pages.at @pan.pageIndex - 1
@@ -188,6 +196,9 @@ module.exports = class Verso extends Events
         return if @pan.active isnt true
 
         pageIndex = @pageIndex
+        transition =
+            velocity: e.velocity
+            baseDuration: 280
         prevPage = @pages.at @pan.pageIndex - 1
         currPage = @pages.at @pan.pageIndex
         nextPage = @pages.at @pan.pageIndex + 1
@@ -199,22 +210,22 @@ module.exports = class Verso extends Events
         if @swipeDirection is 'horizontal' and Math.abs(e.overallVelocityX) >= @swipeVelocity
             if Math.abs(e.deltaX) >= @swipeThreshold
                 if e.offsetDirection is Hammer.DIRECTION_LEFT
-                    @next()
+                    @next transition
                 else if e.offsetDirection is Hammer.DIRECTION_RIGHT
-                    @prev()
+                    @prev transition
         else if @swipeDirection is 'vertical' and Math.abs(e.overallVelocityY) >= @swipeVelocity
             if Math.abs(e.deltaY) >= @swipeThreshold
                 if e.offsetDirection is Hammer.DIRECTION_UP
-                    @next()
+                    @next transition
                 else if e.offsetDirection is Hammer.DIRECTION_DOWN
-                    @prev()
+                    @prev transition
 
         # No page change occurred.
         if pageIndex is @pageIndex and @pages.queue.length is 0
             if currPage.position < 0
-                @pages.transition pageIndex + 1, pageIndex
+                @pages.transition pageIndex + 1, pageIndex, transition
             else if currPage.position > 0
-                @pages.transition pageIndex - 1, pageIndex
+                @pages.transition pageIndex - 1, pageIndex, transition
 
         @pages.resume()
         @pan.active = false

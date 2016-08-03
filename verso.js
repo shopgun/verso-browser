@@ -1,4 +1,67 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Verso = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+var Animation, Events, cancelAnimationFrame, requestAnimationFrame,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+Events = _dereq_('./events');
+
+requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+
+cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame;
+
+module.exports = Animation = (function(superClass) {
+  extend(Animation, superClass);
+
+  function Animation() {
+    Animation.__super__.constructor.call(this);
+    this.then = null;
+    this.now = null;
+    this.delta = null;
+    this.paused = false;
+    return;
+  }
+
+  Animation.prototype.play = function() {
+    this.paused = false;
+    this.then = this.time();
+    this.frame();
+  };
+
+  Animation.prototype.pause = function() {
+    this.paused = true;
+    cancelAnimationFrame(this.animationFrame);
+  };
+
+  Animation.prototype.frame = function(time) {
+    if (this.paused === true) {
+      return;
+    }
+    this.setDelta();
+    this.trigger('update', this.delta, time);
+    this.trigger('render', this.delta, time);
+    this.animationFrame = requestAnimationFrame(this.frame.bind(this));
+  };
+
+  Animation.prototype.setDelta = function() {
+    this.now = this.time();
+    this.delta = (this.now - this.then) / 1000;
+    this.then = this.now;
+  };
+
+  Animation.prototype.time = function() {
+    if (window.performance.now) {
+      return performance.now() + performance.timing.navigationStart;
+    } else {
+      return Date.now();
+    }
+  };
+
+  return Animation;
+
+})(Events);
+
+
+},{"./events":2}],2:[function(_dereq_,module,exports){
 var Events,
   slice = [].slice;
 
@@ -35,7 +98,7 @@ module.exports = Events = (function() {
 })();
 
 
-},{}],2:[function(_dereq_,module,exports){
+},{}],3:[function(_dereq_,module,exports){
 var Navigation;
 
 module.exports = Navigation = (function() {
@@ -43,13 +106,6 @@ module.exports = Navigation = (function() {
     this.verso = verso;
     this.prevEl = this.verso.el.querySelector('.verso__navigation[data-direction="previous"]');
     this.nextEl = this.verso.el.querySelector('.verso__navigation[data-direction="next"]');
-    this.verso.on('change', this.updateNav.bind(this));
-    this.bindEvents();
-    this.updateNav();
-    return;
-  }
-
-  Navigation.prototype.bindEvents = function() {
     this.prevEl.addEventListener('click', (function(_this) {
       return function() {
         return _this.verso.prev();
@@ -60,14 +116,17 @@ module.exports = Navigation = (function() {
         return _this.verso.next();
       };
     })(this));
-  };
+    this.verso.on('change', this.updateNav.bind(this));
+    this.updateNav();
+    return;
+  }
 
   Navigation.prototype.updateNav = function() {
     var count, index;
     index = this.verso.pageIndex;
     count = this.verso.pages.count();
-    this.prevEl.style.opacity = index === 0 ? 0 : 1;
-    this.nextEl.style.opacity = index === count - 1 ? 0 : 1;
+    this.prevEl.dataset.active = index > 0;
+    this.nextEl.dataset.active = index < count - 1;
   };
 
   return Navigation;
@@ -75,7 +134,7 @@ module.exports = Navigation = (function() {
 })();
 
 
-},{}],3:[function(_dereq_,module,exports){
+},{}],4:[function(_dereq_,module,exports){
 var Page;
 
 module.exports = Page = (function() {
@@ -102,12 +161,12 @@ module.exports = Page = (function() {
   };
 
   Page.prototype.show = function() {
-    this.el.style.display = 'block';
+    this.el.style.visibility = 'visible';
     return this;
   };
 
   Page.prototype.hide = function() {
-    this.el.style.display = 'none';
+    this.el.style.visibility = 'hidden';
     return this;
   };
 
@@ -116,10 +175,10 @@ module.exports = Page = (function() {
 })();
 
 
-},{}],4:[function(_dereq_,module,exports){
-var Pages, requestAnimationFrame;
+},{}],5:[function(_dereq_,module,exports){
+var Animation, Pages;
 
-requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+Animation = _dereq_('./animation');
 
 module.exports = Pages = (function() {
   function Pages(pages) {
@@ -155,66 +214,77 @@ module.exports = Pages = (function() {
 
   Pages.prototype.resume = function() {
     this.paused = false;
-    requestAnimationFrame(this.step.bind(this));
+    this.run();
   };
 
-  Pages.prototype.getPositionChange = function(velocity) {
-    var base, change;
-    if (velocity == null) {
-      velocity = 1;
-    }
-    base = 2.3;
-    change = base;
-    change += this.queue.length;
-    change *= velocity;
-    return change;
-  };
-
-  Pages.prototype.step = function() {
-    var fromPosition, fromTarget, isComplete, item, positionChange, positionDirection, toPosition, toTarget;
+  Pages.prototype.run = function() {
+    var item;
     if (this.paused === true || this.queue.length === 0) {
       return;
     }
     item = this.queue[0];
-    positionDirection = item.isForward ? -1 : 1;
-    positionChange = this.getPositionChange() * positionDirection;
-    fromPosition = item.fromPage != null ? item.fromPage.position : 0;
-    toPosition = item.toPage != null ? item.toPage.position : 0;
-    fromTarget = 100 * positionDirection;
-    toTarget = 0;
-    isComplete = false;
-    toPosition += positionChange;
-    fromPosition = toPosition + fromTarget;
-    if ((item.isForward && toPosition <= 0) || (!item.isForward && toPosition >= 0)) {
-      fromPosition = fromTarget;
-      toPosition = 0;
-      isComplete = true;
-    }
-    if (item.fromPage != null) {
-      item.fromPage.updatePosition(fromPosition);
-      item.fromPage.updateTransform(fromPosition);
-      if (isComplete) {
-        item.fromPage.hide();
-      } else {
-        item.fromPage.show();
-      }
-    }
-    item.toPage.updatePosition(toPosition);
-    item.toPage.updateTransform(toPosition);
-    item.toPage.show();
-    if (isComplete === true) {
-      this.queue.shift();
-    }
-    requestAnimationFrame(this.step.bind(this));
+    item.animation.on('update', (function(_this) {
+      return function() {
+        if (item.isComplete() === true) {
+          item.animation.pause();
+          _this.queue.shift();
+          _this.run();
+        }
+      };
+    })(this));
+    item.animation.play();
   };
 
-  Pages.prototype.transition = function(from, to) {
-    this.queue.push({
-      isForward: to > from,
-      fromPage: this.at(from),
-      toPage: this.at(to)
+  Pages.prototype.transition = function(from, to, transition) {
+    var animation, direction, fromPage, fromTarget, isComplete, isForward, toPage, toTarget;
+    if (transition == null) {
+      transition = {};
+    }
+    isComplete = false;
+    isForward = to > from;
+    direction = isForward ? -1 : 1;
+    fromPage = this.at(from);
+    toPage = this.at(to);
+    fromTarget = 100 * direction;
+    toTarget = 0;
+    animation = new Animation();
+    animation.on('update', (function(_this) {
+      return function(delta, time) {
+        var distance;
+        distance = 100 * (delta / (transition.baseDuration / 1000));
+        distance += distance * Math.abs(transition.velocity) / 1000;
+        distance += _this.queue.length;
+        toPage.updatePosition(toPage.position + distance * direction);
+        if ((isForward && toPage.position <= 0) || (!isForward && toPage.position >= 0)) {
+          toPage.updatePosition(0);
+          isComplete = true;
+        }
+        if (fromPage != null) {
+          fromPage.updatePosition(toPage.position + 100 * direction);
+        }
+      };
+    })(this));
+    animation.on('render', function(delta) {
+      if (fromPage != null) {
+        fromPage.updateTransform(fromPage.position);
+        if (isComplete) {
+          fromPage.hide();
+        } else {
+          fromPage.show();
+        }
+      }
+      toPage.updateTransform(toPage.position);
+      toPage.show();
     });
-    requestAnimationFrame(this.step.bind(this));
+    this.queue.push({
+      isComplete: function() {
+        return isComplete;
+      },
+      animation: animation
+    });
+    if (this.queue.length === 1) {
+      this.run();
+    }
   };
 
   return Pages;
@@ -222,7 +292,7 @@ module.exports = Pages = (function() {
 })();
 
 
-},{}],5:[function(_dereq_,module,exports){
+},{"./animation":1}],6:[function(_dereq_,module,exports){
 var Progress;
 
 module.exports = Progress = (function() {
@@ -245,7 +315,7 @@ module.exports = Progress = (function() {
 })();
 
 
-},{}],6:[function(_dereq_,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 var Status;
 
 module.exports = Status = (function() {
@@ -277,9 +347,9 @@ module.exports = Status = (function() {
 })();
 
 
-},{}],7:[function(_dereq_,module,exports){
-module.exports=".verso {\n  position: relative;\n  height: 100%;\n  outline: 0;\n  overflow: hidden;\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n.verso *,\n.verso *:before,\n.verso *:after {\n  -webkit-box-sizing: inherit;\n  -moz-box-sizing: inherit;\n  box-sizing: inherit;\n}\n.verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  display: none;\n}\n.verso__page[data-state=\"previous\"],\n.verso__page[data-state=\"current\"],\n.verso__page[data-state=\"next\"] {\n  will-change: transform;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 300ms;\n  -moz-transition: opacity ease 300ms;\n  -o-transition: opacity ease 300ms;\n  -ms-transition: opacity ease 300ms;\n  transition: opacity ease 300ms;\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width 200ms ease-in;\n  -moz-transition: width 200ms ease-in;\n  -o-transition: width 200ms ease-in;\n  -ms-transition: width 200ms ease-in;\n  transition: width 200ms ease-in;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n"
 },{}],8:[function(_dereq_,module,exports){
+module.exports=".verso {\n  position: relative;\n  height: 100%;\n  outline: 0;\n  overflow: hidden;\n  visibility: hidden;\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n.verso[data-shown=\"true\"] {\n  visibility: visible;\n}\n.verso *,\n.verso *:before,\n.verso *:after {\n  -webkit-box-sizing: inherit;\n  -moz-box-sizing: inherit;\n  box-sizing: inherit;\n}\n.verso__pages {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n}\n.verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  visibility: hidden;\n  overflow: hidden;\n}\n.verso__page[data-state=\"previous\"],\n.verso__page[data-state=\"current\"],\n.verso__page[data-state=\"next\"] {\n  will-change: transform;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 200ms;\n  -moz-transition: opacity ease 200ms;\n  -o-transition: opacity ease 200ms;\n  -ms-transition: opacity ease 200ms;\n  transition: opacity ease 200ms;\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n.verso__navigation[data-active=\"true\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width 200ms ease-in-out;\n  -moz-transition: width 200ms ease-in-out;\n  -o-transition: width 200ms ease-in-out;\n  -ms-transition: width 200ms ease-in-out;\n  transition: width 200ms ease-in-out;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n"
+},{}],9:[function(_dereq_,module,exports){
 var css, insertCss;
 
 insertCss = _dereq_('insert-css');
@@ -289,7 +359,7 @@ css = _dereq_('./styl/index.styl');
 insertCss(css);
 
 
-},{"./styl/index.styl":7,"insert-css":12}],9:[function(_dereq_,module,exports){
+},{"./styl/index.styl":8,"insert-css":13}],10:[function(_dereq_,module,exports){
 var Navigation, Progress, Status, View;
 
 View = _dereq_('./view');
@@ -308,7 +378,7 @@ module.exports = {
 };
 
 
-},{"./navigation":2,"./progress":5,"./status":6,"./view":10}],10:[function(_dereq_,module,exports){
+},{"./navigation":3,"./progress":6,"./status":7,"./view":11}],11:[function(_dereq_,module,exports){
 var Events, Hammer, Page, Pages, Verso,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty,
@@ -332,6 +402,7 @@ module.exports = Verso = (function(superClass) {
     swipeDirection: 'horizontal',
     swipeVelocity: 0.3,
     swipeThreshold: 10,
+    transitionDuration: 200,
     keysPrev: [8, 33, 37, 38],
     keysNext: [13, 32, 34, 39, 40]
   };
@@ -356,7 +427,7 @@ module.exports = Verso = (function(superClass) {
     this.pinch = {
       active: false
     };
-    this.hammer = new Hammer.Manager(this.el);
+    this.hammer = new Hammer.Manager(this.el.querySelector('.verso__pages'));
     this.hammer.add(new Hammer.Pinch());
     this.hammer.add(new Hammer.Pan({
       threshold: 0,
@@ -383,34 +454,51 @@ module.exports = Verso = (function(superClass) {
     this.hammer.on('pinchstart', this.pinchStart.bind(this));
     this.hammer.on('pinchmove', this.pinchMove.bind(this));
     this.hammer.on('pinchend', this.pinchEnd.bind(this));
-    this.updateState();
-    this.pages.at(this.pageIndex).show();
     this.el.addEventListener('keyup', this.keyUp.bind(this), false);
     this.el.setAttribute('tabindex', -1);
-    this.el.focus();
     return;
   }
 
-  Verso.prototype.go = function(pageIndex) {
-    var from, to;
+  Verso.prototype.show = function() {
+    this.updateState();
+    this.pages.at(this.pageIndex).show();
+    this.el.dataset.shown = true;
+    this.el.focus();
+  };
+
+  Verso.prototype.go = function(pageIndex, transition) {
+    var defaultTransition, from, key, to, value;
+    if (transition == null) {
+      transition = {};
+    }
     if (isNaN(pageIndex) || pageIndex < 0 || pageIndex > this.pages.count() - 1 || pageIndex === this.pageIndex) {
       return;
     }
     from = this.pageIndex;
     to = pageIndex;
+    defaultTransition = {
+      velocity: 1,
+      baseDuration: this.transitionDuration
+    };
+    for (key in defaultTransition) {
+      value = defaultTransition[key];
+      if (transition[key] == null) {
+        transition[key] = value;
+      }
+    }
     this.trigger('beforeChange', from, to);
     this.pageIndex = to;
     this.updateState();
-    this.pages.transition(from, to);
+    this.pages.transition(from, to, transition);
     this.trigger('change', from, to);
   };
 
-  Verso.prototype.prev = function() {
-    this.go(this.pageIndex - 1);
+  Verso.prototype.prev = function(transition) {
+    this.go(this.pageIndex - 1, transition);
   };
 
-  Verso.prototype.next = function() {
-    this.go(this.pageIndex + 1);
+  Verso.prototype.next = function(transition) {
+    this.go(this.pageIndex + 1, transition);
   };
 
   Verso.prototype.updateState = function() {
@@ -470,7 +558,6 @@ module.exports = Verso = (function(superClass) {
 
   Verso.prototype.panStart = function(e) {
     var pageEl, pageIndex;
-    e.preventDefault();
     if (e.changedPointers[0].pageX <= 20 || e.changedPointers[0].pageX >= window.innerWidth - 20) {
       return;
     }
@@ -489,7 +576,6 @@ module.exports = Verso = (function(superClass) {
 
   Verso.prototype.panMove = function(e) {
     var currPage, delta, nextPage, prevPage;
-    e.preventDefault();
     if (this.pan.active !== true) {
       return;
     }
@@ -510,11 +596,15 @@ module.exports = Verso = (function(superClass) {
   };
 
   Verso.prototype.panEnd = function(e) {
-    var currPage, nextPage, pageIndex, prevPage;
+    var currPage, nextPage, pageIndex, prevPage, transition;
     if (this.pan.active !== true) {
       return;
     }
     pageIndex = this.pageIndex;
+    transition = {
+      velocity: e.velocity,
+      baseDuration: 280
+    };
     prevPage = this.pages.at(this.pan.pageIndex - 1);
     currPage = this.pages.at(this.pan.pageIndex);
     nextPage = this.pages.at(this.pan.pageIndex + 1);
@@ -528,25 +618,25 @@ module.exports = Verso = (function(superClass) {
     if (this.swipeDirection === 'horizontal' && Math.abs(e.overallVelocityX) >= this.swipeVelocity) {
       if (Math.abs(e.deltaX) >= this.swipeThreshold) {
         if (e.offsetDirection === Hammer.DIRECTION_LEFT) {
-          this.next();
+          this.next(transition);
         } else if (e.offsetDirection === Hammer.DIRECTION_RIGHT) {
-          this.prev();
+          this.prev(transition);
         }
       }
     } else if (this.swipeDirection === 'vertical' && Math.abs(e.overallVelocityY) >= this.swipeVelocity) {
       if (Math.abs(e.deltaY) >= this.swipeThreshold) {
         if (e.offsetDirection === Hammer.DIRECTION_UP) {
-          this.next();
+          this.next(transition);
         } else if (e.offsetDirection === Hammer.DIRECTION_DOWN) {
-          this.prev();
+          this.prev(transition);
         }
       }
     }
     if (pageIndex === this.pageIndex && this.pages.queue.length === 0) {
       if (currPage.position < 0) {
-        this.pages.transition(pageIndex + 1, pageIndex);
+        this.pages.transition(pageIndex + 1, pageIndex, transition);
       } else if (currPage.position > 0) {
-        this.pages.transition(pageIndex - 1, pageIndex);
+        this.pages.transition(pageIndex - 1, pageIndex, transition);
       }
     }
     this.pages.resume();
@@ -580,7 +670,7 @@ module.exports = Verso = (function(superClass) {
 })(Events);
 
 
-},{"./events":1,"./page":3,"./pages":4,"hammerjs":11}],11:[function(_dereq_,module,exports){
+},{"./events":2,"./page":4,"./pages":5,"hammerjs":12}],12:[function(_dereq_,module,exports){
 /*! Hammer.JS - v2.0.7 - 2016-04-22
  * http://hammerjs.github.io/
  *
@@ -3225,7 +3315,7 @@ if (typeof define === 'function' && define.amd) {
 
 })(window, document, 'Hammer');
 
-},{}],12:[function(_dereq_,module,exports){
+},{}],13:[function(_dereq_,module,exports){
 var containers = []; // will store container HTMLElement references
 var styleElements = []; // will store {prepend: HTMLElement, append: HTMLElement}
 
@@ -3273,5 +3363,5 @@ function createStyleElement() {
     return styleElement;
 }
 
-},{}]},{},[9,8])(9)
+},{}]},{},[10,9])(10)
 });

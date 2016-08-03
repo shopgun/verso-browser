@@ -3,16 +3,12 @@ module.exports = class Navigation
         @prevEl = @verso.el.querySelector '.verso__navigation[data-direction="previous"]'
         @nextEl = @verso.el.querySelector '.verso__navigation[data-direction="next"]'
 
-        @verso.on 'change', @updateNav.bind(@)
-
-        @bindEvents()
-        @updateNav()
-
-        return
-
-    bindEvents: ->
         @prevEl.addEventListener 'click', => @verso.prev()
         @nextEl.addEventListener 'click', => @verso.next()
+
+        @verso.on 'change', @updateNav.bind(@)
+
+        @updateNav()
 
         return
 
@@ -20,7 +16,7 @@ module.exports = class Navigation
         index = @verso.pageIndex
         count = @verso.pages.count()
 
-        @prevEl.style.opacity = if index is 0 then 0 else 1
-        @nextEl.style.opacity = if index is count - 1 then 0 else 1
+        @prevEl.dataset.active = index > 0
+        @nextEl.dataset.active = index < count - 1
 
         return
