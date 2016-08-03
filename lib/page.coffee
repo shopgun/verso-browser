@@ -2,10 +2,12 @@ module.exports = class Page
     constructor: (@el, @index = 0, @position = 0) ->
         @transformPosition = @position
         @scrolling = false
+        @zoomScale = 1
 
         @el.setAttribute 'data-versoindex', @index
         @el.addEventListener 'scroll', @scroll.bind(@), false
 
+        # TODO: Generalize data-transition-* and support transform to begin with.
         # @transitions =
         #     start: @el.getAttribute 'data-transition-start'
         #     middle: @el.getAttribute 'data-transition-middle'
@@ -21,6 +23,23 @@ module.exports = class Page
         @scrollTimeout = setTimeout =>
             @scrolling = false
         , 200
+
+        return
+
+    mayZoom: ->
+        @el.dataset.zoom is 'true'
+
+    zoom: (x, y, zoomScale) ->
+        console.log 'zoom', x, y, zoomScale
+
+        el = @el.querySelector '.verso__scroll-child'
+
+        console.log el
+
+        if el?
+            el.style.transform = "scale3d(#{zoomScale}, #{zoomScale}, 1)"
+
+        @zoomScale = zoomScale
 
         return
 

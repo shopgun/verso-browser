@@ -25,17 +25,15 @@
     height 100%
     visibility hidden
     overflow hidden
+    overflow auto
+    overflow-scrolling touch
 
     &[data-state="previous"],
     &[data-state="current"],
     &[data-state="next"]
         will-change transform
 
-//     &[data-scroll-view="true"]
-//         overflow auto
-//         overflow-scrolling touch
-
-// .verso__scroll-child
-//     transform-origin 50% 0%
-//     transition transform 200ms ease-in-out
-//     overflow hidden
+.verso__scroll-child
+    transform-origin 0% 0%
+    transition transform 200ms ease-in-out
+    overflow hidden

@@ -64,8 +64,8 @@ module.exports = class Pages
 
         animation.on 'update', (delta, time) =>
             distance = 100 * (delta / (transition.baseDuration / 1000))
-            distance += distance * Math.abs(transition.velocity) / 1000
-            distance += @queue.length
+            distance += distance * Math.abs(transition.velocity) / 1000 # Account for velocity.
+            distance += @queue.length # Make animation faster when queue is stacking up.
 
             toPage.updatePosition toPage.position + distance * direction
 

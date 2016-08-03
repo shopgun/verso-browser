@@ -7,7 +7,6 @@ module.exports = class Verso extends Events
     defaults:
         pageIndex: 0
         maxZoomScale: 3
-        minZoomScale: 1
         swipeDirection: 'horizontal'
         swipeVelocity: 0.3
         swipeThreshold: 10
@@ -42,7 +41,11 @@ module.exports = class Verso extends Events
                     Hammer.DIRECTION_ALL
         @hammer.add new Hammer.Tap
             event: 'doubletap'
+            interval: 200
             taps: 2
+        @hammer.add new Hammer.Tap
+            event: 'singletap'
+        @hammer.on 'singletap', @singleTap.bind @
         @hammer.on 'doubletap', @doubleTap.bind @
         @hammer.on 'panstart', @panStart.bind @
         @hammer.on 'panmove', @panMove.bind @
@@ -50,6 +53,9 @@ module.exports = class Verso extends Events
         @hammer.on 'pinchstart', @pinchStart.bind @
         @hammer.on 'pinchmove', @pinchMove.bind @
         @hammer.on 'pinchend', @pinchEnd.bind @
+
+        @hammer.get('doubletap').recognizeWith 'singletap'
+        @hammer.get('singletap').requireFailure 'doubletap'
 
         @el.addEventListener 'keyup', @keyUp.bind(@), false
         @el.setAttribute 'tabindex', -1
@@ -149,14 +155,30 @@ module.exports = class Verso extends Events
 
         return
 
-    doubletap: (e) ->
-        console.log 'doubletap', e
+    singleTap: (e) ->
+        page = @pages.at @pageIndex
+
+        page.zoom e.center.x, e.center.y, 1 if page.zoomScale > 1
+
+        return
+
+    doubleTap: (e) ->
+        page = @pages.at @pageIndex
+
+        console.log page.mayZoom()
+
+        if page.mayZoom() is true
+            if page.zoomScale is 1
+                page.zoom e.center.x, e.center.y, @maxZoomScale
+            else if page.zoomScale > 1
+                page.zoom e.center.x, e.center.y, 1
 
         return
 
     panStart: (e) ->
         e.preventDefault()
 
+        return if @pinch.active is true or @pages.at(@pageIndex).zoomScale > 1
         return if e.changedPointers[0].pageX <= 20 or e.changedPointers[0].pageX >= window.innerWidth - 20
 
         pageEl = e.target
@@ -239,7 +261,7 @@ module.exports = class Verso extends Events
         return
 
     pinchStart: (e) ->
-        return if @pan.active is true
+        return if @pan.active is true or @pages.at(@pageIndex).mayZoom() is false
 
         @pinch.active = true
 
@@ -253,9 +275,13 @@ module.exports = class Verso extends Events
     pinchEnd: (e) ->
         return if @pinch.active isnt true
 
+        page = @pages.at @pageIndex
+
+        if page.zoomScale > @maxZoomScale
+            page.zoom e.center.x, e.center.y, @maxZoomScale
+        else if page.zoomScale < 1
+            page.zoom e.center.x, e.center.y, 1
+
         @pinch.active = false
 
-        return
-
-    doubleTap: (e) ->
         return

@@ -138,12 +138,13 @@ module.exports = Navigation = (function() {
 var Page;
 
 module.exports = Page = (function() {
-  function Page(el, index, position1) {
-    this.el = el;
+  function Page(el1, index, position1) {
+    this.el = el1;
     this.index = index != null ? index : 0;
     this.position = position1 != null ? position1 : 0;
     this.transformPosition = this.position;
     this.scrolling = false;
+    this.zoomScale = 1;
     this.el.setAttribute('data-versoindex', this.index);
     this.el.addEventListener('scroll', this.scroll.bind(this), false);
     return;
@@ -157,6 +158,21 @@ module.exports = Page = (function() {
         return _this.scrolling = false;
       };
     })(this), 200);
+  };
+
+  Page.prototype.mayZoom = function() {
+    return this.el.dataset.zoom === 'true';
+  };
+
+  Page.prototype.zoom = function(x, y, zoomScale) {
+    var el;
+    console.log('zoom', x, y, zoomScale);
+    el = this.el.querySelector('.verso__scroll-child');
+    console.log(el);
+    if (el != null) {
+      el.style.transform = "scale3d(" + zoomScale + ", " + zoomScale + ", 1)";
+    }
+    this.zoomScale = zoomScale;
   };
 
   Page.prototype.updateTransform = function(position) {
@@ -360,7 +376,7 @@ module.exports = Status = (function() {
 
 
 },{}],8:[function(_dereq_,module,exports){
-module.exports=".verso {\n  position: relative;\n  height: 100%;\n  outline: 0;\n  overflow: hidden;\n  visibility: hidden;\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n.verso[data-shown=\"true\"] {\n  visibility: visible;\n}\n.verso *,\n.verso *:before,\n.verso *:after {\n  -webkit-box-sizing: inherit;\n  -moz-box-sizing: inherit;\n  box-sizing: inherit;\n}\n.verso__pages {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n}\n.verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  visibility: hidden;\n  overflow: hidden;\n}\n.verso__page[data-state=\"previous\"],\n.verso__page[data-state=\"current\"],\n.verso__page[data-state=\"next\"] {\n  will-change: transform;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 200ms;\n  -moz-transition: opacity ease 200ms;\n  -o-transition: opacity ease 200ms;\n  -ms-transition: opacity ease 200ms;\n  transition: opacity ease 200ms;\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n.verso__navigation[data-active=\"true\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width 200ms ease-in-out;\n  -moz-transition: width 200ms ease-in-out;\n  -o-transition: width 200ms ease-in-out;\n  -ms-transition: width 200ms ease-in-out;\n  transition: width 200ms ease-in-out;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n"
+module.exports=".verso {\n  position: relative;\n  height: 100%;\n  outline: 0;\n  overflow: hidden;\n  visibility: hidden;\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n.verso[data-shown=\"true\"] {\n  visibility: visible;\n}\n.verso *,\n.verso *:before,\n.verso *:after {\n  -webkit-box-sizing: inherit;\n  -moz-box-sizing: inherit;\n  box-sizing: inherit;\n}\n.verso__pages {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n}\n.verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  visibility: hidden;\n  overflow: hidden;\n  overflow: auto;\n  -webkit-overflow-scrolling: touch;\n  overflow-scrolling: touch;\n}\n.verso__page[data-state=\"previous\"],\n.verso__page[data-state=\"current\"],\n.verso__page[data-state=\"next\"] {\n  will-change: transform;\n}\n.verso__scroll-child {\n  -webkit-transform-origin: 0% 0%;\n  -moz-transform-origin: 0% 0%;\n  -o-transform-origin: 0% 0%;\n  -ms-transform-origin: 0% 0%;\n  transform-origin: 0% 0%;\n  -webkit-transition: -webkit-transform 200ms ease-in-out;\n  -moz-transition: -moz-transform 200ms ease-in-out;\n  -o-transition: -o-transform 200ms ease-in-out;\n  -ms-transition: -ms-transform 200ms ease-in-out;\n  transition: transform 200ms ease-in-out;\n  overflow: hidden;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 200ms;\n  -moz-transition: opacity ease 200ms;\n  -o-transition: opacity ease 200ms;\n  -ms-transition: opacity ease 200ms;\n  transition: opacity ease 200ms;\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n.verso__navigation[data-active=\"true\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width 200ms ease-in-out;\n  -moz-transition: width 200ms ease-in-out;\n  -o-transition: width 200ms ease-in-out;\n  -ms-transition: width 200ms ease-in-out;\n  transition: width 200ms ease-in-out;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n"
 },{}],9:[function(_dereq_,module,exports){
 var css, insertCss;
 
@@ -410,7 +426,6 @@ module.exports = Verso = (function(superClass) {
   Verso.prototype.defaults = {
     pageIndex: 0,
     maxZoomScale: 3,
-    minZoomScale: 1,
     swipeDirection: 'horizontal',
     swipeVelocity: 0.3,
     swipeThreshold: 10,
@@ -459,8 +474,13 @@ module.exports = Verso = (function(superClass) {
     }));
     this.hammer.add(new Hammer.Tap({
       event: 'doubletap',
+      interval: 200,
       taps: 2
     }));
+    this.hammer.add(new Hammer.Tap({
+      event: 'singletap'
+    }));
+    this.hammer.on('singletap', this.singleTap.bind(this));
     this.hammer.on('doubletap', this.doubleTap.bind(this));
     this.hammer.on('panstart', this.panStart.bind(this));
     this.hammer.on('panmove', this.panMove.bind(this));
@@ -468,6 +488,8 @@ module.exports = Verso = (function(superClass) {
     this.hammer.on('pinchstart', this.pinchStart.bind(this));
     this.hammer.on('pinchmove', this.pinchMove.bind(this));
     this.hammer.on('pinchend', this.pinchEnd.bind(this));
+    this.hammer.get('doubletap').recognizeWith('singletap');
+    this.hammer.get('singletap').requireFailure('doubletap');
     this.el.addEventListener('keyup', this.keyUp.bind(this), false);
     this.el.setAttribute('tabindex', -1);
     return;
@@ -566,13 +588,33 @@ module.exports = Verso = (function(superClass) {
     }
   };
 
-  Verso.prototype.doubletap = function(e) {
-    console.log('doubletap', e);
+  Verso.prototype.singleTap = function(e) {
+    var page;
+    page = this.pages.at(this.pageIndex);
+    if (page.zoomScale > 1) {
+      page.zoom(e.center.x, e.center.y, 1);
+    }
+  };
+
+  Verso.prototype.doubleTap = function(e) {
+    var page;
+    page = this.pages.at(this.pageIndex);
+    console.log(page.mayZoom());
+    if (page.mayZoom() === true) {
+      if (page.zoomScale === 1) {
+        page.zoom(e.center.x, e.center.y, this.maxZoomScale);
+      } else if (page.zoomScale > 1) {
+        page.zoom(e.center.x, e.center.y, 1);
+      }
+    }
   };
 
   Verso.prototype.panStart = function(e) {
     var page, pageEl, pageIndex;
     e.preventDefault();
+    if (this.pinch.active === true || this.pages.at(this.pageIndex).zoomScale > 1) {
+      return;
+    }
     if (e.changedPointers[0].pageX <= 20 || e.changedPointers[0].pageX >= window.innerWidth - 20) {
       return;
     }
@@ -661,7 +703,7 @@ module.exports = Verso = (function(superClass) {
   };
 
   Verso.prototype.pinchStart = function(e) {
-    if (this.pan.active === true) {
+    if (this.pan.active === true || this.pages.at(this.pageIndex).mayZoom() === false) {
       return;
     }
     this.pinch.active = true;
@@ -674,13 +716,18 @@ module.exports = Verso = (function(superClass) {
   };
 
   Verso.prototype.pinchEnd = function(e) {
+    var page;
     if (this.pinch.active !== true) {
       return;
     }
+    page = this.pages.at(this.pageIndex);
+    if (page.zoomScale > this.maxZoomScale) {
+      page.zoom(e.center.x, e.center.y, this.maxZoomScale);
+    } else if (page.zoomScale < 1) {
+      page.zoom(e.center.x, e.center.y, 1);
+    }
     this.pinch.active = false;
   };
-
-  Verso.prototype.doubleTap = function(e) {};
 
   return Verso;
 
