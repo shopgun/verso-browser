@@ -143,9 +143,21 @@ module.exports = Page = (function() {
     this.index = index != null ? index : 0;
     this.position = position1 != null ? position1 : 0;
     this.transformPosition = this.position;
+    this.scrolling = false;
     this.el.setAttribute('data-versoindex', this.index);
+    this.el.addEventListener('scroll', this.scroll.bind(this), false);
     return;
   }
+
+  Page.prototype.scroll = function() {
+    clearTimeout(this.scrollTimeout);
+    this.scrolling = true;
+    this.scrollTimeout = setTimeout((function(_this) {
+      return function() {
+        return _this.scrolling = false;
+      };
+    })(this), 200);
+  };
 
   Page.prototype.updateTransform = function(position) {
     position = Math.max(-100, position);
@@ -427,10 +439,12 @@ module.exports = Verso = (function(superClass) {
     this.pinch = {
       active: false
     };
-    this.hammer = new Hammer.Manager(this.el.querySelector('.verso__pages'));
+    this.hammer = new Hammer.Manager(this.el.querySelector('.verso__pages'), {
+      touchAction: 'auto'
+    });
     this.hammer.add(new Hammer.Pinch());
     this.hammer.add(new Hammer.Pan({
-      threshold: 0,
+      threshold: 10,
       direction: (function(_this) {
         return function() {
           if (_this.swipeDirection === 'horizontal') {
@@ -557,7 +571,8 @@ module.exports = Verso = (function(superClass) {
   };
 
   Verso.prototype.panStart = function(e) {
-    var pageEl, pageIndex;
+    var page, pageEl, pageIndex;
+    e.preventDefault();
     if (e.changedPointers[0].pageX <= 20 || e.changedPointers[0].pageX >= window.innerWidth - 20) {
       return;
     }
@@ -567,7 +582,8 @@ module.exports = Verso = (function(superClass) {
       pageEl = pageEl.parentNode;
     }
     pageIndex = +pageEl.dataset.versoindex;
-    if (pageIndex != null) {
+    page = this.pages.at(pageIndex);
+    if ((page != null) && page.scrolling === false) {
       this.pan.active = true;
       this.pan.pageIndex = pageIndex;
       this.pages.pause();
@@ -576,6 +592,7 @@ module.exports = Verso = (function(superClass) {
 
   Verso.prototype.panMove = function(e) {
     var currPage, delta, nextPage, prevPage;
+    e.preventDefault();
     if (this.pan.active !== true) {
       return;
     }

@@ -28,10 +28,11 @@ module.exports = class Verso extends Events
         @pinch =
             active: false
 
-        @hammer = new Hammer.Manager @el.querySelector('.verso__pages')
+        @hammer = new Hammer.Manager @el.querySelector('.verso__pages'),
+            touchAction: 'auto'
         @hammer.add new Hammer.Pinch()
         @hammer.add new Hammer.Pan
-            threshold: 0
+            threshold: 10
             direction: do =>
                 if @swipeDirection is 'horizontal'
                     Hammer.DIRECTION_HORIZONTAL
@@ -154,6 +155,8 @@ module.exports = class Verso extends Events
         return
 
     panStart: (e) ->
+        e.preventDefault()
+
         return if e.changedPointers[0].pageX <= 20 or e.changedPointers[0].pageX >= window.innerWidth - 20
 
         pageEl = e.target
@@ -163,8 +166,9 @@ module.exports = class Verso extends Events
             pageEl = pageEl.parentNode
 
         pageIndex = +pageEl.dataset.versoindex
+        page = @pages.at pageIndex
 
-        if pageIndex?
+        if page? and page.scrolling is false
             @pan.active = true
             @pan.pageIndex = pageIndex
 
@@ -173,6 +177,8 @@ module.exports = class Verso extends Events
         return
 
     panMove: (e) ->
+        e.preventDefault()
+
         return if @pan.active isnt true
 
         prevPage = @pages.at @pan.pageIndex - 1

@@ -1,12 +1,26 @@
 module.exports = class Page
     constructor: (@el, @index = 0, @position = 0) ->
         @transformPosition = @position
+        @scrolling = false
+
         @el.setAttribute 'data-versoindex', @index
+        @el.addEventListener 'scroll', @scroll.bind(@), false
 
         # @transitions =
         #     start: @el.getAttribute 'data-transition-start'
         #     middle: @el.getAttribute 'data-transition-middle'
         #     end: @el.getAttribute 'data-transition-end'
+
+        return
+
+    scroll: ->
+        clearTimeout @scrollTimeout
+
+        @scrolling = true
+
+        @scrollTimeout = setTimeout =>
+            @scrolling = false
+        , 200
 
         return
 
