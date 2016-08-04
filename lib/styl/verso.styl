@@ -18,6 +18,7 @@
     absolute top left
     right 0
     bottom 0
+    overflow hidden
 
 .verso__page
     absolute top left
@@ -25,15 +26,12 @@
     height 100%
     visibility hidden
     overflow hidden
-    overflow auto
-    overflow-scrolling touch
 
-    &[data-state="previous"],
-    &[data-state="current"],
-    &[data-state="next"]
-        will-change transform
+    &[data-state="current"]
+        overflow auto
+        overflow-scrolling touch
 
 .verso__scroll-child
     transform-origin 0% 0%
-    transition transform 200ms ease-in-out
+    transition all 500ms ease-in-out
     overflow hidden

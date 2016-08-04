@@ -10,7 +10,7 @@ module.exports = class Verso extends Events
         swipeDirection: 'horizontal'
         swipeVelocity: 0.3
         swipeThreshold: 10
-        transitionDuration: 200
+        transitionDuration: 220
         keysPrev: [8, 33, 37, 38] # Backspace, page up, left arrow, up arrow.
         keysNext: [13, 32, 34, 39, 40] # Enter, space, page down, right arrow, down arrow.
 
@@ -43,9 +43,6 @@ module.exports = class Verso extends Events
             event: 'doubletap'
             interval: 200
             taps: 2
-        @hammer.add new Hammer.Tap
-            event: 'singletap'
-        @hammer.on 'singletap', @singleTap.bind @
         @hammer.on 'doubletap', @doubleTap.bind @
         @hammer.on 'panstart', @panStart.bind @
         @hammer.on 'panmove', @panMove.bind @
@@ -53,9 +50,6 @@ module.exports = class Verso extends Events
         @hammer.on 'pinchstart', @pinchStart.bind @
         @hammer.on 'pinchmove', @pinchMove.bind @
         @hammer.on 'pinchend', @pinchEnd.bind @
-
-        @hammer.get('doubletap').recognizeWith 'singletap'
-        @hammer.get('singletap').requireFailure 'doubletap'
 
         @el.addEventListener 'keyup', @keyUp.bind(@), false
         @el.setAttribute 'tabindex', -1
@@ -165,8 +159,6 @@ module.exports = class Verso extends Events
     doubleTap: (e) ->
         page = @pages.at @pageIndex
 
-        console.log page.mayZoom()
-
         if page.mayZoom() is true
             if page.zoomScale is 1
                 page.zoom e.center.x, e.center.y, @maxZoomScale
@@ -221,6 +213,8 @@ module.exports = class Verso extends Events
         return
 
     panEnd: (e) ->
+        e.preventDefault()
+
         return if @pan.active isnt true
 
         pageIndex = @pageIndex

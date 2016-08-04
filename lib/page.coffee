@@ -34,12 +34,16 @@ module.exports = class Page
 
         el = @el.querySelector '.verso__scroll-child'
 
-        console.log el
-
         if el?
+            console.log zoomScale
+
+            if zoomScale is 1
+                x = 0
+                y = 0
+
             el.style.transform = "scale3d(#{zoomScale}, #{zoomScale}, 1)"
 
-        @zoomScale = zoomScale
+            @zoomScale = zoomScale
 
         return
 
