@@ -32,7 +32,7 @@ module.exports = class Page
     zoom: (x, y, zoomScale) ->
         console.log 'zoom', x, y, zoomScale
 
-        el = @el.querySelector '.verso__scroll-child'
+        el = @el.querySelector '.verso__zoomer'
 
         if el?
             console.log zoomScale
