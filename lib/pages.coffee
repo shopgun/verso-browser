@@ -13,6 +13,9 @@ module.exports = class Pages
     count: ->
         @pages.length
 
+    queueCount: ->
+        @queue.length
+
     slice: (start, end) ->
         @pages.slice start, end
 
@@ -36,7 +39,7 @@ module.exports = class Pages
         return
 
     run: ->
-        return if @paused is true or @queue.length is 0
+        return if @paused is true or @queueCount() is 0
 
         item = @queue[0]
 
@@ -65,7 +68,7 @@ module.exports = class Pages
         animation.on 'update', (delta, time) =>
             distance = 100 * (delta / (transition.baseDuration / 1000))
             distance += distance * Math.abs(transition.velocity) / 1000 # Account for velocity.
-            distance += @queue.length # Make animation faster when queue is stacking up.
+            distance += @queueCount() # Make animation faster when queue is stacking up.
 
             toPage.updatePosition toPage.position + distance * direction
 
@@ -96,6 +99,6 @@ module.exports = class Pages
             isComplete: -> isComplete
             animation: animation
 
-        @run() if @queue.length is 1
+        @run() if @queueCount() is 1
 
         return

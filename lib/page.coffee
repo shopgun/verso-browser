@@ -1,13 +1,22 @@
-module.exports = class Page
+Events = require './events'
+Transformer = require './transformer'
+
+module.exports = class Page extends Events
     constructor: (@el, @index = 0, @position = 0) ->
+        super()
+
         @transformPosition = @position
+        @scrollable = @el.dataset.scroll is 'true'
         @scrolling = false
-        @zoomScale = 1
+        @shown = false
+        @transformers = []
 
         @el.setAttribute 'data-versoindex', @index
-        @el.addEventListener 'scroll', @scroll.bind(@), false
+        @el.addEventListener 'scroll', @scroll.bind(@), false if @scrollable is true
 
-        # TODO: Generalize data-transition-* and support transform to begin with.
+        @on 'statechange', @stateChange.bind(@), false
+
+        # TODO: Generalize data-transition-* and support `translate` to begin with.
         # @transitions =
         #     start: @el.getAttribute 'data-transition-start'
         #     middle: @el.getAttribute 'data-transition-middle'
@@ -26,27 +35,6 @@ module.exports = class Page
 
         return
 
-    mayZoom: ->
-        @el.dataset.zoom is 'true'
-
-    zoom: (x, y, zoomScale) ->
-        console.log 'zoom', x, y, zoomScale
-
-        el = @el.querySelector '.verso__zoomer'
-
-        if el?
-            console.log zoomScale
-
-            if zoomScale is 1
-                x = 0
-                y = 0
-
-            el.style.transform = "scale3d(#{zoomScale}, #{zoomScale}, 1)"
-
-            @zoomScale = zoomScale
-
-        return
-
     updateTransform: (position) ->
         position = Math.max -100, position
         position = Math.min 100, position
@@ -62,12 +50,43 @@ module.exports = class Page
 
         @
 
+    updateState: (state) ->
+        if @el.dataset.state isnt state
+            @el.dataset.state = state
+
+            @trigger 'statechange', state
+
+        @
+
+    stateChange: (state) ->
+        if state is 'current'
+            els = @el.querySelectorAll '.verso__transformer'
+
+            @transformers.push new Transformer(el) for el in els
+
+            @el.setAttribute 'aria-hidden', false
+        else
+            @transformers = @transformers.filter (transformer) ->
+                transformer.destroy()
+
+                false
+
+            @el.setAttribute 'aria-hidden', true
+
+        return
+
     show: ->
-        @el.style.visibility = 'visible'
+        if @shown is false
+            @el.style.visibility = 'visible'
+
+            @shown = true
 
         @
 
     hide: ->
-        @el.style.visibility = 'hidden'
+        if @shown is true
+            @el.style.visibility = 'hidden'
+
+            @shown = false
 
         @

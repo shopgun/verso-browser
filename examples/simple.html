@@ -24,8 +24,8 @@
                 position: absolute;
                 top: 0;
                 left: 0;
-                right: 0;
-                bottom: 0;
+                width: 100%;
+                height: 100%;
                 background-repeat: no-repeat;
                 background-position: center center;
                 background-size: contain;
@@ -61,27 +61,27 @@
     <body>
         <article id="demo" class="verso">
             <div class="verso__pages">
-                <section id="page1" class="verso__page" data-zoom="true" data-transition-start="transform:translate(-100%,0%)" data-transition-middle="transform:translate(0%,0%)" data-transition-end="transform:translate(100%,0%)">
-                    <div class="verso__zoomer image"></div>
+                <section id="page1" class="verso__page" data-transitionstart="transform:translate(-100%,0%)" data-transitionmiddle="transform:translate(0%,0%)" data-transitionend="transform:translate(100%,0%)">
+                    <div class="verso__transformer image" data-zoom="true" data-maxzoomscale="3" data-minzoomscale="1"></div>
                 </section>
 
-                <section id="page2" class="verso__page" data-transition-start="transform:translate(-100%,0%)" data-transition-middle="transform:translate(0%,0%)" data-transition-end="transform:translate(100%,0%)">
+                <section id="page2" class="verso__page" data-transitionstart="transform:translate(-100%,0%)" data-transitionmiddle="transform:translate(0%,0%)" data-transitionend="transform:translate(100%,0%)">
                     <div class="image"></div>
                 </section>
 
-                <section id="page3" class="verso__page" data-transition-start="transform:translate(-100%,0%)" data-transition-middle="transform:translate(0%,0%)" data-transition-end="transform:translate(100%,0%)">
+                <section id="page3" class="verso__page" data-transitionstart="transform:translate(-100%,0%)" data-transitionmiddle="transform:translate(0%,0%)" data-transitionend="transform:translate(100%,0%)">
                     <div class="image"></div>
                 </section>
 
-                <section id="page4" class="verso__page" data-transition-start="transform:translate(-100%,0%)" data-transition-middle="transform:translate(0%,0%)" data-transition-end="transform:translate(100%,0%)">
+                <section id="page4" class="verso__page" data-transitionstart="transform:translate(-100%,0%)" data-transitionmiddle="transform:translate(0%,0%)" data-transitionend="transform:translate(100%,0%)">
                     <div class="image"></div>
                 </section>
 
-                <section id="page5" class="verso__page" data-transition-start="transform:translate(-100%,0%)" data-transition-middle="transform:translate(0%,0%)" data-transition-end="transform:translate(100%,0%)">
+                <section id="page5" class="verso__page" data-transitionstart="transform:translate(-100%,0%)" data-transitionmiddle="transform:translate(0%,0%)" data-transitionend="transform:translate(100%,0%)">
                     <div class="image"></div>
                 </section>
 
-                <section id="page6" class="verso__page">
+                <section id="page6" data-scroll="true" class="verso__page">
                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur vestibulum, urna eget elementum ornare, dolor turpis imperdiet urna, nec blandit magna ex iaculis purus. Aliquam consequat, tortor et mattis tincidunt, lacus erat faucibus risus, et placerat turpis ipsum nec justo. Nullam nec ante elementum sapien rutrum venenatis vel congue odio. Sed elit purus, porttitor non accumsan a, pharetra ut turpis. Maecenas bibendum maximus dui sed vulputate. Nam dapibus porttitor aliquet. Donec tempor congue sapien at ullamcorper. Aliquam porttitor dolor at lorem dignissim feugiat. Sed sit amet blandit dolor.</p>
 
                     <p>Aenean id lectus vel massa fermentum fermentum sed ut enim. Maecenas a interdum quam. Duis convallis leo sit amet ante hendrerit, et sagittis ex sodales. Nunc eget nulla eget urna rhoncus viverra id auctor nunc. Pellentesque orci sem, gravida et mi at, interdum lacinia tellus. Sed dolor lacus, gravida a tortor vitae, viverra faucibus dolor. Vestibulum vel turpis id velit sagittis efficitur non quis mauris. Aenean eu sapien et sem posuere molestie. Sed molestie ligula in erat imperdiet, sit amet sollicitudin metus pretium. Quisque condimentum, urna in consequat tempus, ante ligula aliquet lectus, in placerat elit mauris a sem. Integer facilisis sodales posuere. Cras laoreet auctor est sit amet pharetra.</p>

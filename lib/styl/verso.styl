@@ -27,11 +27,6 @@
     visibility hidden
     overflow hidden
 
-    &[data-state="current"]
+    &[data-scroll="true"][data-state="current"]
         overflow auto
         overflow-scrolling touch
-
-.verso__zoomer
-    transform-origin 0% 0%
-    transition all 200ms ease-in-out
-    overflow hidden

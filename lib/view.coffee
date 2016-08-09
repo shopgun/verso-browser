@@ -6,7 +6,6 @@ Page = require './page'
 module.exports = class Verso extends Events
     defaults:
         pageIndex: 0
-        maxZoomScale: 3
         swipeDirection: 'horizontal'
         swipeVelocity: 0.3
         swipeThreshold: 10
@@ -20,18 +19,15 @@ module.exports = class Verso extends Events
         for key, value of @defaults
             @[key] = options[key] ? value
 
-        @pages = new Pages @getPages()
+        @pages = new Pages @generatePages()
         @pan =
             active: false
             pageIndex: null
         @pinch =
             active: false
 
-        @hammer = new Hammer.Manager @el.querySelector('.verso__pages'),
-            touchAction: 'auto'
-        @hammer.add new Hammer.Pinch()
+        @hammer = new Hammer.Manager @el.querySelector('.verso__pages')
         @hammer.add new Hammer.Pan
-            threshold: 10
             direction: do =>
                 if @swipeDirection is 'horizontal'
                     Hammer.DIRECTION_HORIZONTAL
@@ -39,17 +35,9 @@ module.exports = class Verso extends Events
                     Hammer.DIRECTION_VERTICAL
                 else
                     Hammer.DIRECTION_ALL
-        @hammer.add new Hammer.Tap
-            event: 'doubletap'
-            interval: 200
-            taps: 2
-        @hammer.on 'doubletap', @doubleTap.bind @
         @hammer.on 'panstart', @panStart.bind @
         @hammer.on 'panmove', @panMove.bind @
         @hammer.on 'panend', @panEnd.bind @
-        @hammer.on 'pinchstart', @pinchStart.bind @
-        @hammer.on 'pinchmove', @pinchMove.bind @
-        @hammer.on 'pinchend', @pinchEnd.bind @
 
         @el.addEventListener 'keyup', @keyUp.bind(@), false
         @el.setAttribute 'tabindex', -1
@@ -98,34 +86,25 @@ module.exports = class Verso extends Events
         return
 
     updateState: ->
-        @pages.at(@pageIndex).el.dataset.state = 'current'
-        @pages.at(@pageIndex).el.setAttribute 'aria-hidden', false
-
-        if @pageIndex > 0
-            @pages.at(@pageIndex - 1).el.dataset.state = 'previous'
-            @pages.at(@pageIndex - 1).el.setAttribute 'aria-hidden', true
-
-        if @pageIndex + 1 < @pages.count()
-            @pages.at(@pageIndex + 1).el.dataset.state = 'next'
-            @pages.at(@pageIndex + 1).el.setAttribute 'aria-hidden', true
+        @pages.at(@pageIndex).updateState 'current'
+        @pages.at(@pageIndex - 1).updateState 'previous' if @pageIndex > 0
+        @pages.at(@pageIndex + 1).updateState 'next' if @pageIndex + 1 < @pages.count()
 
         if @pageIndex > 1
             @pages.slice(0, @pageIndex - 1).forEach (page) ->
-                page.el.dataset.state = 'before'
-                page.el.setAttribute 'aria-hidden', true
+                page.updateState 'before'
 
                 return
 
         if @pageIndex + 2 < @pages.count()
             @pages.slice(@pageIndex + 2).forEach (page) ->
-                page.el.dataset.state = 'after'
-                page.el.setAttribute 'aria-hidden', true
+                page.updateState 'after'
 
                 return
 
         return
 
-    getPages: ->
+    generatePages: ->
         pages = []
         els = @el.querySelectorAll '.verso__page'
 
@@ -149,28 +128,10 @@ module.exports = class Verso extends Events
 
         return
 
-    singleTap: (e) ->
-        page = @pages.at @pageIndex
-
-        page.zoom e.center.x, e.center.y, 1 if page.zoomScale > 1
-
-        return
-
-    doubleTap: (e) ->
-        page = @pages.at @pageIndex
-
-        if page.mayZoom() is true
-            if page.zoomScale is 1
-                page.zoom e.center.x, e.center.y, @maxZoomScale
-            else if page.zoomScale > 1
-                page.zoom e.center.x, e.center.y, 1
-
-        return
-
     panStart: (e) ->
         e.preventDefault()
 
-        return if @pinch.active is true or @pages.at(@pageIndex).zoomScale > 1
+        return if @pinch.active is true
         return if e.changedPointers[0].pageX <= 20 or e.changedPointers[0].pageX >= window.innerWidth - 20
 
         pageEl = e.target
@@ -243,7 +204,7 @@ module.exports = class Verso extends Events
                     @prev transition
 
         # No page change occurred.
-        if pageIndex is @pageIndex and @pages.queue.length is 0
+        if pageIndex is @pageIndex and @pages.queueCount() is 0
             if currPage.position < 0
                 @pages.transition pageIndex + 1, pageIndex, transition
             else if currPage.position > 0
@@ -251,31 +212,5 @@ module.exports = class Verso extends Events
 
         @pages.resume()
         @pan.active = false
-
-        return
-
-    pinchStart: (e) ->
-        return if @pan.active is true or @pages.at(@pageIndex).mayZoom() is false
-
-        @pinch.active = true
-
-        return
-
-    pinchMove: (e) ->
-        return if @pinch.active isnt true
-
-        return
-
-    pinchEnd: (e) ->
-        return if @pinch.active isnt true
-
-        page = @pages.at @pageIndex
-
-        if page.zoomScale > @maxZoomScale
-            page.zoom e.center.x, e.center.y, @maxZoomScale
-        else if page.zoomScale < 1
-            page.zoom e.center.x, e.center.y, 1
-
-        @pinch.active = false
 
         return

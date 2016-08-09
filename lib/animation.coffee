@@ -1,7 +1,6 @@
 Events = require './events'
 
-requestAnimationFrame = window.requestAnimationFrame or window.mozRequestAnimationFrame or window.webkitRequestAnimationFrame or window.msRequestAnimationFrame
-cancelAnimationFrame = window.cancelAnimationFrame or window.mozCancelAnimationFrame or window.webkitCancelAnimationFrame or window.msCancelAnimationFrame
+requestAnimationFrame = window.requestAnimationFrame or window.mozRequestAnimationFrame or window.webkitRequestAnimationFrame or window.msRequestAnimationFrame or (callback) -> window.setTimeout callback, 1000 / 60
 
 module.exports = class Animation extends Events
     constructor: ->
@@ -24,17 +23,17 @@ module.exports = class Animation extends Events
     pause: ->
         @paused = true
 
-        cancelAnimationFrame @animationFrame
-
         return
 
     frame: (time) ->
         return if @paused is true
 
         @setDelta()
+
         @trigger 'update', @delta, time
         @trigger 'render', @delta, time
-        @animationFrame = requestAnimationFrame @frame.bind(@)
+
+        requestAnimationFrame @frame.bind(@)
 
         return
 
