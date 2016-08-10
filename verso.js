@@ -134,19 +134,19 @@ module.exports = Navigation = (function() {
 
 
 },{}],4:[function(_dereq_,module,exports){
-var Events, Page, Transformer,
+var Events, Page, Zoom,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
 Events = _dereq_('./events');
 
-Transformer = _dereq_('./transformer');
+Zoom = _dereq_('./zoom');
 
 module.exports = Page = (function(superClass) {
   extend(Page, superClass);
 
-  function Page(el1, index, position1) {
-    this.el = el1;
+  function Page(el, index, position1) {
+    this.el = el;
     this.index = index != null ? index : 0;
     this.position = position1 != null ? position1 : 0;
     Page.__super__.constructor.call(this);
@@ -154,7 +154,8 @@ module.exports = Page = (function(superClass) {
     this.scrollable = this.el.dataset.scroll === 'true';
     this.scrolling = false;
     this.shown = false;
-    this.transformers = [];
+    this.state = null;
+    this.zoom = null;
     this.el.setAttribute('data-versoindex', this.index);
     if (this.scrollable === true) {
       this.el.addEventListener('scroll', this.scroll.bind(this), false);
@@ -187,27 +188,27 @@ module.exports = Page = (function(superClass) {
   };
 
   Page.prototype.updateState = function(state) {
-    if (this.el.dataset.state !== state) {
+    if (this.state !== state) {
       this.el.dataset.state = state;
+      this.state = state;
       this.trigger('statechange', state);
     }
     return this;
   };
 
   Page.prototype.stateChange = function(state) {
-    var el, els, i, len;
+    var zoomEl;
     if (state === 'current') {
-      els = this.el.querySelectorAll('.verso__transformer');
-      for (i = 0, len = els.length; i < len; i++) {
-        el = els[i];
-        this.transformers.push(new Transformer(el));
+      zoomEl = this.el.querySelector('.verso__zoom');
+      if (zoomEl != null) {
+        this.zoom = new Zoom(zoomEl);
       }
       this.el.setAttribute('aria-hidden', false);
     } else {
-      this.transformers = this.transformers.filter(function(transformer) {
-        transformer.destroy();
-        return false;
-      });
+      if (this.zoom != null) {
+        this.zoom.destroy();
+        this.zoom = null;
+      }
       this.el.setAttribute('aria-hidden', true);
     }
   };
@@ -233,7 +234,7 @@ module.exports = Page = (function(superClass) {
 })(Events);
 
 
-},{"./events":2,"./transformer":10}],5:[function(_dereq_,module,exports){
+},{"./events":2,"./zoom":12}],5:[function(_dereq_,module,exports){
 var Animation, Pages;
 
 Animation = _dereq_('./animation');
@@ -410,7 +411,7 @@ module.exports = Status = (function() {
 
 
 },{}],8:[function(_dereq_,module,exports){
-module.exports=".verso {\n  position: relative;\n  height: 100%;\n  outline: 0;\n  overflow: hidden;\n  visibility: hidden;\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n.verso[data-shown=\"true\"] {\n  visibility: visible;\n}\n.verso *,\n.verso *:before,\n.verso *:after {\n  -webkit-box-sizing: inherit;\n  -moz-box-sizing: inherit;\n  box-sizing: inherit;\n}\n.verso__pages {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  overflow: hidden;\n}\n.verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  visibility: hidden;\n  overflow: hidden;\n}\n.verso__page[data-scroll=\"true\"][data-state=\"current\"] {\n  overflow: auto;\n  -webkit-overflow-scrolling: touch;\n  overflow-scrolling: touch;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 200ms;\n  -moz-transition: opacity ease 200ms;\n  -o-transition: opacity ease 200ms;\n  -ms-transition: opacity ease 200ms;\n  transition: opacity ease 200ms;\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n.verso__navigation[data-active=\"true\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width 200ms ease-in-out;\n  -moz-transition: width 200ms ease-in-out;\n  -o-transition: width 200ms ease-in-out;\n  -ms-transition: width 200ms ease-in-out;\n  transition: width 200ms ease-in-out;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n.verso__transformer {\n  -webkit-transform-origin: 0% 0%;\n  -moz-transform-origin: 0% 0%;\n  -o-transform-origin: 0% 0%;\n  -ms-transform-origin: 0% 0%;\n  transform-origin: 0% 0%;\n}\n"
+module.exports=".verso {\n  position: relative;\n  height: 100%;\n  outline: 0;\n  overflow: hidden;\n  visibility: hidden;\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n.verso[data-shown=\"true\"] {\n  visibility: visible;\n}\n.verso *,\n.verso *:before,\n.verso *:after {\n  -webkit-box-sizing: inherit;\n  -moz-box-sizing: inherit;\n  box-sizing: inherit;\n}\n.verso__pages {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  overflow: hidden;\n}\n.verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  visibility: hidden;\n  overflow: hidden;\n  overflow: auto;\n}\n.verso__page[data-scroll=\"true\"][data-state=\"current\"] {\n  overflow: auto;\n  -webkit-overflow-scrolling: touch;\n  overflow-scrolling: touch;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 200ms;\n  -moz-transition: opacity ease 200ms;\n  -o-transition: opacity ease 200ms;\n  -ms-transition: opacity ease 200ms;\n  transition: opacity ease 200ms;\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n.verso__navigation[data-active=\"true\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width 200ms ease-in-out;\n  -moz-transition: width 200ms ease-in-out;\n  -o-transition: width 200ms ease-in-out;\n  -ms-transition: width 200ms ease-in-out;\n  transition: width 200ms ease-in-out;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n.verso__zoom {\n  -webkit-transform-origin: 0% 0%;\n  -moz-transform-origin: 0% 0%;\n  -o-transform-origin: 0% 0%;\n  -ms-transform-origin: 0% 0%;\n  transform-origin: 0% 0%;\n}\n"
 },{}],9:[function(_dereq_,module,exports){
 var css, insertCss;
 
@@ -421,100 +422,7 @@ css = _dereq_('./styl/index.styl');
 insertCss(css);
 
 
-},{"./styl/index.styl":8,"insert-css":15}],10:[function(_dereq_,module,exports){
-var Impetus, Transformer;
-
-Impetus = _dereq_('impetus');
-
-module.exports = Transformer = (function() {
-  function Transformer(el) {
-    this.el = el;
-    this.options = this.getOptions();
-    this.hammer = new Hammer.Manager(this.el);
-    this.hammer.add(new Hammer.Pinch());
-    this.hammer.add(new Hammer.Pan());
-    this.hammer.add(new Hammer.Tap({
-      event: 'doubletap',
-      interval: 200,
-      taps: 2
-    }));
-    this.hammer.on('doubletap', this.doubleTap.bind(this));
-    this.hammer.on('panmove', this.panMove.bind(this));
-    this.hammer.on('pinchstart', this.pinchStart.bind(this));
-    this.hammer.on('pinchmove', this.pinchMove.bind(this));
-    this.hammer.on('pinchend', this.pinchEnd.bind(this));
-    this.contextMenu = this.contextMenu.bind(this);
-    this.el.addEventListener('contextmenu', this.contextMenu, false);
-    return;
-  }
-
-  Transformer.prototype.destroy = function() {
-    this.hammer.stop(true);
-    this.hammer.destroy();
-    this.el.removeEventListener('contextmenu', this.contextMenu);
-  };
-
-  Transformer.prototype.getOptions = function() {
-    return {};
-  };
-
-  Transformer.prototype.toggleZoom = function(x, y) {};
-
-  Transformer.prototype.contextMenu = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    this.toggleZoom(e.pageX, e.pageY);
-  };
-
-  Transformer.prototype.doubleTap = function(e) {
-    this.toggleZoom(e.center.x, e.center.y);
-  };
-
-  Transformer.prototype.panMove = function(e) {};
-
-  Transformer.prototype.pinchStart = function(e) {
-    if (this.pan.active === true || this.pages.at(this.pageIndex).scrollable === true) {
-      return;
-    }
-    if (this.pages.queueCount() > 0) {
-      return;
-    }
-    this.pinch.active = true;
-    this.pinch.object = this.pages.at(this.pageIndex).e.target;
-  };
-
-  Transformer.prototype.pinchMove = function(e) {
-    if (this.pinch.active !== true) {
-      return;
-    }
-    this.pinch.manipulation.pinch({
-      x: e.center.x,
-      y: e.center.y,
-      distance: e.distance,
-      scale: e.scale
-    });
-  };
-
-  Transformer.prototype.pinchEnd = function(e) {
-    var page;
-    if (this.pinch.active !== true) {
-      return;
-    }
-    page = this.pages.at(this.pageIndex);
-    if (page.zoomScale > this.maxZoomScale) {
-      page.zoom(e.center.x, e.center.y, this.maxZoomScale);
-    } else if (page.zoomScale < 1) {
-      page.zoom(e.center.x, e.center.y, 1);
-    }
-    this.pinch.active = false;
-  };
-
-  return Transformer;
-
-})();
-
-
-},{"impetus":14}],11:[function(_dereq_,module,exports){
+},{"./styl/index.styl":8,"insert-css":14}],10:[function(_dereq_,module,exports){
 var Navigation, Progress, Status, View;
 
 View = _dereq_('./view');
@@ -533,8 +441,8 @@ module.exports = {
 };
 
 
-},{"./navigation":3,"./progress":6,"./status":7,"./view":12}],12:[function(_dereq_,module,exports){
-var Events, Hammer, Page, Pages, Verso,
+},{"./navigation":3,"./progress":6,"./status":7,"./view":11}],11:[function(_dereq_,module,exports){
+var Events, Hammer, Page, Pages, Verso, propagating,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -546,6 +454,8 @@ Hammer = _dereq_('hammerjs');
 Pages = _dereq_('./pages');
 
 Page = _dereq_('./page');
+
+propagating = _dereq_('propagating-hammerjs');
 
 module.exports = Verso = (function(superClass) {
   extend(Verso, superClass);
@@ -580,7 +490,7 @@ module.exports = Verso = (function(superClass) {
     this.pinch = {
       active: false
     };
-    this.hammer = new Hammer.Manager(this.el.querySelector('.verso__pages'));
+    this.hammer = propagating(new Hammer.Manager(this.el.querySelector('.verso__pages')));
     this.hammer.add(new Hammer.Pan({
       direction: (function(_this) {
         return function() {
@@ -789,7 +699,212 @@ module.exports = Verso = (function(superClass) {
 })(Events);
 
 
-},{"./events":2,"./page":4,"./pages":5,"hammerjs":13}],13:[function(_dereq_,module,exports){
+},{"./events":2,"./page":4,"./pages":5,"hammerjs":13,"propagating-hammerjs":15}],12:[function(_dereq_,module,exports){
+var Events, Zoom, propagating,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+propagating = _dereq_('propagating-hammerjs');
+
+Events = _dereq_('./events');
+
+module.exports = Zoom = (function(superClass) {
+  extend(Zoom, superClass);
+
+  Zoom.prototype.defaults = {
+    transitionDuration: 220
+  };
+
+  function Zoom(el1, options) {
+    var key, ref, ref1, value;
+    this.el = el1;
+    if (options == null) {
+      options = {};
+    }
+    Zoom.__super__.constructor.call(this);
+    ref = this.defaults;
+    for (key in ref) {
+      value = ref[key];
+      this[key] = (ref1 = options[key]) != null ? ref1 : value;
+    }
+    this.x = 0;
+    this.y = 0;
+    this.scale = this.getScale();
+    this.prevScale = this.scale;
+    this.pinchScale = this.scale;
+    this.minScale = this.getMinScale();
+    this.maxScale = this.getMaxScale();
+    this.transitioning = false;
+    this.hammer = propagating(new Hammer.Manager(this.el));
+    this.hammer.add(new Hammer.Pinch());
+    this.hammer.add(new Hammer.Pan());
+    this.hammer.add(new Hammer.Tap({
+      event: 'doubletap',
+      interval: 200,
+      taps: 2
+    }));
+    this.hammer.on('doubletap', this.doubleTap.bind(this));
+    this.hammer.on('panstart', this.panStart.bind(this));
+    this.hammer.on('panmove', this.panMove.bind(this));
+    this.hammer.on('panend', this.panEnd.bind(this));
+    this.hammer.on('pinchstart', this.pinchStart.bind(this));
+    this.hammer.on('pinchmove', this.pinchMove.bind(this));
+    this.hammer.on('pinchend', this.pinchEnd.bind(this));
+    this.contextMenu = this.contextMenu.bind(this);
+    this.el.addEventListener('contextmenu', this.contextMenu, false);
+    return;
+  }
+
+  Zoom.prototype.destroy = function() {
+    this.hammer.stop(true);
+    this.hammer.destroy();
+    this.el.removeEventListener('contextmenu', this.contextMenu);
+  };
+
+  Zoom.prototype.getScale = function() {
+    var value;
+    value = +this.el.dataset.zoomscale;
+    if (isNaN(value)) {
+      return 1;
+    } else {
+      return value;
+    }
+  };
+
+  Zoom.prototype.getMinScale = function() {
+    var value;
+    value = +this.el.dataset.minzoomscale;
+    if (isNaN(value)) {
+      return 1;
+    } else {
+      return value;
+    }
+  };
+
+  Zoom.prototype.getMaxScale = function() {
+    var value;
+    value = +this.el.dataset.maxzoomscale;
+    if (isNaN(value)) {
+      return 1;
+    } else {
+      return value;
+    }
+  };
+
+  Zoom.prototype.toggleScale = function(x, y) {
+    if (this.scale === this.minScale) {
+      this.scaleAtOrigin(x, y, this.maxScale, this.transitionDuration);
+    } else if (this.scale > this.minScale) {
+      this.scaleAtOrigin(x, y, this.minScale, this.transitionDuration);
+    }
+  };
+
+  Zoom.prototype.scaleAtOrigin = function(x, y, scale, duration) {
+    var dx, dy, rect, xf, yf;
+    rect = this.el.getBoundingClientRect();
+    x -= rect.left;
+    y -= rect.top;
+    xf = x * scale / this.scale;
+    yf = y * scale / this.scale;
+    dx = this.x + x - xf;
+    dy = this.y + y - yf;
+    if (scale === this.minScale) {
+      dx = dy = 0;
+    }
+    this.x = dx;
+    this.y = dy;
+    this.prevScale = this.scale;
+    this.scale = scale;
+    this.transitioning = true;
+    this.transform(this.el, this.x, this.y, this.scale, duration, (function(_this) {
+      return function() {
+        _this.transitioning = false;
+      };
+    })(this));
+  };
+
+  Zoom.prototype.transform = function(el, x, y, scale, duration, callback) {
+    var end, parentNode, scrollLeft, scrollTop;
+    if (duration > 0) {
+      parentNode = el.parentNode;
+      scrollTop = -parentNode.scrollTop;
+      scrollLeft = -parentNode.scrollLeft;
+      el.style.transform = "translate3d(" + scrollLeft + "px, " + scrollTop + "px, 0) scale3d(" + this.prevScale + ", " + this.prevScale + ", 1)";
+      parentNode.style.overflow = 'hidden';
+      parentNode.scrollTop = 0;
+      parentNode.scrollLeft = 0;
+      end = (function(_this) {
+        return function() {
+          el.removeEventListener('transitionend', end);
+          el.style.transition = 'none';
+          el.style.transform = "translate3d(0, 0, 0) scale3d(" + scale + ", " + scale + ", 1)";
+          parentNode.style.overflow = 'auto';
+          parentNode.scrollTop = -y;
+          parentNode.scrollLeft = -x;
+          callback();
+        };
+      })(this);
+      el.addEventListener('transitionend', end, false);
+      el.style.transition = "transform ease-in-out " + duration + "ms";
+    } else {
+      callback();
+    }
+    el.style.transform = "translate3d(" + x + "px, " + y + "px, 0) scale3d(" + scale + ", " + scale + ", 1)";
+  };
+
+  Zoom.prototype.contextMenu = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.toggleScale(e.pageX, e.pageY);
+  };
+
+  Zoom.prototype.doubleTap = function(e) {
+    this.toggleScale(e.center.x, e.center.y);
+  };
+
+  Zoom.prototype.panStart = function(e) {
+    if (this.scale !== this.minScale) {
+      e.stopPropagation();
+    }
+  };
+
+  Zoom.prototype.panMove = function(e) {
+    if (this.scale !== this.minScale) {
+      e.stopPropagation();
+    }
+  };
+
+  Zoom.prototype.panEnd = function(e) {
+    if (this.scale !== this.minScale) {
+      e.stopPropagation();
+    }
+  };
+
+  Zoom.prototype.pinchStart = function(e) {
+    e.stopPropagation();
+    this.pinchScale = this.scale;
+  };
+
+  Zoom.prototype.pinchMove = function(e) {
+    e.stopPropagation();
+    this.scaleAtOrigin(e.center.x, e.center.y, this.pinchScale * e.scale, 0);
+  };
+
+  Zoom.prototype.pinchEnd = function(e) {
+    e.stopPropagation();
+    if (this.scale > this.maxScale) {
+      this.scaleAtOrigin(e.center.x, e.center.y, this.maxScale, this.transitionDuration);
+    } else if (this.scale < this.minScale) {
+      this.scaleAtOrigin(e.center.x, e.center.y, this.minScale, this.transitionDuration);
+    }
+  };
+
+  return Zoom;
+
+})(Events);
+
+
+},{"./events":2,"propagating-hammerjs":15}],13:[function(_dereq_,module,exports){
 /*! Hammer.JS - v2.0.7 - 2016-04-22
  * http://hammerjs.github.io/
  *
@@ -3435,432 +3550,6 @@ if (typeof define === 'function' && define.amd) {
 })(window, document, 'Hammer');
 
 },{}],14:[function(_dereq_,module,exports){
-(function (global, factory) {
-	if (typeof define === 'function' && define.amd) {
-		define(['exports', 'module'], factory);
-	} else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-		factory(exports, module);
-	} else {
-		var mod = {
-			exports: {}
-		};
-		factory(mod.exports, mod);
-		global.Impetus = mod.exports;
-	}
-})(this, function (exports, module) {
-	'use strict';
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-	var stopThresholdDefault = 0.3;
-	var bounceDeceleration = 0.04;
-	var bounceAcceleration = 0.11;
-
-	var Impetus = function Impetus(_ref) {
-		var _ref$source = _ref.source;
-		var sourceEl = _ref$source === undefined ? document : _ref$source;
-		var updateCallback = _ref.update;
-		var _ref$multiplier = _ref.multiplier;
-		var multiplier = _ref$multiplier === undefined ? 1 : _ref$multiplier;
-		var _ref$friction = _ref.friction;
-		var friction = _ref$friction === undefined ? 0.92 : _ref$friction;
-		var initialValues = _ref.initialValues;
-		var boundX = _ref.boundX;
-		var boundY = _ref.boundY;
-		var _ref$bounce = _ref.bounce;
-		var bounce = _ref$bounce === undefined ? true : _ref$bounce;
-
-		_classCallCheck(this, Impetus);
-
-		var boundXmin, boundXmax, boundYmin, boundYmax, pointerLastX, pointerLastY, pointerCurrentX, pointerCurrentY, pointerId, decVelX, decVelY;
-		var targetX = 0;
-		var targetY = 0;
-		var stopThreshold = stopThresholdDefault * multiplier;
-		var ticking = false;
-		var pointerActive = false;
-		var paused = false;
-		var decelerating = false;
-		var trackingPoints = [];
-
-		/**
-   * Initialize instance
-   */
-		(function init() {
-			sourceEl = typeof sourceEl === 'string' ? document.querySelector(sourceEl) : sourceEl;
-			if (!sourceEl) {
-				throw new Error('IMPETUS: source not found.');
-			}
-
-			if (!updateCallback) {
-				throw new Error('IMPETUS: update function not defined.');
-			}
-
-			if (initialValues) {
-				if (initialValues[0]) {
-					targetX = initialValues[0];
-				}
-				if (initialValues[1]) {
-					targetY = initialValues[1];
-				}
-				callUpdateCallback();
-			}
-
-			// Initialize bound values
-			if (boundX) {
-				boundXmin = boundX[0];
-				boundXmax = boundX[1];
-			}
-			if (boundY) {
-				boundYmin = boundY[0];
-				boundYmax = boundY[1];
-			}
-
-			sourceEl.addEventListener('touchstart', onDown);
-			sourceEl.addEventListener('mousedown', onDown);
-		})();
-
-		/**
-   * Disable movement processing
-   * @public
-   */
-		this.pause = function () {
-			pointerActive = false;
-			paused = true;
-		};
-
-		/**
-   * Enable movement processing
-   * @public
-   */
-		this.resume = function () {
-			paused = false;
-		};
-
-		/**
-   * Update the current x and y values
-   * @public
-   * @param {Number} x
-   * @param {Number} y
-   */
-		this.setValues = function (x, y) {
-			if (typeof x === 'number') {
-				targetX = x;
-			}
-			if (typeof y === 'number') {
-				targetY = y;
-			}
-		};
-
-		/**
-   * Update the multiplier value
-   * @public
-   * @param {Number} val
-   */
-		this.setMultiplier = function (val) {
-			multiplier = val;
-			stopThreshold = stopThresholdDefault * multiplier;
-		};
-
-		/**
-   * Executes the update function
-   */
-		function callUpdateCallback() {
-			updateCallback.call(sourceEl, targetX, targetY);
-		}
-
-		/**
-   * Creates a custom normalized event object from touch and mouse events
-   * @param  {Event} ev
-   * @returns {Object} with x, y, and id properties
-   */
-		function normalizeEvent(ev) {
-			if (ev.type === 'touchmove' || ev.type === 'touchstart' || ev.type === 'touchend') {
-				var touch = ev.targetTouches[0] || ev.changedTouches[0];
-				return {
-					x: touch.clientX,
-					y: touch.clientY,
-					id: touch.identifier
-				};
-			} else {
-				// mouse events
-				return {
-					x: ev.clientX,
-					y: ev.clientY,
-					id: null
-				};
-			}
-		}
-
-		/**
-   * Initializes movement tracking
-   * @param  {Object} ev Normalized event
-   */
-		function onDown(ev) {
-			var event = normalizeEvent(ev);
-			if (!pointerActive && !paused) {
-				pointerActive = true;
-				decelerating = false;
-				pointerId = event.id;
-
-				pointerLastX = pointerCurrentX = event.x;
-				pointerLastY = pointerCurrentY = event.y;
-				trackingPoints = [];
-				addTrackingPoint(pointerLastX, pointerLastY);
-
-				document.addEventListener('touchmove', onMove);
-				document.addEventListener('touchend', onUp);
-				document.addEventListener('touchcancel', stopTracking);
-				document.addEventListener('mousemove', onMove);
-				document.addEventListener('mouseup', onUp);
-			}
-		}
-
-		/**
-   * Handles move events
-   * @param  {Object} ev Normalized event
-   */
-		function onMove(ev) {
-			ev.preventDefault();
-			var event = normalizeEvent(ev);
-
-			if (pointerActive && event.id === pointerId) {
-				pointerCurrentX = event.x;
-				pointerCurrentY = event.y;
-				addTrackingPoint(pointerLastX, pointerLastY);
-				requestTick();
-			}
-		}
-
-		/**
-   * Handles up/end events
-   * @param {Object} ev Normalized event
-   */
-		function onUp(ev) {
-			var event = normalizeEvent(ev);
-
-			if (pointerActive && event.id === pointerId) {
-				stopTracking();
-			}
-		}
-
-		/**
-   * Stops movement tracking, starts animation
-   */
-		function stopTracking() {
-			pointerActive = false;
-			addTrackingPoint(pointerLastX, pointerLastY);
-			startDecelAnim();
-
-			document.removeEventListener('touchmove', onMove);
-			document.removeEventListener('touchend', onUp);
-			document.removeEventListener('touchcancel', stopTracking);
-			document.removeEventListener('mouseup', onUp);
-			document.removeEventListener('mousemove', onMove);
-		}
-
-		/**
-   * Records movement for the last 100ms
-   * @param {number} x
-   * @param {number} y [description]
-   */
-		function addTrackingPoint(x, y) {
-			var time = Date.now();
-			while (trackingPoints.length > 0) {
-				if (time - trackingPoints[0].time <= 100) {
-					break;
-				}
-				trackingPoints.shift();
-			}
-
-			trackingPoints.push({ x: x, y: y, time: time });
-		}
-
-		/**
-   * Calculate new values, call update function
-   */
-		function updateAndRender() {
-			var pointerChangeX = pointerCurrentX - pointerLastX;
-			var pointerChangeY = pointerCurrentY - pointerLastY;
-
-			targetX += pointerChangeX * multiplier;
-			targetY += pointerChangeY * multiplier;
-
-			if (bounce) {
-				var diff = checkBounds();
-				if (diff.x !== 0) {
-					targetX -= pointerChangeX * dragOutOfBoundsMultiplier(diff.x) * multiplier;
-				}
-				if (diff.y !== 0) {
-					targetY -= pointerChangeY * dragOutOfBoundsMultiplier(diff.y) * multiplier;
-				}
-			} else {
-				checkBounds(true);
-			}
-
-			callUpdateCallback();
-
-			pointerLastX = pointerCurrentX;
-			pointerLastY = pointerCurrentY;
-			ticking = false;
-		}
-
-		/**
-   * Returns a value from around 0.5 to 1, based on distance
-   * @param {Number} val
-   */
-		function dragOutOfBoundsMultiplier(val) {
-			return 0.000005 * Math.pow(val, 2) + 0.0001 * val + 0.55;
-		}
-
-		/**
-   * prevents animating faster than current framerate
-   */
-		function requestTick() {
-			if (!ticking) {
-				requestAnimFrame(updateAndRender);
-			}
-			ticking = true;
-		}
-
-		/**
-   * Determine position relative to bounds
-   * @param {Boolean} restrict Whether to restrict target to bounds
-   */
-		function checkBounds(restrict) {
-			var xDiff = 0;
-			var yDiff = 0;
-
-			if (boundXmin !== undefined && targetX < boundXmin) {
-				xDiff = boundXmin - targetX;
-			} else if (boundXmax !== undefined && targetX > boundXmax) {
-				xDiff = boundXmax - targetX;
-			}
-
-			if (boundYmin !== undefined && targetY < boundYmin) {
-				yDiff = boundYmin - targetY;
-			} else if (boundYmax !== undefined && targetY > boundYmax) {
-				yDiff = boundYmax - targetY;
-			}
-
-			if (restrict) {
-				if (xDiff !== 0) {
-					targetX = xDiff > 0 ? boundXmin : boundXmax;
-				}
-				if (yDiff !== 0) {
-					targetY = yDiff > 0 ? boundYmin : boundYmax;
-				}
-			}
-
-			return {
-				x: xDiff,
-				y: yDiff,
-				inBounds: xDiff === 0 && yDiff === 0
-			};
-		}
-
-		/**
-   * Initialize animation of values coming to a stop
-   */
-		function startDecelAnim() {
-			var firstPoint = trackingPoints[0];
-			var lastPoint = trackingPoints[trackingPoints.length - 1];
-
-			var xOffset = lastPoint.x - firstPoint.x;
-			var yOffset = lastPoint.y - firstPoint.y;
-			var timeOffset = lastPoint.time - firstPoint.time;
-
-			var D = timeOffset / 15 / multiplier;
-
-			decVelX = xOffset / D || 0; // prevent NaN
-			decVelY = yOffset / D || 0;
-
-			var diff = checkBounds();
-
-			if (Math.abs(decVelX) > 1 || Math.abs(decVelY) > 1 || !diff.inBounds) {
-				decelerating = true;
-				requestAnimFrame(stepDecelAnim);
-			}
-		}
-
-		/**
-   * Animates values slowing down
-   */
-		function stepDecelAnim() {
-			if (!decelerating) {
-				return;
-			}
-
-			decVelX *= friction;
-			decVelY *= friction;
-
-			targetX += decVelX;
-			targetY += decVelY;
-
-			var diff = checkBounds();
-
-			if (Math.abs(decVelX) > stopThreshold || Math.abs(decVelY) > stopThreshold || !diff.inBounds) {
-
-				if (bounce) {
-					var reboundAdjust = 2.5;
-
-					if (diff.x !== 0) {
-						if (diff.x * decVelX <= 0) {
-							decVelX += diff.x * bounceDeceleration;
-						} else {
-							var adjust = diff.x > 0 ? reboundAdjust : -reboundAdjust;
-							decVelX = (diff.x + adjust) * bounceAcceleration;
-						}
-					}
-					if (diff.y !== 0) {
-						if (diff.y * decVelY <= 0) {
-							decVelY += diff.y * bounceDeceleration;
-						} else {
-							var adjust = diff.y > 0 ? reboundAdjust : -reboundAdjust;
-							decVelY = (diff.y + adjust) * bounceAcceleration;
-						}
-					}
-				} else {
-					if (diff.x !== 0) {
-						if (diff.x > 0) {
-							targetX = boundXmin;
-						} else {
-							targetX = boundXmax;
-						}
-						decVelX = 0;
-					}
-					if (diff.y !== 0) {
-						if (diff.y > 0) {
-							targetY = boundYmin;
-						} else {
-							targetY = boundYmax;
-						}
-						decVelY = 0;
-					}
-				}
-
-				callUpdateCallback();
-
-				requestAnimFrame(stepDecelAnim);
-			} else {
-				decelerating = false;
-			}
-		}
-	}
-
-	/**
-  * @see http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
-  */
-	;
-
-	module.exports = Impetus;
-	var requestAnimFrame = (function () {
-		return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (callback) {
-			window.setTimeout(callback, 1000 / 60);
-		};
-	})();
-});
-
-},{}],15:[function(_dereq_,module,exports){
 var containers = []; // will store container HTMLElement references
 var styleElements = []; // will store {prepend: HTMLElement, append: HTMLElement}
 
@@ -3908,5 +3597,238 @@ function createStyleElement() {
     return styleElement;
 }
 
-},{}]},{},[11,9])(11)
+},{}],15:[function(_dereq_,module,exports){
+'use strict';
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define([], factory);
+  } else if (typeof exports === 'object') {
+    // Node. Does not work with strict CommonJS, but
+    // only CommonJS-like environments that support module.exports,
+    // like Node.
+    module.exports = factory();
+  } else {
+    // Browser globals (root is window)
+    window.propagating = factory();
+  }
+}(function () {
+  var _firstTarget = null; // singleton, will contain the target element where the touch event started
+
+  /**
+   * Extend an Hammer.js instance with event propagation.
+   *
+   * Features:
+   * - Events emitted by hammer will propagate in order from child to parent
+   *   elements.
+   * - Events are extended with a function `event.stopPropagation()` to stop
+   *   propagation to parent elements.
+   * - An option `preventDefault` to stop all default browser behavior.
+   *
+   * Usage:
+   *   var hammer = propagatingHammer(new Hammer(element));
+   *   var hammer = propagatingHammer(new Hammer(element), {preventDefault: true});
+   *
+   * @param {Hammer.Manager} hammer   An hammer instance.
+   * @param {Object} [options]        Available options:
+   *                                  - `preventDefault: true | false | 'mouse' | 'touch' | 'pen'`.
+   *                                    Enforce preventing the default browser behavior.
+   *                                    Cannot be set to `false`.
+   * @return {Hammer.Manager} Returns the same hammer instance with extended
+   *                          functionality
+   */
+  return function propagating(hammer, options) {
+    var _options = options || {
+      preventDefault: false
+    };
+
+    if (hammer.Manager) {
+      // This looks like the Hammer constructor.
+      // Overload the constructors with our own.
+      var Hammer = hammer;
+
+      var PropagatingHammer = function(element, options) {
+        var o = Object.create(_options);
+        if (options) Hammer.assign(o, options);
+        return propagating(new Hammer(element, o), o);
+      };
+      Hammer.assign(PropagatingHammer, Hammer);
+
+      PropagatingHammer.Manager = function (element, options) {
+        var o = Object.create(_options);
+        if (options) Hammer.assign(o, options);
+        return propagating(new Hammer.Manager(element, o), o);
+      };
+
+      return PropagatingHammer;
+    }
+
+    // create a wrapper object which will override the functions
+    // `on`, `off`, `destroy`, and `emit` of the hammer instance
+    var wrapper = Object.create(hammer);
+
+    // attach to DOM element
+    var element = hammer.element;
+
+    if(!element.hammer) element.hammer = [];
+    element.hammer.push(wrapper);
+
+    // register an event to catch the start of a gesture and store the
+    // target in a singleton
+    hammer.on('hammer.input', function (event) {
+      if (_options.preventDefault === true || (_options.preventDefault === event.pointerType)) {
+        event.preventDefault();
+      }
+      if (event.isFirst) {
+        _firstTarget = event.target;
+      }
+    });
+
+    /** @type {Object.<String, Array.<function>>} */
+    wrapper._handlers = {};
+
+    /**
+     * Register a handler for one or multiple events
+     * @param {String} events    A space separated string with events
+     * @param {function} handler A callback function, called as handler(event)
+     * @returns {Hammer.Manager} Returns the hammer instance
+     */
+    wrapper.on = function (events, handler) {
+      // register the handler
+      split(events).forEach(function (event) {
+        var _handlers = wrapper._handlers[event];
+        if (!_handlers) {
+          wrapper._handlers[event] = _handlers = [];
+
+          // register the static, propagated handler
+          hammer.on(event, propagatedHandler);
+        }
+        _handlers.push(handler);
+      });
+
+      return wrapper;
+    };
+
+    /**
+     * Unregister a handler for one or multiple events
+     * @param {String} events      A space separated string with events
+     * @param {function} [handler] Optional. The registered handler. If not
+     *                             provided, all handlers for given events
+     *                             are removed.
+     * @returns {Hammer.Manager}   Returns the hammer instance
+     */
+    wrapper.off = function (events, handler) {
+      // unregister the handler
+      split(events).forEach(function (event) {
+        var _handlers = wrapper._handlers[event];
+        if (_handlers) {
+          _handlers = handler ? _handlers.filter(function (h) {
+            return h !== handler;
+          }) : [];
+
+          if (_handlers.length > 0) {
+            wrapper._handlers[event] = _handlers;
+          }
+          else {
+            // remove static, propagated handler
+            hammer.off(event, propagatedHandler);
+            delete wrapper._handlers[event];
+          }
+        }
+      });
+
+      return wrapper;
+    };
+
+    /**
+     * Emit to the event listeners
+     * @param {string} eventType
+     * @param {Event} event
+     */
+    wrapper.emit = function(eventType, event) {
+      _firstTarget = event.target;
+      hammer.emit(eventType, event);
+    };
+
+    wrapper.destroy = function () {
+      // Detach from DOM element
+      var hammers = hammer.element.hammer;
+      var idx = hammers.indexOf(wrapper);
+      if(idx !== -1) hammers.splice(idx,1);
+      if(!hammers.length) delete hammer.element.hammer;
+
+      // clear all handlers
+      wrapper._handlers = {};
+
+      // call original hammer destroy
+      hammer.destroy();
+    };
+
+    // split a string with space separated words
+    function split(events) {
+      return events.match(/[^ ]+/g);
+    }
+
+    /**
+     * A static event handler, applying event propagation.
+     * @param {Object} event
+     */
+    function propagatedHandler(event) {
+      // let only a single hammer instance handle this event
+      if (event.type !== 'hammer.input') {
+        // it is possible that the same srcEvent is used with multiple hammer events,
+        // we keep track on which events are handled in an object _handled
+        if (!event.srcEvent._handled) {
+          event.srcEvent._handled = {};
+        }
+
+        if (event.srcEvent._handled[event.type]) {
+          return;
+        }
+        else {
+          event.srcEvent._handled[event.type] = true;
+        }
+      }
+
+      // attach a stopPropagation function to the event
+      var stopped = false;
+      event.stopPropagation = function () {
+        stopped = true;
+      };
+
+      //wrap the srcEvent's stopPropagation to also stop hammer propagation:
+      var srcStop = event.srcEvent.stopPropagation.bind(event.srcEvent);
+      if(typeof srcStop == "function") {
+        event.srcEvent.stopPropagation = function(){
+          srcStop();
+          event.stopPropagation();
+        }
+      }
+
+      // attach firstTarget property to the event
+      event.firstTarget = _firstTarget;
+
+      // propagate over all elements (until stopped)
+      var elem = _firstTarget;
+      while (elem && !stopped) {
+        var elemHammer = elem.hammer;
+        if(elemHammer){
+          var _handlers;
+          for(var k = 0; k < elemHammer.length; k++){
+            _handlers = elemHammer[k]._handlers[event.type];
+            if(_handlers) for (var i = 0; i < _handlers.length && !stopped; i++) {
+              _handlers[i](event);
+            }
+          }
+        }
+        elem = elem.parentNode;
+      }
+    }
+
+    return wrapper;
+  };
+}));
+
+},{}]},{},[10,9])(10)
 });

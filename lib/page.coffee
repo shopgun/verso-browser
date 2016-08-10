@@ -1,5 +1,5 @@
 Events = require './events'
-Transformer = require './transformer'
+Zoom = require './zoom'
 
 module.exports = class Page extends Events
     constructor: (@el, @index = 0, @position = 0) ->
@@ -9,7 +9,8 @@ module.exports = class Page extends Events
         @scrollable = @el.dataset.scroll is 'true'
         @scrolling = false
         @shown = false
-        @transformers = []
+        @state = null
+        @zoom = null
 
         @el.setAttribute 'data-versoindex', @index
         @el.addEventListener 'scroll', @scroll.bind(@), false if @scrollable is true
@@ -51,8 +52,9 @@ module.exports = class Page extends Events
         @
 
     updateState: (state) ->
-        if @el.dataset.state isnt state
+        if @state isnt state
             @el.dataset.state = state
+            @state = state
 
             @trigger 'statechange', state
 
@@ -60,16 +62,15 @@ module.exports = class Page extends Events
 
     stateChange: (state) ->
         if state is 'current'
-            els = @el.querySelectorAll '.verso__transformer'
+            zoomEl = @el.querySelector '.verso__zoom'
 
-            @transformers.push new Transformer(el) for el in els
+            @zoom = new Zoom zoomEl if zoomEl?
 
             @el.setAttribute 'aria-hidden', false
         else
-            @transformers = @transformers.filter (transformer) ->
-                transformer.destroy()
-
-                false
+            if @zoom?
+                @zoom.destroy()
+                @zoom = null
 
             @el.setAttribute 'aria-hidden', true
 
