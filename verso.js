@@ -411,7 +411,7 @@ module.exports = Status = (function() {
 
 
 },{}],8:[function(_dereq_,module,exports){
-module.exports=".verso {\n  position: relative;\n  height: 100%;\n  outline: 0;\n  overflow: hidden;\n  visibility: hidden;\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n.verso[data-shown=\"true\"] {\n  visibility: visible;\n}\n.verso *,\n.verso *:before,\n.verso *:after {\n  -webkit-box-sizing: inherit;\n  -moz-box-sizing: inherit;\n  box-sizing: inherit;\n}\n.verso__pages {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  overflow: hidden;\n}\n.verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  visibility: hidden;\n  overflow: hidden;\n  overflow: auto;\n}\n.verso__page[data-scroll=\"true\"][data-state=\"current\"] {\n  overflow: auto;\n  -webkit-overflow-scrolling: touch;\n  overflow-scrolling: touch;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 200ms;\n  -moz-transition: opacity ease 200ms;\n  -o-transition: opacity ease 200ms;\n  -ms-transition: opacity ease 200ms;\n  transition: opacity ease 200ms;\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n.verso__navigation[data-active=\"true\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width 200ms ease-in-out;\n  -moz-transition: width 200ms ease-in-out;\n  -o-transition: width 200ms ease-in-out;\n  -ms-transition: width 200ms ease-in-out;\n  transition: width 200ms ease-in-out;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n.verso__zoom {\n  -webkit-transform-origin: 0% 0%;\n  -moz-transform-origin: 0% 0%;\n  -o-transform-origin: 0% 0%;\n  -ms-transform-origin: 0% 0%;\n  transform-origin: 0% 0%;\n}\n"
+module.exports=".verso {\n  position: relative;\n  height: 100%;\n  outline: 0;\n  overflow: hidden;\n  visibility: hidden;\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n.verso[data-shown=\"true\"] {\n  visibility: visible;\n}\n.verso *,\n.verso *:before,\n.verso *:after {\n  -webkit-box-sizing: inherit;\n  -moz-box-sizing: inherit;\n  box-sizing: inherit;\n}\n.verso__pages {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  overflow: hidden;\n}\n.verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  z-index: 2;\n  width: 100%;\n  height: 100%;\n  visibility: hidden;\n  overflow: hidden;\n}\n.verso__page[data-scroll=\"true\"][data-state=\"current\"] {\n  overflow: auto;\n  -webkit-overflow-scrolling: touch;\n  overflow-scrolling: touch;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 200ms;\n  -moz-transition: opacity ease 200ms;\n  -o-transition: opacity ease 200ms;\n  -ms-transition: opacity ease 200ms;\n  transition: opacity ease 200ms;\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n.verso__navigation[data-active=\"true\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width 200ms ease-in-out;\n  -moz-transition: width 200ms ease-in-out;\n  -o-transition: width 200ms ease-in-out;\n  -ms-transition: width 200ms ease-in-out;\n  transition: width 200ms ease-in-out;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n.verso__zoom {\n  -webkit-transform-origin: 0% 0%;\n  -moz-transform-origin: 0% 0%;\n  -o-transform-origin: 0% 0%;\n  -ms-transform-origin: 0% 0%;\n  transform-origin: 0% 0%;\n}\n"
 },{}],9:[function(_dereq_,module,exports){
 var css, insertCss;
 
@@ -712,7 +712,10 @@ module.exports = Zoom = (function(superClass) {
   extend(Zoom, superClass);
 
   Zoom.prototype.defaults = {
-    transitionDuration: 220
+    transitionDuration: 220,
+    minScale: 1,
+    maxScale: 2.5,
+    scale: 1
   };
 
   function Zoom(el1, options) {
@@ -729,11 +732,11 @@ module.exports = Zoom = (function(superClass) {
     }
     this.x = 0;
     this.y = 0;
-    this.scale = this.getScale();
+    this.minScale = this.getDatasetValue('minzoomscale', 'number', this.minScale);
+    this.maxScale = this.getDatasetValue('maxzoomscale', 'number', this.maxScale);
+    this.scale = this.getDatasetValue('zoomscale', 'number', this.scale);
     this.prevScale = this.scale;
     this.pinchScale = this.scale;
-    this.minScale = this.getMinScale();
-    this.maxScale = this.getMaxScale();
     this.transitioning = false;
     this.hammer = propagating(new Hammer.Manager(this.el));
     this.hammer.add(new Hammer.Pinch());
@@ -741,6 +744,7 @@ module.exports = Zoom = (function(superClass) {
     this.hammer.add(new Hammer.Tap({
       event: 'doubletap',
       interval: 200,
+      threshold: 10,
       taps: 2
     }));
     this.hammer.on('doubletap', this.doubleTap.bind(this));
@@ -758,37 +762,24 @@ module.exports = Zoom = (function(superClass) {
   Zoom.prototype.destroy = function() {
     this.hammer.stop(true);
     this.hammer.destroy();
+    this.reset();
     this.el.removeEventListener('contextmenu', this.contextMenu);
   };
 
-  Zoom.prototype.getScale = function() {
-    var value;
-    value = +this.el.dataset.zoomscale;
-    if (isNaN(value)) {
-      return 1;
-    } else {
-      return value;
-    }
-  };
+  Zoom.prototype.reset = function() {};
 
-  Zoom.prototype.getMinScale = function() {
+  Zoom.prototype.getDatasetValue = function(key, type, defaultValue) {
     var value;
-    value = +this.el.dataset.minzoomscale;
-    if (isNaN(value)) {
-      return 1;
-    } else {
-      return value;
+    value = this.el.dataset[key];
+    if (type === 'number') {
+      value = +value;
+      if (isNaN(value)) {
+        value = defaultValue;
+      }
+    } else if (typeof value !== type) {
+      value = defaultValue;
     }
-  };
-
-  Zoom.prototype.getMaxScale = function() {
-    var value;
-    value = +this.el.dataset.maxzoomscale;
-    if (isNaN(value)) {
-      return 1;
-    } else {
-      return value;
-    }
+    return value;
   };
 
   Zoom.prototype.toggleScale = function(x, y) {
@@ -816,40 +807,11 @@ module.exports = Zoom = (function(superClass) {
     this.prevScale = this.scale;
     this.scale = scale;
     this.transitioning = true;
-    this.transform(this.el, this.x, this.y, this.scale, duration, (function(_this) {
+    this.transform(this.el, this.x, this.y, this.prevScale, this.scale, duration, (function(_this) {
       return function() {
-        _this.transitioning = false;
+        return _this.transitioning = false;
       };
     })(this));
-  };
-
-  Zoom.prototype.transform = function(el, x, y, scale, duration, callback) {
-    var end, parentNode, scrollLeft, scrollTop;
-    if (duration > 0) {
-      parentNode = el.parentNode;
-      scrollTop = -parentNode.scrollTop;
-      scrollLeft = -parentNode.scrollLeft;
-      el.style.transform = "translate3d(" + scrollLeft + "px, " + scrollTop + "px, 0) scale3d(" + this.prevScale + ", " + this.prevScale + ", 1)";
-      parentNode.style.overflow = 'hidden';
-      parentNode.scrollTop = 0;
-      parentNode.scrollLeft = 0;
-      end = (function(_this) {
-        return function() {
-          el.removeEventListener('transitionend', end);
-          el.style.transition = 'none';
-          el.style.transform = "translate3d(0, 0, 0) scale3d(" + scale + ", " + scale + ", 1)";
-          parentNode.style.overflow = 'auto';
-          parentNode.scrollTop = -y;
-          parentNode.scrollLeft = -x;
-          callback();
-        };
-      })(this);
-      el.addEventListener('transitionend', end, false);
-      el.style.transition = "transform ease-in-out " + duration + "ms";
-    } else {
-      callback();
-    }
-    el.style.transform = "translate3d(" + x + "px, " + y + "px, 0) scale3d(" + scale + ", " + scale + ", 1)";
   };
 
   Zoom.prototype.contextMenu = function(e) {
@@ -896,6 +858,49 @@ module.exports = Zoom = (function(superClass) {
       this.scaleAtOrigin(e.center.x, e.center.y, this.maxScale, this.transitionDuration);
     } else if (this.scale < this.minScale) {
       this.scaleAtOrigin(e.center.x, e.center.y, this.minScale, this.transitionDuration);
+    }
+  };
+
+  Zoom.prototype.transform = function(el, x, y, prevScale, scale, duration, callback) {
+    var parentNode, resetScroll, resetTransform, scrollLeft, scrollTop, transform, transitionEnd;
+    parentNode = el.parentNode;
+    scrollTop = -parentNode.scrollTop;
+    scrollLeft = -parentNode.scrollLeft;
+    resetScroll = function() {
+      el.style.transform = "translate3d(" + scrollLeft + "px, " + scrollTop + "px, 0) scale3d(" + prevScale + ", " + prevScale + ", 1)";
+      parentNode.scrollTop = 0;
+      parentNode.scrollLeft = 0;
+    };
+    resetTransform = function() {
+      el.style.transform = "translate3d(0, 0, 0) scale3d(" + scale + ", " + scale + ", 1)";
+      parentNode.style.overflow = 'auto';
+      parentNode.scrollTop = -y;
+      parentNode.scrollLeft = -x;
+    };
+    transitionEnd = function() {
+      el.removeEventListener('transitionend', transitionEnd);
+      el.style.transition = 'none';
+      resetTransform();
+      callback();
+    };
+    transform = function() {
+      el.style.transform = "translate3d(" + x + "px, " + y + "px, 0) scale3d(" + scale + ", " + scale + ", 1)";
+    };
+    if (scrollLeft !== 0 || scrollTop !== 0) {
+      resetScroll();
+    }
+    if (scale > 1) {
+      parentNode.style.overflow = 'scroll';
+    } else {
+      parentNode.style.overflow = 'hidden';
+    }
+    if (duration > 0) {
+      el.addEventListener('transitionend', transitionEnd, false);
+      el.style.transition = "transform ease-in-out " + duration + "ms";
+      transform();
+    } else {
+      transform();
+      callback();
     }
   };
 
