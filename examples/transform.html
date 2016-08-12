@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Transform</title>
+        <style>
+/*            300 * 0,3 = 90px width
+            total width 90x*4 = 360px
+            60px
+
+            30/360*100 = 8,3333333333 => 50-8,3333333333 = -41.6666666667%*/
+
+            * {
+                box-sizing: border-box;
+            }
+
+            #parent {
+                position: relative;
+                border: 1px solid red;
+                width: 300px;
+                height: 300px;
+                background-color: blue;
+                overflow: auto;
+                margin: 0 auto;
+            }
+
+            #child {
+                background-color: transparent;
+                border: 2px solid black;
+                width: 30%;
+                height: 100%;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: scale(4) translate(-41.6666666667%, -50%);
+                transform-origin: 0 0;
+                background-repeat: no-repeat;
+                background-position: center center;
+                background-size: contain;
+                background-color: green;
+                background-image: url("images/1.jpg");
+            }
+        </style>
+    </head>
+    <body>
+        <div id="parent">
+            <div id="child">
+            </div>
+        </div>
+    </body>
+</html>

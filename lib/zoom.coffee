@@ -69,6 +69,8 @@ module.exports = class Zoom extends Events
         value
 
     toggleScale: (x, y) ->
+        rect = @el.getBoundingClientRect()
+
         if @scale is @minScale
             @scaleAtOrigin x, y, @maxScale, @transitionDuration
         else if @scale > @minScale
@@ -76,24 +78,58 @@ module.exports = class Zoom extends Events
 
         return
 
-    scaleAtOrigin: (x, y, scale, duration) ->
+    # Courtesy of https://cloudup.com/blog/how-we-made-zoom-on-mobile-using-css3-and-js
+    #
+    scaleAtOrigin: (x, y, scale, duration, overflow = false) ->
         rect = @el.getBoundingClientRect()
+        parentWidth = @el.parentNode.offsetWidth
+        parentHeight = @el.parentNode.offsetHeight
+
+        # Find the cursor offset within the element.
         x -= rect.left
         y -= rect.top
-        xf = x * scale / @scale
-        yf = y * scale / @scale
-        dx = @x + x - xf
-        dy = @y + y - yf
 
-        dx = dy = 0 if scale is @minScale
+        # Find the final position of the coordinate after scaling.
+        finalX = x * scale / @scale
+        finalY = y * scale / @scale
 
-        @x = dx
-        @y = dy
+        # Find the difference between the initial and final position and add the difference to the current position.
+        deltaX = @x + x - finalX
+        deltaY = @y + y - finalY
+
+        # if overflow is false
+        #     if rect.width * scale < parentWidth
+        #         deltaX = 0
+        #     else
+        #         maxX = (parentWidth - rect.width) / 2
+        #         minX = maxX * -1
+
+        #         console.log minX, maxX
+
+        #         deltaX = Math.max minX, deltaX
+        #         deltaX = Math.min maxX, deltaX
+
+        #         console.log deltaX
+
+            # if rect.height * scale < parentHeight
+            #     deltaY = 0
+            # else
+            #     minY = -(parentHeight - rect.height) / 2
+            #     maxY = minY * -1
+
+            #     deltaY = Math.max minY, deltaY
+            #     deltaY = Math.min maxY, deltaY
+
+        @x = deltaX
+        @y = deltaY
         @prevScale = @scale
         @scale = scale
         @transitioning = true
 
-        @transform @el, @x, @y, @prevScale, @scale, duration, => @transitioning = false
+        @transform @el, @x, @y, @prevScale, @scale, duration, =>
+            @transitioning = false
+
+            return
 
         return
 
@@ -163,7 +199,8 @@ module.exports = class Zoom extends Events
             return
 
         resetTransform = ->
-            el.style.transform = "translate3d(0, 0, 0) scale3d(#{scale}, #{scale}, 1)"
+            if scale isnt 1
+                el.style.transform = "translate3d(0, 0, 0) scale3d(#{scale}, #{scale}, 1)"
 
             parentNode.style.overflow = 'auto'
             parentNode.scrollTop = -y
@@ -181,7 +218,10 @@ module.exports = class Zoom extends Events
             return
 
         transform = ->
-            el.style.transform = "translate3d(#{x}px, #{y}px, 0) scale3d(#{scale}, #{scale}, 1)"
+            if scale is 1
+                el.style.transform = ''
+            else
+                el.style.transform = "translate3d(#{x}px, #{y}px, 0) scale3d(#{scale}, #{scale}, 1)"
 
             return
 
@@ -195,7 +235,7 @@ module.exports = class Zoom extends Events
 
         if duration > 0
             el.addEventListener 'transitionend', transitionEnd, false
-            el.style.transition = "transform ease-in-out #{duration}ms"
+            el.style.transition = "all ease-in-out #{duration}ms"
 
             transform()
         else
