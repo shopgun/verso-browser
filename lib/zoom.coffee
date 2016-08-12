@@ -6,6 +6,7 @@ module.exports = class Zoom extends Events
         transitionDuration: 220
         minScale: 1
         maxScale: 2.5
+        easing: 'ease-in-out'
         scale: 1
 
     constructor: (@el, options = {}) ->
@@ -69,8 +70,6 @@ module.exports = class Zoom extends Events
         value
 
     toggleScale: (x, y) ->
-        rect = @el.getBoundingClientRect()
-
         if @scale is @minScale
             @scaleAtOrigin x, y, @maxScale, @transitionDuration
         else if @scale > @minScale
@@ -80,14 +79,16 @@ module.exports = class Zoom extends Events
 
     # Courtesy of https://cloudup.com/blog/how-we-made-zoom-on-mobile-using-css3-and-js
     #
-    scaleAtOrigin: (x, y, scale, duration, overflow = false) ->
+    scaleAtOrigin: (x, y, scale, duration) ->
         rect = @el.getBoundingClientRect()
-        parentWidth = @el.parentNode.offsetWidth
-        parentHeight = @el.parentNode.offsetHeight
 
         # Find the cursor offset within the element.
         x -= rect.left
         y -= rect.top
+
+        # Find the relative position.
+        x = x / rect.width * 100
+        y = y / rect.height * 100
 
         # Find the final position of the coordinate after scaling.
         finalX = x * scale / @scale
@@ -97,36 +98,24 @@ module.exports = class Zoom extends Events
         deltaX = @x + x - finalX
         deltaY = @y + y - finalY
 
-        # if overflow is false
-        #     if rect.width * scale < parentWidth
-        #         deltaX = 0
-        #     else
-        #         maxX = (parentWidth - rect.width) / 2
-        #         minX = maxX * -1
-
-        #         console.log minX, maxX
-
-        #         deltaX = Math.max minX, deltaX
-        #         deltaX = Math.min maxX, deltaX
-
-        #         console.log deltaX
-
-            # if rect.height * scale < parentHeight
-            #     deltaY = 0
-            # else
-            #     minY = -(parentHeight - rect.height) / 2
-            #     maxY = minY * -1
-
-            #     deltaY = Math.max minY, deltaY
-            #     deltaY = Math.min maxY, deltaY
-
         @x = deltaX
         @y = deltaY
         @prevScale = @scale
         @scale = scale
         @transitioning = true
 
-        @transform @el, @x, @y, @prevScale, @scale, duration, =>
+        @x -= 50
+        @y -= 50
+
+        @transform
+            el: @el
+            x: @x
+            y: @y
+            prevScale: @prevScale
+            scale: @scale
+            duration: duration
+            easing: @easing
+        , =>
             @transitioning = false
 
             return
@@ -185,57 +174,50 @@ module.exports = class Zoom extends Events
 
         return
 
-    transform: (el, x, y, prevScale, scale, duration, callback) ->
-        parentNode = el.parentNode
+    transform: (options, callback) ->
+        parentNode = options.el.parentNode
         scrollTop = -parentNode.scrollTop
         scrollLeft = -parentNode.scrollLeft
+        x = options.x
+        y = options.y
+        scale = options.scale
 
         resetScroll = ->
-            el.style.transform = "translate3d(#{scrollLeft}px, #{scrollTop}px, 0) scale3d(#{prevScale}, #{prevScale}, 1)"
+            options.el.style.transform = "translate3d(#{scrollLeft}px, #{scrollTop}px, 0) scale3d(#{options.prevScale}, #{options.prevScale}, 1)"
 
             parentNode.scrollTop = 0
             parentNode.scrollLeft = 0
 
             return
 
-        resetTransform = ->
-            if scale isnt 1
-                el.style.transform = "translate3d(0, 0, 0) scale3d(#{scale}, #{scale}, 1)"
-
-            parentNode.style.overflow = 'auto'
-            parentNode.scrollTop = -y
-            parentNode.scrollLeft = -x
-
-            return
-
         transitionEnd = ->
-            el.removeEventListener 'transitionend', transitionEnd
-            el.style.transition = 'none'
+            options.el.removeEventListener 'transitionend', transitionEnd
+            options.el.style.transition = 'none'
 
-            resetTransform()
+            if scale isnt 1
+                options.el.style.transform = "translate3d(-50%, -50%, 0) scale3d(#{scale}, #{scale}, 1)"
+
+                parentNode.style.overflow = 'scroll'
+                parentNode.scrollTop = y / 100 * parentNode.offsetHeight
+                parentNode.scrollLeft = x / 100 * parentNode.offsetWidth
+
             callback()
 
             return
 
         transform = ->
             if scale is 1
-                el.style.transform = ''
+                options.el.style.transform = ''
             else
-                el.style.transform = "translate3d(#{x}px, #{y}px, 0) scale3d(#{scale}, #{scale}, 1)"
+                options.el.style.transform = "translate3d(#{x}%, #{y}%, 0) scale3d(#{scale}, #{scale}, 1)"
 
             return
 
         resetScroll() if scrollLeft isnt 0 or scrollTop isnt 0
 
-        # TODO: get min scale somehow.
-        if scale > 1
-            parentNode.style.overflow = 'scroll'
-        else
-            parentNode.style.overflow = 'hidden'
-
-        if duration > 0
-            el.addEventListener 'transitionend', transitionEnd, false
-            el.style.transition = "all ease-in-out #{duration}ms"
+        if options.duration > 0
+            options.el.addEventListener 'transitionend', transitionEnd, false
+            options.el.style.transition = "transform #{options.easing} #{options.duration}ms"
 
             transform()
         else

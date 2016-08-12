@@ -715,12 +715,13 @@ module.exports = Zoom = (function(superClass) {
     transitionDuration: 220,
     minScale: 1,
     maxScale: 2.5,
+    easing: 'ease-in-out',
     scale: 1
   };
 
-  function Zoom(el1, options) {
+  function Zoom(el, options) {
     var key, ref, ref1, value;
-    this.el = el1;
+    this.el = el;
     if (options == null) {
       options = {};
     }
@@ -783,8 +784,6 @@ module.exports = Zoom = (function(superClass) {
   };
 
   Zoom.prototype.toggleScale = function(x, y) {
-    var rect;
-    rect = this.el.getBoundingClientRect();
     if (this.scale === this.minScale) {
       this.scaleAtOrigin(x, y, this.maxScale, this.transitionDuration);
     } else if (this.scale > this.minScale) {
@@ -792,16 +791,13 @@ module.exports = Zoom = (function(superClass) {
     }
   };
 
-  Zoom.prototype.scaleAtOrigin = function(x, y, scale, duration, overflow) {
-    var deltaX, deltaY, finalX, finalY, parentHeight, parentWidth, rect;
-    if (overflow == null) {
-      overflow = false;
-    }
+  Zoom.prototype.scaleAtOrigin = function(x, y, scale, duration) {
+    var deltaX, deltaY, finalX, finalY, rect;
     rect = this.el.getBoundingClientRect();
-    parentWidth = this.el.parentNode.offsetWidth;
-    parentHeight = this.el.parentNode.offsetHeight;
     x -= rect.left;
     y -= rect.top;
+    x = x / rect.width * 100;
+    y = y / rect.height * 100;
     finalX = x * scale / this.scale;
     finalY = y * scale / this.scale;
     deltaX = this.x + x - finalX;
@@ -811,7 +807,17 @@ module.exports = Zoom = (function(superClass) {
     this.prevScale = this.scale;
     this.scale = scale;
     this.transitioning = true;
-    this.transform(this.el, this.x, this.y, this.prevScale, this.scale, duration, (function(_this) {
+    this.x -= 50;
+    this.y -= 50;
+    this.transform({
+      el: this.el,
+      x: this.x,
+      y: this.y,
+      prevScale: this.prevScale,
+      scale: this.scale,
+      duration: duration,
+      easing: this.easing
+    }, (function(_this) {
       return function() {
         _this.transitioning = false;
       };
@@ -865,48 +871,43 @@ module.exports = Zoom = (function(superClass) {
     }
   };
 
-  Zoom.prototype.transform = function(el, x, y, prevScale, scale, duration, callback) {
-    var parentNode, resetScroll, resetTransform, scrollLeft, scrollTop, transform, transitionEnd;
-    parentNode = el.parentNode;
+  Zoom.prototype.transform = function(options, callback) {
+    var parentNode, resetScroll, scale, scrollLeft, scrollTop, transform, transitionEnd, x, y;
+    parentNode = options.el.parentNode;
     scrollTop = -parentNode.scrollTop;
     scrollLeft = -parentNode.scrollLeft;
+    x = options.x;
+    y = options.y;
+    scale = options.scale;
     resetScroll = function() {
-      el.style.transform = "translate3d(" + scrollLeft + "px, " + scrollTop + "px, 0) scale3d(" + prevScale + ", " + prevScale + ", 1)";
+      options.el.style.transform = "translate3d(" + scrollLeft + "px, " + scrollTop + "px, 0) scale3d(" + options.prevScale + ", " + options.prevScale + ", 1)";
       parentNode.scrollTop = 0;
       parentNode.scrollLeft = 0;
     };
-    resetTransform = function() {
-      if (scale !== 1) {
-        el.style.transform = "translate3d(0, 0, 0) scale3d(" + scale + ", " + scale + ", 1)";
-      }
-      parentNode.style.overflow = 'auto';
-      parentNode.scrollTop = -y;
-      parentNode.scrollLeft = -x;
-    };
     transitionEnd = function() {
-      el.removeEventListener('transitionend', transitionEnd);
-      el.style.transition = 'none';
-      resetTransform();
+      options.el.removeEventListener('transitionend', transitionEnd);
+      options.el.style.transition = 'none';
+      if (scale !== 1) {
+        options.el.style.transform = "translate3d(-50%, -50%, 0) scale3d(" + scale + ", " + scale + ", 1)";
+        parentNode.style.overflow = 'scroll';
+        parentNode.scrollTop = y / 100 * parentNode.offsetHeight;
+        parentNode.scrollLeft = x / 100 * parentNode.offsetWidth;
+      }
       callback();
     };
     transform = function() {
       if (scale === 1) {
-        el.style.transform = '';
+        options.el.style.transform = '';
       } else {
-        el.style.transform = "translate3d(" + x + "px, " + y + "px, 0) scale3d(" + scale + ", " + scale + ", 1)";
+        options.el.style.transform = "translate3d(" + x + "%, " + y + "%, 0) scale3d(" + scale + ", " + scale + ", 1)";
       }
     };
     if (scrollLeft !== 0 || scrollTop !== 0) {
       resetScroll();
     }
-    if (scale > 1) {
-      parentNode.style.overflow = 'scroll';
-    } else {
-      parentNode.style.overflow = 'hidden';
-    }
-    if (duration > 0) {
-      el.addEventListener('transitionend', transitionEnd, false);
-      el.style.transition = "all ease-in-out " + duration + "ms";
+    if (options.duration > 0) {
+      options.el.addEventListener('transitionend', transitionEnd, false);
+      options.el.style.transition = "transform " + options.easing + " " + options.duration + "ms";
       transform();
     } else {
       transform();
