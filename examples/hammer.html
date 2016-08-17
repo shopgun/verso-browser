@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'>
+        <title>Hammer</title>
+        <style>
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            #hammer {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: steelblue;
+            }
+        </style>
+    </head>
+    <body>
+        <div id='hammer'></div>
+        <script src='../node_modules/hammerjs/hammer.js'></script>
+        <script>
+            var el = document.getElementById('hammer');
+            var hammer = new Hammer.Manager(el);
+
+            hammer.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
+
+            el.addEventListener('touchend', function (e) {
+                e.preventDefault();
+            });
+
+            hammer.on('doubletap', function (ev) {
+                el.textContent += ev.type + '(' + ev.center.x + ') ';
+            });
+        </script>
+    </body>
+</html>

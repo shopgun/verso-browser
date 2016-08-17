@@ -1,6 +1,6 @@
 module.exports = (el, x = 0, y = 0, scale = 1, easing = 'ease', duration = 0, callback) ->
     animate = ->
-        el.style.transform = "translate3d(#{x}%, #{y}%, 0) scale3d(#{scale}, #{scale}, 1)"
+        el.style.transform = "translate3d(#{x}, #{y}, 0) scale3d(#{scale}, #{scale}, 1)"
 
         return
 

@@ -16,21 +16,22 @@ module.exports = class Zoom extends Events
         for key, value of @defaults
             @[key] = options[key] ? value
 
-        @x = @y = 0
+        @x = 0
+        @y = 0
+        @initialScrollLeft = 0
+        @initialScrollTop = 0
         @easing = @getOption 'easing', 'string', @easing
         @minScale = @getOption 'minzoomscale', 'number', @minScale
         @maxScale = @getOption 'maxzoomscale', 'number', @maxScale
         @scale = @getOption 'zoomscale', 'number', @scale
         @startScale = @scale
         @transforming = false
-        @hammer = propagating new Hammer.Manager(@el)
+        @hammer = propagating new Hammer.Manager(@el, touchAction: 'auto')
 
         @hammer.add new Hammer.Pinch()
         @hammer.add new Hammer.Pan()
         @hammer.add new Hammer.Tap
             event: 'doubletap'
-            interval: 200
-            threshold: 10
             taps: 2
         @hammer.on 'doubletap', @doubleTap.bind @
         @hammer.on 'panstart', @panStart.bind @
@@ -41,7 +42,12 @@ module.exports = class Zoom extends Events
         @hammer.on 'pinchend', @pinchEnd.bind @
 
         @contextMenu = @contextMenu.bind @
+        @touchEnd = @touchEnd.bind @
+        @resize = @resize.bind @
+
         @el.addEventListener 'contextmenu', @contextMenu, false
+        @el.addEventListener 'touchend', @touchEnd, false
+        window.addEventListener 'resize', @resize, false
 
         return
 
@@ -52,6 +58,8 @@ module.exports = class Zoom extends Events
         @reset()
 
         @el.removeEventListener 'contextmenu', @contextMenu
+        @el.removeEventListener 'touchend', @touchEnd
+        window.removeEventListener 'resize', @resize
 
         return
 
@@ -73,14 +81,12 @@ module.exports = class Zoom extends Events
         if @scale is @minScale
             @scaleAtOrigin x, y, @maxScale
             @scaleAtEdges()
-            @transform @transitionDuration, =>
-                @enableScroll x, y
-
-                return
+            @transform @transitionDuration, @enableScroll.bind(@)
         else if @scale > @minScale
-            @disableScroll x, y
+            @disableScroll()
 
-            @x = @y = 0
+            @x = 0
+            @y = 0
             @scale = @minScale
 
             @transform @transitionDuration
@@ -94,6 +100,18 @@ module.exports = class Zoom extends Events
         @toggleScale e.pageX, e.pageY
 
         return
+
+    touchEnd: (e) ->
+        e.preventDefault()
+
+        return
+
+    resize: ->
+        @x = 0
+        @y = 0
+        @scale = @minScale
+
+        @transform()
 
     doubleTap: (e) ->
         @toggleScale e.center.x, e.center.y
@@ -117,33 +135,35 @@ module.exports = class Zoom extends Events
 
     pinchStart: (e) ->
         e.stopPropagation()
+        e.preventDefault()
 
         @startScale = @scale
 
         @disableScroll()
-        @scaleAtOrigin e.center.x, e.center.y, @startScale * e.scale, 0
+        @scaleAtOrigin e.center.x, e.center.y, @startScale * e.scale
         @transform()
 
         return
 
     pinchMove: (e) ->
         e.stopPropagation()
+        e.preventDefault()
 
-        @scaleAtOrigin e.center.x, e.center.y, @startScale * e.scale, 0
+        @scaleAtOrigin e.center.x, e.center.y, @startScale * e.scale
         @transform()
 
         return
 
     pinchEnd: (e) ->
         e.stopPropagation()
+        e.preventDefault()
 
         x = @x
         y = @y
         scale = @scale
 
         if @scale > @maxScale
-            @scale = @maxScale
-
+            @scaleAtOrigin e.center.x, e.center.y, @maxScale
             @scaleAtEdges()
         else if @scale <= @minScale
             @x = 0
@@ -158,7 +178,7 @@ module.exports = class Zoom extends Events
 
         return
 
-    disableScroll: (x, y) ->
+    disableScroll: ->
         parentNode = @el.parentNode
         style = window.getComputedStyle @el
         childWidth = +style.width.replace 'px', ''
@@ -167,13 +187,16 @@ module.exports = class Zoom extends Events
         scrollTop = parentNode.scrollTop
 
         @x -= (scrollLeft - @initialScrollLeft) / childWidth * 100
-        @y += (@initialScrollTop - scrollTop) / childHeight * 100
+        @y -= (scrollTop - @initialScrollTop) / childHeight * 100
 
         @transform()
 
         parentNode.scrollTop = 0
         parentNode.scrollLeft = 0
         parentNode.dataset.zoomscroll = false
+
+        @initialScrollLeft = 0
+        @initialScrollTop = 0
 
         return
 
@@ -255,8 +278,8 @@ module.exports = class Zoom extends Events
         y -= rect.top
 
         # Find the relative position.
-        x = x / rect.width * 100
-        y = y / rect.height * 100
+        x = x / (rect.width / @scale) * 100
+        y = y / (rect.height / @scale) * 100
 
         # Find the final position of the coordinate after scaling.
         finalX = x * scale / @scale
@@ -275,7 +298,7 @@ module.exports = class Zoom extends Events
     transform: (duration, callback) ->
         @transforming = true
 
-        transform @el, @x, @y, @scale, @easing, duration, =>
+        transform @el, "#{@x}%", "#{@y}%", @scale, @easing, duration, =>
             @transforming = false
 
             callback() if typeof callback is 'function'

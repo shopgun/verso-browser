@@ -26,7 +26,7 @@ module.exports = class Verso extends Events
             pageIndex: null
         @pinch =
             active: false
-        @hammer = propagating new Hammer.Manager(@el.querySelector('.verso__pages'))
+        @hammer = propagating new Hammer.Manager(@el.querySelector('.verso__pages'), touchAction: 'auto')
 
         @hammer.add new Hammer.Pan
             direction: do =>
