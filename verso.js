@@ -160,6 +160,7 @@ module.exports = Page = (function(superClass) {
     if (this.scrollable === true) {
       this.el.addEventListener('scroll', this.scroll.bind(this), false);
     }
+    this.el.addEventListener('mousewheel', this.mousewheel.bind(this), false);
     this.on('statechange', this.stateChange.bind(this), false);
     return;
   }
@@ -172,6 +173,12 @@ module.exports = Page = (function(superClass) {
         return _this.scrolling = false;
       };
     })(this), 200);
+  };
+
+  Page.prototype.mousewheel = function(e) {
+    if (e.deltaX === 0 && e.deltaY === 0) {
+      e.preventDefault();
+    }
   };
 
   Page.prototype.updateTransform = function(position) {
@@ -234,7 +241,7 @@ module.exports = Page = (function(superClass) {
 })(Events);
 
 
-},{"./events":2,"./zoom":12}],5:[function(_dereq_,module,exports){
+},{"./events":2,"./zoom":13}],5:[function(_dereq_,module,exports){
 var Animation, Pages;
 
 Animation = _dereq_('./animation');
@@ -411,7 +418,7 @@ module.exports = Status = (function() {
 
 
 },{}],8:[function(_dereq_,module,exports){
-module.exports=".verso {\n  position: relative;\n  height: 100%;\n  outline: 0;\n  overflow: hidden;\n  visibility: hidden;\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n.verso[data-shown=\"true\"] {\n  visibility: visible;\n}\n.verso *,\n.verso *:before,\n.verso *:after {\n  -webkit-box-sizing: inherit;\n  -moz-box-sizing: inherit;\n  box-sizing: inherit;\n}\n.verso__pages {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  overflow: hidden;\n}\n.verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  z-index: 2;\n  width: 100%;\n  height: 100%;\n  visibility: hidden;\n  overflow: hidden;\n}\n.verso__page[data-scroll=\"true\"][data-state=\"current\"] {\n  overflow: auto;\n  -webkit-overflow-scrolling: touch;\n  overflow-scrolling: touch;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 200ms;\n  -moz-transition: opacity ease 200ms;\n  -o-transition: opacity ease 200ms;\n  -ms-transition: opacity ease 200ms;\n  transition: opacity ease 200ms;\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n.verso__navigation[data-active=\"true\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width 200ms ease-in-out;\n  -moz-transition: width 200ms ease-in-out;\n  -o-transition: width 200ms ease-in-out;\n  -ms-transition: width 200ms ease-in-out;\n  transition: width 200ms ease-in-out;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n.verso__zoom {\n  -webkit-transform-origin: 0 0;\n  -moz-transform-origin: 0 0;\n  -o-transform-origin: 0 0;\n  -ms-transform-origin: 0 0;\n  transform-origin: 0 0;\n}\n"
+module.exports=".verso {\n  position: relative;\n  height: 100%;\n  outline: 0;\n  overflow: hidden;\n  visibility: hidden;\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n.verso[data-shown=\"true\"] {\n  visibility: visible;\n}\n.verso *,\n.verso *:before,\n.verso *:after {\n  -webkit-box-sizing: inherit;\n  -moz-box-sizing: inherit;\n  box-sizing: inherit;\n}\n.verso__pages {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  overflow: hidden;\n}\n.verso__page {\n  position: absolute;\n  top: 0;\n  left: 0;\n  z-index: 2;\n  width: 100%;\n  height: 100%;\n  visibility: hidden;\n  overflow: hidden;\n}\n.verso__page[data-scroll=\"true\"][data-state=\"current\"],\n.verso__page[data-zoomscroll=\"true\"] {\n  overflow: auto;\n  -webkit-overflow-scrolling: touch;\n  overflow-scrolling: touch;\n}\n.verso__navigation {\n  position: absolute;\n  top: 50%;\n  z-index: 3;\n  margin-top: -25px;\n  width: 25px;\n  height: 50px;\n  line-height: 50px;\n  font-size: 22px;\n  font-weight: normal;\n  text-align: center;\n  overflow: hidden;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  cursor: pointer;\n  -webkit-transition: opacity ease 200ms;\n  -moz-transition: opacity ease 200ms;\n  -o-transition: opacity ease 200ms;\n  -ms-transition: opacity ease 200ms;\n  transition: opacity ease 200ms;\n  opacity: 0;\n  -ms-filter: \"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\";\n  filter: alpha(opacity=0);\n}\n.verso__navigation:hover,\n.verso__navigation:focus {\n  background-color: rgba(0,0,0,0.6);\n}\n.verso__navigation:active {\n  background-color: rgba(0,0,0,0.8);\n}\n.verso__navigation[data-direction=\"previous\"] {\n  left: 0;\n}\n.verso__navigation[data-direction=\"next\"] {\n  right: 0;\n}\n.verso__navigation[data-active=\"true\"] {\n  opacity: 1;\n  -ms-filter: none;\n  filter: none;\n}\n@media (pointer: coarse), (max-width: 1000px) {\n  .verso__navigation {\n    display: none;\n  }\n}\n.verso__progress {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 3;\n  height: 4px;\n}\n.verso-progress__inner {\n  position: relative;\n  width: 0%;\n  height: 4px;\n  background-color: rgba(0,0,0,0.3);\n  -webkit-transition: width 200ms ease-in-out;\n  -moz-transition: width 200ms ease-in-out;\n  -o-transition: width 200ms ease-in-out;\n  -ms-transition: width 200ms ease-in-out;\n  transition: width 200ms ease-in-out;\n}\n.verso__status {\n  position: absolute;\n  left: 50%;\n  bottom: 12px;\n  width: 90px;\n  margin-left: -45px;\n  z-index: 3;\n  background-color: rgba(0,0,0,0.3);\n  color: #fff;\n  text-align: center;\n  padding: 4px 0;\n  font-size: 14px;\n  font-family: inherit;\n  font-weight: 600;\n  -webkit-border-radius: 5px;\n  border-radius: 5px;\n}\n.verso__zoom {\n  -webkit-transform-origin: 0 0;\n  -moz-transform-origin: 0 0;\n  -o-transform-origin: 0 0;\n  -ms-transform-origin: 0 0;\n  transform-origin: 0 0;\n}\n"
 },{}],9:[function(_dereq_,module,exports){
 var css, insertCss;
 
@@ -422,7 +429,44 @@ css = _dereq_('./styl/index.styl');
 insertCss(css);
 
 
-},{"./styl/index.styl":8,"insert-css":14}],10:[function(_dereq_,module,exports){
+},{"./styl/index.styl":8,"insert-css":15}],10:[function(_dereq_,module,exports){
+module.exports = function(el, x, y, scale, easing, duration, callback) {
+  var animate, completed;
+  if (x == null) {
+    x = 0;
+  }
+  if (y == null) {
+    y = 0;
+  }
+  if (scale == null) {
+    scale = 1;
+  }
+  if (easing == null) {
+    easing = 'ease';
+  }
+  if (duration == null) {
+    duration = 0;
+  }
+  animate = function() {
+    el.style.transform = "translate3d(" + x + "%, " + y + "%, 0) scale3d(" + scale + ", " + scale + ", 1)";
+  };
+  completed = function() {
+    el.removeEventListener('transitionend', completed);
+    el.style.transition = 'none';
+    callback();
+  };
+  if (duration > 0) {
+    el.addEventListener('transitionend', completed, false);
+    el.style.transition = "transform " + easing + " " + duration + "ms";
+    animate();
+  } else {
+    animate();
+    callback();
+  }
+};
+
+
+},{}],11:[function(_dereq_,module,exports){
 var Navigation, Progress, Status, View;
 
 View = _dereq_('./view');
@@ -441,7 +485,7 @@ module.exports = {
 };
 
 
-},{"./navigation":3,"./progress":6,"./status":7,"./view":11}],11:[function(_dereq_,module,exports){
+},{"./navigation":3,"./progress":6,"./status":7,"./view":12}],12:[function(_dereq_,module,exports){
 var Events, Hammer, Page, Pages, Verso, propagating,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty,
@@ -699,14 +743,16 @@ module.exports = Verso = (function(superClass) {
 })(Events);
 
 
-},{"./events":2,"./page":4,"./pages":5,"hammerjs":13,"propagating-hammerjs":15}],12:[function(_dereq_,module,exports){
-var Events, Zoom, propagating,
+},{"./events":2,"./page":4,"./pages":5,"hammerjs":14,"propagating-hammerjs":16}],13:[function(_dereq_,module,exports){
+var Events, Zoom, propagating, transform,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
 propagating = _dereq_('propagating-hammerjs');
 
 Events = _dereq_('./events');
+
+transform = _dereq_('./transform');
 
 module.exports = Zoom = (function(superClass) {
   extend(Zoom, superClass);
@@ -731,14 +777,13 @@ module.exports = Zoom = (function(superClass) {
       value = ref[key];
       this[key] = (ref1 = options[key]) != null ? ref1 : value;
     }
-    this.x = 0;
-    this.y = 0;
-    this.minScale = this.getDatasetValue('minzoomscale', 'number', this.minScale);
-    this.maxScale = this.getDatasetValue('maxzoomscale', 'number', this.maxScale);
-    this.scale = this.getDatasetValue('zoomscale', 'number', this.scale);
-    this.prevScale = this.scale;
-    this.pinchScale = this.scale;
-    this.transitioning = false;
+    this.x = this.y = 0;
+    this.easing = this.getOption('easing', 'string', this.easing);
+    this.minScale = this.getOption('minzoomscale', 'number', this.minScale);
+    this.maxScale = this.getOption('maxzoomscale', 'number', this.maxScale);
+    this.scale = this.getOption('zoomscale', 'number', this.scale);
+    this.startScale = this.scale;
+    this.transforming = false;
     this.hammer = propagating(new Hammer.Manager(this.el));
     this.hammer.add(new Hammer.Pinch());
     this.hammer.add(new Hammer.Pan());
@@ -769,7 +814,7 @@ module.exports = Zoom = (function(superClass) {
 
   Zoom.prototype.reset = function() {};
 
-  Zoom.prototype.getDatasetValue = function(key, type, defaultValue) {
+  Zoom.prototype.getOption = function(key, type, defaultValue) {
     var value;
     value = this.el.dataset[key];
     if (type === 'number') {
@@ -785,43 +830,19 @@ module.exports = Zoom = (function(superClass) {
 
   Zoom.prototype.toggleScale = function(x, y) {
     if (this.scale === this.minScale) {
-      this.scaleAtOrigin(x, y, this.maxScale, this.transitionDuration);
+      this.scaleAtOrigin(x, y, this.maxScale);
+      this.scaleAtEdges();
+      this.transform(this.transitionDuration, (function(_this) {
+        return function() {
+          _this.enableScroll(x, y);
+        };
+      })(this));
     } else if (this.scale > this.minScale) {
-      this.scaleAtOrigin(x, y, this.minScale, this.transitionDuration);
+      this.disableScroll(x, y);
+      this.x = this.y = 0;
+      this.scale = this.minScale;
+      this.transform(this.transitionDuration);
     }
-  };
-
-  Zoom.prototype.scaleAtOrigin = function(x, y, scale, duration) {
-    var deltaX, deltaY, finalX, finalY, rect;
-    rect = this.el.getBoundingClientRect();
-    x -= rect.left;
-    y -= rect.top;
-    x = x / rect.width * 100;
-    y = y / rect.height * 100;
-    finalX = x * scale / this.scale;
-    finalY = y * scale / this.scale;
-    deltaX = this.x + x - finalX;
-    deltaY = this.y + y - finalY;
-    this.x = deltaX;
-    this.y = deltaY;
-    this.prevScale = this.scale;
-    this.scale = scale;
-    this.transitioning = true;
-    this.x -= 50;
-    this.y -= 50;
-    this.transform({
-      el: this.el,
-      x: this.x,
-      y: this.y,
-      prevScale: this.prevScale,
-      scale: this.scale,
-      duration: duration,
-      easing: this.easing
-    }, (function(_this) {
-      return function() {
-        _this.transitioning = false;
-      };
-    })(this));
   };
 
   Zoom.prototype.contextMenu = function(e) {
@@ -854,65 +875,140 @@ module.exports = Zoom = (function(superClass) {
 
   Zoom.prototype.pinchStart = function(e) {
     e.stopPropagation();
-    this.pinchScale = this.scale;
+    this.startScale = this.scale;
+    this.disableScroll();
+    this.scaleAtOrigin(e.center.x, e.center.y, this.startScale * e.scale, 0);
+    this.transform();
   };
 
   Zoom.prototype.pinchMove = function(e) {
     e.stopPropagation();
-    this.scaleAtOrigin(e.center.x, e.center.y, this.pinchScale * e.scale, 0);
+    this.scaleAtOrigin(e.center.x, e.center.y, this.startScale * e.scale, 0);
+    this.transform();
   };
 
   Zoom.prototype.pinchEnd = function(e) {
+    var scale, x, y;
     e.stopPropagation();
+    x = this.x;
+    y = this.y;
+    scale = this.scale;
     if (this.scale > this.maxScale) {
-      this.scaleAtOrigin(e.center.x, e.center.y, this.maxScale, this.transitionDuration);
-    } else if (this.scale < this.minScale) {
-      this.scaleAtOrigin(e.center.x, e.center.y, this.minScale, this.transitionDuration);
+      this.scale = this.maxScale;
+      this.scaleAtEdges();
+    } else if (this.scale <= this.minScale) {
+      this.x = 0;
+      this.y = 0;
+      this.scale = this.minScale;
+    }
+    if (x !== this.x || y !== this.y || scale !== this.scale) {
+      this.transform(this.transitionDuration, (function(_this) {
+        return function() {
+          if (_this.scale > _this.minScale) {
+            _this.enableScroll();
+          }
+        };
+      })(this));
     }
   };
 
-  Zoom.prototype.transform = function(options, callback) {
-    var parentNode, resetScroll, scale, scrollLeft, scrollTop, transform, transitionEnd, x, y;
-    parentNode = options.el.parentNode;
-    scrollTop = -parentNode.scrollTop;
-    scrollLeft = -parentNode.scrollLeft;
-    x = options.x;
-    y = options.y;
-    scale = options.scale;
-    resetScroll = function() {
-      options.el.style.transform = "translate3d(" + scrollLeft + "px, " + scrollTop + "px, 0) scale3d(" + options.prevScale + ", " + options.prevScale + ", 1)";
-      parentNode.scrollTop = 0;
-      parentNode.scrollLeft = 0;
+  Zoom.prototype.disableScroll = function(x, y) {
+    var childHeight, childWidth, parentNode, scrollLeft, scrollTop, style;
+    parentNode = this.el.parentNode;
+    style = window.getComputedStyle(this.el);
+    childWidth = +style.width.replace('px', '');
+    childHeight = +style.height.replace('px', '');
+    scrollLeft = parentNode.scrollLeft;
+    scrollTop = parentNode.scrollTop;
+    this.x -= (scrollLeft - this.initialScrollLeft) / childWidth * 100;
+    this.y += (this.initialScrollTop - scrollTop) / childHeight * 100;
+    this.transform();
+    parentNode.scrollTop = 0;
+    parentNode.scrollLeft = 0;
+    parentNode.dataset.zoomscroll = false;
+  };
+
+  Zoom.prototype.enableScroll = function() {
+    var parentNode, plane, rect, scrollLeft, scrollTop;
+    rect = this.el.getBoundingClientRect();
+    parentNode = this.el.parentNode;
+    plane = this.getPlane();
+    scrollLeft = Math.abs(rect.left);
+    scrollTop = Math.abs(rect.top);
+    this.el.style.transform = "translate3d(" + plane.toX + "%, " + plane.toY + "%, 0) scale3d(" + this.scale + ", " + this.scale + ", 1)";
+    parentNode.dataset.zoomscroll = true;
+    parentNode.scrollLeft = scrollLeft;
+    parentNode.scrollTop = scrollTop;
+    this.initialScrollLeft = scrollLeft;
+    this.initialScrollTop = scrollTop;
+  };
+
+  Zoom.prototype.maxEdge = function(offset, width) {
+    return -offset * (100 / width);
+  };
+
+  Zoom.prototype.minEdge = function(offset, width, scale, outerWidth) {
+    return this.maxEdge(offset, width) - (width * scale - outerWidth) * (100 / width);
+  };
+
+  Zoom.prototype.getPlane = function() {
+    var childHeight, childWidth, offsetLeft, offsetTop, parentHeight, parentNode, parentWidth, plane, style;
+    plane = {
+      fromX: 0,
+      fromY: 0,
+      toX: 0,
+      toY: 0
     };
-    transitionEnd = function() {
-      options.el.removeEventListener('transitionend', transitionEnd);
-      options.el.style.transition = 'none';
-      if (scale !== 1) {
-        options.el.style.transform = "translate3d(-50%, -50%, 0) scale3d(" + scale + ", " + scale + ", 1)";
-        parentNode.style.overflow = 'scroll';
-        parentNode.scrollTop = y / 100 * parentNode.offsetHeight;
-        parentNode.scrollLeft = x / 100 * parentNode.offsetWidth;
-      }
-      callback();
-    };
-    transform = function() {
-      if (scale === 1) {
-        options.el.style.transform = '';
-      } else {
-        options.el.style.transform = "translate3d(" + x + "%, " + y + "%, 0) scale3d(" + scale + ", " + scale + ", 1)";
-      }
-    };
-    if (scrollLeft !== 0 || scrollTop !== 0) {
-      resetScroll();
-    }
-    if (options.duration > 0) {
-      options.el.addEventListener('transitionend', transitionEnd, false);
-      options.el.style.transition = "transform " + options.easing + " " + options.duration + "ms";
-      transform();
-    } else {
-      transform();
-      callback();
-    }
+    style = window.getComputedStyle(this.el);
+    parentNode = this.el.parentNode;
+    parentWidth = parentNode.offsetWidth;
+    parentHeight = parentNode.offsetHeight;
+    childWidth = +style.width.replace('px', '');
+    childHeight = +style.height.replace('px', '');
+    offsetTop = (parentHeight - childHeight) / 2;
+    offsetLeft = (parentWidth - childWidth) / 2;
+    plane.toY = this.maxEdge(offsetTop, childHeight);
+    plane.fromY = this.minEdge(offsetTop, childHeight, this.scale, parentHeight);
+    plane.toX = this.maxEdge(offsetLeft, childWidth);
+    plane.fromX = this.minEdge(offsetLeft, childWidth, this.scale, parentWidth);
+    return plane;
+  };
+
+  Zoom.prototype.scaleAtEdges = function() {
+    var plane;
+    plane = this.getPlane();
+    this.x = Math.min(plane.toX, Math.max(this.x, plane.fromX));
+    this.y = Math.min(plane.toY, Math.max(this.y, plane.fromY));
+    return this;
+  };
+
+  Zoom.prototype.scaleAtOrigin = function(x, y, scale) {
+    var deltaX, deltaY, finalX, finalY, rect;
+    rect = this.el.getBoundingClientRect();
+    x -= rect.left;
+    y -= rect.top;
+    x = x / rect.width * 100;
+    y = y / rect.height * 100;
+    finalX = x * scale / this.scale;
+    finalY = y * scale / this.scale;
+    deltaX = this.x + x - finalX;
+    deltaY = this.y + y - finalY;
+    this.x = deltaX;
+    this.y = deltaY;
+    this.scale = scale;
+    return this;
+  };
+
+  Zoom.prototype.transform = function(duration, callback) {
+    this.transforming = true;
+    transform(this.el, this.x, this.y, this.scale, this.easing, duration, (function(_this) {
+      return function() {
+        _this.transforming = false;
+        if (typeof callback === 'function') {
+          callback();
+        }
+      };
+    })(this));
   };
 
   return Zoom;
@@ -920,7 +1016,7 @@ module.exports = Zoom = (function(superClass) {
 })(Events);
 
 
-},{"./events":2,"propagating-hammerjs":15}],13:[function(_dereq_,module,exports){
+},{"./events":2,"./transform":10,"propagating-hammerjs":16}],14:[function(_dereq_,module,exports){
 /*! Hammer.JS - v2.0.7 - 2016-04-22
  * http://hammerjs.github.io/
  *
@@ -3565,7 +3661,7 @@ if (typeof define === 'function' && define.amd) {
 
 })(window, document, 'Hammer');
 
-},{}],14:[function(_dereq_,module,exports){
+},{}],15:[function(_dereq_,module,exports){
 var containers = []; // will store container HTMLElement references
 var styleElements = []; // will store {prepend: HTMLElement, append: HTMLElement}
 
@@ -3613,7 +3709,7 @@ function createStyleElement() {
     return styleElement;
 }
 
-},{}],15:[function(_dereq_,module,exports){
+},{}],16:[function(_dereq_,module,exports){
 'use strict';
 
 (function (factory) {
@@ -3846,5 +3942,5 @@ function createStyleElement() {
   };
 }));
 
-},{}]},{},[10,9])(10)
+},{}]},{},[11,9])(11)
 });

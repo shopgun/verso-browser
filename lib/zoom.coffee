@@ -1,5 +1,6 @@
 propagating = require 'propagating-hammerjs'
 Events = require './events'
+transform = require './transform'
 
 module.exports = class Zoom extends Events
     defaults:
@@ -15,14 +16,13 @@ module.exports = class Zoom extends Events
         for key, value of @defaults
             @[key] = options[key] ? value
 
-        @x = 0
-        @y = 0
-        @minScale = @getDatasetValue 'minzoomscale', 'number', @minScale
-        @maxScale = @getDatasetValue 'maxzoomscale', 'number', @maxScale
-        @scale = @getDatasetValue 'zoomscale', 'number', @scale
-        @prevScale = @scale
-        @pinchScale = @scale
-        @transitioning = false
+        @x = @y = 0
+        @easing = @getOption 'easing', 'string', @easing
+        @minScale = @getOption 'minzoomscale', 'number', @minScale
+        @maxScale = @getOption 'maxzoomscale', 'number', @maxScale
+        @scale = @getOption 'zoomscale', 'number', @scale
+        @startScale = @scale
+        @transforming = false
         @hammer = propagating new Hammer.Manager(@el)
 
         @hammer.add new Hammer.Pinch()
@@ -58,7 +58,7 @@ module.exports = class Zoom extends Events
     reset: ->
         return
 
-    getDatasetValue: (key, type, defaultValue) ->
+    getOption: (key, type, defaultValue) ->
         value = @el.dataset[key]
 
         if type is 'number'
@@ -71,54 +71,19 @@ module.exports = class Zoom extends Events
 
     toggleScale: (x, y) ->
         if @scale is @minScale
-            @scaleAtOrigin x, y, @maxScale, @transitionDuration
+            @scaleAtOrigin x, y, @maxScale
+            @scaleAtEdges()
+            @transform @transitionDuration, =>
+                @enableScroll x, y
+
+                return
         else if @scale > @minScale
-            @scaleAtOrigin x, y, @minScale, @transitionDuration
+            @disableScroll x, y
 
-        return
+            @x = @y = 0
+            @scale = @minScale
 
-    # Courtesy of https://cloudup.com/blog/how-we-made-zoom-on-mobile-using-css3-and-js
-    #
-    scaleAtOrigin: (x, y, scale, duration) ->
-        rect = @el.getBoundingClientRect()
-
-        # Find the cursor offset within the element.
-        x -= rect.left
-        y -= rect.top
-
-        # Find the relative position.
-        x = x / rect.width * 100
-        y = y / rect.height * 100
-
-        # Find the final position of the coordinate after scaling.
-        finalX = x * scale / @scale
-        finalY = y * scale / @scale
-
-        # Find the difference between the initial and final position and add the difference to the current position.
-        deltaX = @x + x - finalX
-        deltaY = @y + y - finalY
-
-        @x = deltaX
-        @y = deltaY
-        @prevScale = @scale
-        @scale = scale
-        @transitioning = true
-
-        @x -= 50
-        @y -= 50
-
-        @transform
-            el: @el
-            x: @x
-            y: @y
-            prevScale: @prevScale
-            scale: @scale
-            duration: duration
-            easing: @easing
-        , =>
-            @transitioning = false
-
-            return
+            @transform @transitionDuration
 
         return
 
@@ -153,75 +118,168 @@ module.exports = class Zoom extends Events
     pinchStart: (e) ->
         e.stopPropagation()
 
-        @pinchScale = @scale
+        @startScale = @scale
+
+        @disableScroll()
+        @scaleAtOrigin e.center.x, e.center.y, @startScale * e.scale, 0
+        @transform()
 
         return
 
     pinchMove: (e) ->
         e.stopPropagation()
 
-        @scaleAtOrigin e.center.x, e.center.y, @pinchScale * e.scale, 0
+        @scaleAtOrigin e.center.x, e.center.y, @startScale * e.scale, 0
+        @transform()
 
         return
 
     pinchEnd: (e) ->
         e.stopPropagation()
 
+        x = @x
+        y = @y
+        scale = @scale
+
         if @scale > @maxScale
-            @scaleAtOrigin e.center.x, e.center.y, @maxScale, @transitionDuration
-        else if @scale < @minScale
-            @scaleAtOrigin e.center.x, e.center.y, @minScale, @transitionDuration
+            @scale = @maxScale
+
+            @scaleAtEdges()
+        else if @scale <= @minScale
+            @x = 0
+            @y = 0
+            @scale = @minScale
+
+        if x isnt @x or y isnt @y or scale isnt @scale
+            @transform @transitionDuration, =>
+                @enableScroll() if @scale > @minScale
+
+                return
 
         return
 
-    transform: (options, callback) ->
-        parentNode = options.el.parentNode
-        scrollTop = -parentNode.scrollTop
-        scrollLeft = -parentNode.scrollLeft
-        x = options.x
-        y = options.y
-        scale = options.scale
+    disableScroll: (x, y) ->
+        parentNode = @el.parentNode
+        style = window.getComputedStyle @el
+        childWidth = +style.width.replace 'px', ''
+        childHeight = +style.height.replace 'px', ''
+        scrollLeft = parentNode.scrollLeft
+        scrollTop = parentNode.scrollTop
 
-        resetScroll = ->
-            options.el.style.transform = "translate3d(#{scrollLeft}px, #{scrollTop}px, 0) scale3d(#{options.prevScale}, #{options.prevScale}, 1)"
+        @x -= (scrollLeft - @initialScrollLeft) / childWidth * 100
+        @y += (@initialScrollTop - scrollTop) / childHeight * 100
 
-            parentNode.scrollTop = 0
-            parentNode.scrollLeft = 0
+        @transform()
+
+        parentNode.scrollTop = 0
+        parentNode.scrollLeft = 0
+        parentNode.dataset.zoomscroll = false
+
+        return
+
+    enableScroll: ->
+        rect = @el.getBoundingClientRect()
+        parentNode = @el.parentNode
+        plane = @getPlane()
+        scrollLeft = Math.abs rect.left
+        scrollTop = Math.abs rect.top
+
+        @el.style.transform = "translate3d(#{plane.toX}%, #{plane.toY}%, 0) scale3d(#{@scale}, #{@scale}, 1)"
+
+        parentNode.dataset.zoomscroll = true
+        parentNode.scrollLeft = scrollLeft
+        parentNode.scrollTop = scrollTop
+
+        @initialScrollLeft = scrollLeft
+        @initialScrollTop = scrollTop
+
+        return
+
+    maxEdge: (offset, width) ->
+        -offset * (100 / width)
+
+    minEdge: (offset, width, scale, outerWidth) ->
+        @maxEdge(offset, width) - (width * scale - outerWidth) * (100 / width)
+
+    # parent_width = 1000
+    # child_width = 500
+    # child_left = 250
+    # scale = 3
+    # transformed_child_width = 500 * 3 = 1500
+
+    # 100% transform equals 500px
+
+    # -50% (0px) => 500px overflow
+    # 500px equals 100% transform
+    # range -50% => -150%
+
+    # max_x = -child_left*(100/child_width) = -50%
+    # min_x = max_x - (transformed_child_width-parent_width)*(100/child_width)
+    getPlane: ->
+        plane =
+            fromX: 0
+            fromY: 0
+            toX: 0
+            toY: 0
+        style = window.getComputedStyle @el
+        parentNode = @el.parentNode
+        parentWidth = parentNode.offsetWidth
+        parentHeight = parentNode.offsetHeight
+        childWidth = +style.width.replace 'px', ''
+        childHeight = +style.height.replace 'px', ''
+        offsetTop = (parentHeight - childHeight) / 2
+        offsetLeft = (parentWidth - childWidth) / 2
+
+        plane.toY = @maxEdge offsetTop, childHeight
+        plane.fromY = @minEdge offsetTop, childHeight, @scale, parentHeight
+        plane.toX = @maxEdge offsetLeft, childWidth
+        plane.fromX = @minEdge offsetLeft, childWidth, @scale, parentWidth
+
+        plane
+
+    # Makes sure the coordinates don't exceed the plane.
+    #
+    scaleAtEdges: ->
+        plane = @getPlane()
+
+        @x = Math.min plane.toX, Math.max(@x, plane.fromX)
+        @y = Math.min plane.toY, Math.max(@y, plane.fromY)
+
+        @
+
+    scaleAtOrigin: (x, y, scale) ->
+        rect = @el.getBoundingClientRect()
+
+        # Find the cursor offset within the element.
+        x -= rect.left
+        y -= rect.top
+
+        # Find the relative position.
+        x = x / rect.width * 100
+        y = y / rect.height * 100
+
+        # Find the final position of the coordinate after scaling.
+        finalX = x * scale / @scale
+        finalY = y * scale / @scale
+
+        # Find the difference between the initial and final position and add the difference to the current position.
+        deltaX = @x + x - finalX
+        deltaY = @y + y - finalY
+
+        @x = deltaX
+        @y = deltaY
+        @scale = scale
+
+        @
+
+    transform: (duration, callback) ->
+        @transforming = true
+
+        transform @el, @x, @y, @scale, @easing, duration, =>
+            @transforming = false
+
+            callback() if typeof callback is 'function'
 
             return
-
-        transitionEnd = ->
-            options.el.removeEventListener 'transitionend', transitionEnd
-            options.el.style.transition = 'none'
-
-            if scale isnt 1
-                options.el.style.transform = "translate3d(-50%, -50%, 0) scale3d(#{scale}, #{scale}, 1)"
-
-                parentNode.style.overflow = 'scroll'
-                parentNode.scrollTop = y / 100 * parentNode.offsetHeight
-                parentNode.scrollLeft = x / 100 * parentNode.offsetWidth
-
-            callback()
-
-            return
-
-        transform = ->
-            if scale is 1
-                options.el.style.transform = ''
-            else
-                options.el.style.transform = "translate3d(#{x}%, #{y}%, 0) scale3d(#{scale}, #{scale}, 1)"
-
-            return
-
-        resetScroll() if scrollLeft isnt 0 or scrollTop isnt 0
-
-        if options.duration > 0
-            options.el.addEventListener 'transitionend', transitionEnd, false
-            options.el.style.transition = "transform #{options.easing} #{options.duration}ms"
-
-            transform()
-        else
-            transform()
-            callback()
 
         return

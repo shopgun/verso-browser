@@ -14,6 +14,7 @@ module.exports = class Page extends Events
 
         @el.setAttribute 'data-versoindex', @index
         @el.addEventListener 'scroll', @scroll.bind(@), false if @scrollable is true
+        @el.addEventListener 'mousewheel', @mousewheel.bind(@), false
 
         @on 'statechange', @stateChange.bind(@), false
 
@@ -33,6 +34,11 @@ module.exports = class Page extends Events
         @scrollTimeout = setTimeout =>
             @scrolling = false
         , 200
+
+        return
+
+    mousewheel: (e) ->
+        e.preventDefault() if e.deltaX is 0 and e.deltaY is 0
 
         return
 
