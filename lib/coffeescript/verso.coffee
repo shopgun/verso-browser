@@ -8,9 +8,10 @@ class Verso
         @swipeVelocity = @options.swipeVelocity ? 0.3
         @swipeThreshold = @options.swipeThreshold ? 10
         @navigationDuration = @options.navigationDuration ? 200
+        @navigationPanDuration = @options.navigationPanDuration ? 200
 
         @position = -1
-        @transform = x: 0, scale: 1
+        @transform = left: 0, top: 0, scale: 1
 
         @scrollerEl = @el.querySelector '.verso__scroller'
         @pageSpreadEls = @el.querySelectorAll '.verso__page-spread'
@@ -22,16 +23,22 @@ class Verso
             enable: false
 
         @hammer.add new Hammer.Pan direction: Hammer.DIRECTION_HORIZONTAL
+        @hammer.add new Hammer.Tap event: 'doubletap', taps: 2
+        @hammer.add new Hammer.Tap event: 'singletap'
+        @hammer.get('doubletap').recognizeWith 'singletap'
+        @hammer.get('singletap').requireFailure 'doubletap'
         @hammer.on 'panstart', @panStart.bind @
         @hammer.on 'panmove', @panMove.bind @
         @hammer.on 'panend', @panEnd.bind @
+        @hammer.on 'singletap', @singleTap.bind @
+        @hammer.on 'doubletap', @doubleTap.bind @
 
         return
 
     start: ->
         @hammer.set enable: true
 
-        @navigateTo @getPageSpreadPositionFromPageId(@options.pageId) ? 0, transition: false
+        @navigateTo @getPageSpreadPositionFromPageId(@options.pageId) ? 0, duration: 0
 
         return
 
@@ -53,24 +60,18 @@ class Verso
         activePageSpread = @getPageSpreadFromPosition position
         carousel = @getCarouselFromPageSpread activePageSpread
         velocity = options.velocity ? 1
-        duration = if options.transition is false then 0 else @navigationDuration
+        duration = options.duration ? @navigationDuration
         duration = duration / Math.abs(velocity)
-
-        @trigger 'beforeNavigation', currentPosition: @position, newPosition: position
 
         carousel.visible.forEach (pageSpread) -> pageSpread.position().setVisibility 'visible'
 
-        if position is @getPageSpreadCount() - 1
-            @transform.x = (100 - activePageSpread.getWidth()) - activePageSpread.getLeft()
-        else if position > 0
-            @transform.x = (100 - activePageSpread.getWidth()) / 2 - activePageSpread.getLeft()
-        else
-            @transform.x = 0
-
+        @transform.left = @getLeftTransformFromPageSpread position, activePageSpread
         @position = position
 
+        @trigger 'beforeNavigation', currentPosition: currentPosition, newPosition: position
+
         @animation.animate
-            x: "#{@transform.x}%"
+            x: "#{@transform.left}%"
             duration: duration
         , =>
             activePageSpread = @getPageSpreadFromPosition @position
@@ -83,6 +84,16 @@ class Verso
             return
 
         return
+
+    getLeftTransformFromPageSpread: (position, pageSpread) ->
+        left = 0
+
+        if position is @getPageSpreadCount() - 1
+            left = (100 - pageSpread.getWidth()) - pageSpread.getLeft()
+        else if position > 0
+            left = (100 - pageSpread.getWidth()) / 2 - pageSpread.getLeft()
+
+        left
 
     getCarouselFromPageSpread: (pageSpreadSubject) ->
         carousel =
@@ -162,7 +173,7 @@ class Verso
         e.preventDefault()
 
         totalWidth = @scrollerEl.offsetWidth
-        deltaX = @transform.x + e.deltaX / totalWidth * 100
+        deltaX = @transform.left + e.deltaX / totalWidth * 100
 
         @animation.animate x: "#{deltaX}%", easing: 'linear'
 
@@ -172,16 +183,59 @@ class Verso
         e.preventDefault()
 
         position = @position
+        velocity = e.overallVelocityX
 
-        if Math.abs(e.overallVelocityX) >= @swipeVelocity
+        if Math.abs(velocity) >= @swipeVelocity
             if Math.abs(e.deltaX) >= @swipeThreshold
                 if e.offsetDirection is Hammer.DIRECTION_LEFT
-                    @next velocity: e.overallVelocityX
+                    @next
+                        velocity: velocity
+                        duration: @navigationPanDuration
                 else if e.offsetDirection is Hammer.DIRECTION_RIGHT
-                    @prev velocity: e.overallVelocityX
+                    @prev
+                        velocity: velocity
+                        duration: @navigationPanDuration
 
         if position is @position
-            @animation.animate x: "#{@transform.x}%", duration: @navigationDuration
+            @animation.animate
+                x: "#{@transform.left}%"
+                duration: @navigationPanDuration
+
+        return
+
+    singleTap: (e) ->
+        els = e.target.parentNode.childNodes
+        overlayEls = []
+        x = e.center.x
+        y = e.center.y
+
+        for el in els
+            if el.classList? and el.classList.contains 'verso-page-spread__overlay'
+                rect = el.getBoundingClientRect()
+
+                if x >= rect.left and x <= rect.right and y >= rect.top and y <= rect.bottom
+                    overlayEls.push el
+
+        @trigger 'overlaysClicked', overlayEls: overlayEls if overlayEls.length > 0
+
+        return
+
+    doubleTap: (e) ->
+        activePageSpread = @getPageSpreadFromPosition @position
+        maxZoomScale = activePageSpread.getMaxZoomScale()
+
+        if maxZoomScale > 1
+            if @transform.scale is 1
+                @transform.scale = maxZoomScale
+                @animation.animate
+                    scale: @transform.scale
+                    duration: 200
+            else
+                console.log 'zoom out'
+                @transform.scale = 1
+                @animation.animate
+                    scale: @transform.scale
+                    duration: 200
 
         return
 
