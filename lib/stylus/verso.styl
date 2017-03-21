@@ -1,0 +1,20 @@
+@import 'nib'
+
+.verso
+    position relative
+    outline 0
+    overflow hidden
+    box-sizing border-box
+
+    *,
+    *:before,
+    *:after
+        box-sizing inherit
+
+.verso__scroller
+    absolute top left
+    right 0
+    bottom 0
+
+@require 'page_spread'
+@require 'page'
