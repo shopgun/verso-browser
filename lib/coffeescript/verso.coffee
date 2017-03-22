@@ -277,7 +277,6 @@ class Verso
 
         return
 
-    # https://github.com/shopgun/verso-browser/blob/master/lib/zoom.coffee#L273
     doubleTap: (e) ->
         activePageSpread = @getActivePageSpread()
 
@@ -312,10 +311,13 @@ class Verso
         activePageSpread = @getActivePageSpread()
 
         if activePageSpread.isZoomable()
+            maxZoomScale = activePageSpread.getMaxZoomScale()
+            scale = Math.max 1, Math.min(@transform.scale, maxZoomScale)
+
             @zoomTo
                 x: e.center.x
                 y: e.center.y
-                scale: Math.max 1, Math.min(@transform.scale, activePageSpread.getMaxZoomScale())
+                scale: scale
                 duration: 100
 
         return
