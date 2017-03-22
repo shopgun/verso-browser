@@ -9,6 +9,7 @@ class Verso
         @swipeThreshold = @options.swipeThreshold ? 10
         @navigationDuration = @options.navigationDuration ? 200
         @navigationPanDuration = @options.navigationPanDuration ? 200
+        @zoomDuration = @options.zoomDuration ? 200
 
         @position = -1
         @transform = left: 0, top: 0, scale: 1
@@ -27,11 +28,13 @@ class Verso
         @hammer.add new Hammer.Tap event: 'singletap'
         @hammer.get('doubletap').recognizeWith 'singletap'
         @hammer.get('singletap').requireFailure 'doubletap'
-        @hammer.on 'panstart', @panStart.bind @
         @hammer.on 'panmove', @panMove.bind @
         @hammer.on 'panend', @panEnd.bind @
         @hammer.on 'singletap', @singleTap.bind @
         @hammer.on 'doubletap', @doubleTap.bind @
+        @hammer.on 'pinchstart', @pinchStart.bind @
+        @hammer.on 'pinchmove', @pinchMove.bind @
+        @hammer.on 'pinchend', @pinchEnd.bind @
 
         return
 
@@ -164,8 +167,29 @@ class Verso
         for pageSpread, idx in @pageSpreads
             return idx if pageSpread.options.pageIds.indexOf(pageId) > -1
 
-    panStart: (e) ->
-        e.preventDefault()
+    zoomTo: (options = {}) ->
+        activePageSpread = @getPageSpreadFromPosition @position
+        width = activePageSpread.el.offsetWidth
+        height = activePageSpread.el.offsetHeight
+        scale = options.scale
+        x = (options.x ? 0) / width * 100
+        y = (options.y ? 0) / height * 100
+        x = -(x * scale)
+        y = -(y * scale)
+        x -= x / scale
+        y -= y / scale
+        x -= activePageSpread.getLeft() * scale
+
+        @transform.left = x
+        @transform.top = y
+        @transform.scale = scale
+
+        @animation.animate
+            x: "#{x}%"
+            y: "#{y}%"
+            scale: scale
+            duration: options.duration
+            easing: 'ease-out'
 
         return
 
@@ -220,23 +244,27 @@ class Verso
 
         return
 
+    # https://github.com/shopgun/verso-browser/blob/master/lib/zoom.coffee#L273
     doubleTap: (e) ->
         activePageSpread = @getPageSpreadFromPosition @position
         maxZoomScale = activePageSpread.getMaxZoomScale()
 
         if maxZoomScale > 1
-            if @transform.scale is 1
-                @transform.scale = maxZoomScale
-                @animation.animate
-                    scale: @transform.scale
-                    duration: 200
-            else
-                console.log 'zoom out'
-                @transform.scale = 1
-                @animation.animate
-                    scale: @transform.scale
-                    duration: 200
+            @zoomTo
+                x: e.center.x
+                y: e.center.y
+                scale: if @transform.scale is 1 then maxZoomScale else 1
+                duration: @zoomDuration
 
+        return
+
+    pinchStart: (e) ->
+        return
+
+    pinchMove: (e) ->
+        return
+
+    pinchEnd: (e) ->
         return
 
 MicroEvent.mixin Verso
