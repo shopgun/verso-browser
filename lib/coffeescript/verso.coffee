@@ -77,7 +77,7 @@ class Verso
             x: "#{@transform.left}%"
             duration: duration
         , =>
-            activePageSpread = @getPageSpreadFromPosition @position
+            activePageSpread = @getActivePageSpread()
             carousel = @getCarouselFromPageSpread activePageSpread
 
             carousel.gone.forEach (pageSpread) -> pageSpread.setVisibility 'gone'
@@ -160,6 +160,9 @@ class Verso
     getPageSpreadCount: ->
         @pageSpreads.length
 
+    getActivePageSpread: ->
+        @getPageSpreadFromPosition @position
+
     getPageSpreadFromPosition: (position) ->
         @pageSpreads[position]
 
@@ -168,16 +171,39 @@ class Verso
             return idx if pageSpread.options.pageIds.indexOf(pageId) > -1
 
     zoomTo: (options = {}) ->
-        activePageSpread = @getPageSpreadFromPosition @position
+        scale = options.scale
+        activePageSpread = @getActivePageSpread()
         width = activePageSpread.el.offsetWidth
         height = activePageSpread.el.offsetHeight
-        scale = options.scale
-        x = (options.x ? 0) / width * 100
-        y = (options.y ? 0) / height * 100
+        contentEl = activePageSpread.getContentEl()
+        contentRect = contentEl.getBoundingClientRect()
+        contentOffset =
+            top: contentRect.top / height * 100
+            left: contentRect.left / width * 100
+            width: contentRect.width / width * 100
+            height: contentRect.height / height * 100
+        x = options.x ? 0
+        y = options.y ? 0
+
+        # Convert to relative numbers.
+        x = x / width * 100
+        y = y / height * 100
+
+        # Account for the new scale.
         x = -(x * scale)
         y = -(y * scale)
+
+        # Scale towards the origin.
         x -= x / scale
         y -= y / scale
+
+        # Make sure the animation doesn't exceed the content bounds.
+        x = Math.min x, contentOffset.left * -scale
+        x = Math.max x, contentOffset.left * -scale - contentOffset.width * scale + 100
+        y = Math.min y, contentOffset.top * -scale
+        y = Math.max y, contentOffset.top * -scale - contentOffset.height * scale + 100
+
+        # Account for the page spreads left of the active one.
         x -= activePageSpread.getLeft() * scale
 
         @transform.left = x
@@ -189,7 +215,6 @@ class Verso
             y: "#{y}%"
             scale: scale
             duration: options.duration
-            easing: 'ease-out'
 
         return
 
@@ -246,7 +271,7 @@ class Verso
 
     # https://github.com/shopgun/verso-browser/blob/master/lib/zoom.coffee#L273
     doubleTap: (e) ->
-        activePageSpread = @getPageSpreadFromPosition @position
+        activePageSpread = @getActivePageSpread()
         maxZoomScale = activePageSpread.getMaxZoomScale()
 
         if maxZoomScale > 1

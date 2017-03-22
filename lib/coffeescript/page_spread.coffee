@@ -8,6 +8,9 @@ module.exports = class PageSpread
 
         return
 
+    getContentEl: ->
+        @el.querySelector '.verso-page-spread__content'
+
     getWidth: ->
         @width
 
