@@ -279,29 +279,27 @@ class Verso
 
     # https://github.com/shopgun/verso-browser/blob/master/lib/zoom.coffee#L273
     doubleTap: (e) ->
-        maxZoomScale = @getActivePageSpread().getMaxZoomScale()
+        activePageSpread = @getActivePageSpread()
 
-        if maxZoomScale > 1
+        if activePageSpread.isZoomable()
+            maxZoomScale = activePageSpread.getMaxZoomScale()
+            scale = if @transform.scale is 1 then maxZoomScale else 1
+
             @zoomTo
                 x: e.center.x
                 y: e.center.y
-                scale: if @transform.scale is 1 then maxZoomScale else 1
+                scale: scale
                 duration: @zoomDuration
 
         return
 
     pinchStart: (e) ->
-        maxZoomScale = @getActivePageSpread().getMaxZoomScale()
-
-        if maxZoomScale > 1
-            @transform.pinchStartScale = @transform.scale
+        @transform.pinchStartScale = @transform.scale if @getActivePageSpread().isZoomable()
 
         return
 
     pinchMove: (e) ->
-        maxZoomScale = @getActivePageSpread().getMaxZoomScale()
-
-        if maxZoomScale > 1
+        if @getActivePageSpread().isZoomable()
             @zoomTo
                 x: e.center.x
                 y: e.center.y
@@ -311,13 +309,13 @@ class Verso
         return
 
     pinchEnd: (e) ->
-        maxZoomScale = @getActivePageSpread().getMaxZoomScale()
+        activePageSpread = @getActivePageSpread()
 
-        if maxZoomScale > 1
+        if activePageSpread.isZoomable()
             @zoomTo
                 x: e.center.x
                 y: e.center.y
-                scale: Math.max 1, Math.min(@transform.scale, maxZoomScale)
+                scale: Math.max 1, Math.min(@transform.scale, activePageSpread.getMaxZoomScale())
                 duration: 100
 
         return

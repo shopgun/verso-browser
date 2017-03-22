@@ -8,6 +8,9 @@ module.exports = class PageSpread
 
         return
 
+    isZoomable: ->
+        @getMaxZoomScale() > 1
+
     getContentEl: ->
         @el.querySelector '.verso-page-spread__content'
 
