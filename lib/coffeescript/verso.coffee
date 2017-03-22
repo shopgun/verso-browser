@@ -12,7 +12,7 @@ class Verso
         @zoomDuration = @options.zoomDuration ? 200
 
         @position = -1
-        @transform = left: 0, top: 0, scale: 1
+        @transform = left: 0, top: 0, scale: 1, pinchStartScale: 1
 
         @scrollerEl = @el.querySelector '.verso__scroller'
         @pageSpreadEls = @el.querySelectorAll '.verso__page-spread'
@@ -26,6 +26,7 @@ class Verso
         @hammer.add new Hammer.Pan direction: Hammer.DIRECTION_HORIZONTAL
         @hammer.add new Hammer.Tap event: 'doubletap', taps: 2
         @hammer.add new Hammer.Tap event: 'singletap'
+        @hammer.add new Hammer.Pinch()
         @hammer.get('doubletap').recognizeWith 'singletap'
         @hammer.get('singletap').requireFailure 'doubletap'
         @hammer.on 'panmove', @panMove.bind @
@@ -170,7 +171,7 @@ class Verso
         for pageSpread, idx in @pageSpreads
             return idx if pageSpread.options.pageIds.indexOf(pageId) > -1
 
-    zoomTo: (options = {}) ->
+    zoom: (options = {}) ->
         scale = options.scale
         activePageSpread = @getActivePageSpread()
         width = activePageSpread.el.offsetWidth
@@ -198,10 +199,11 @@ class Verso
         y -= y / scale
 
         # Make sure the animation doesn't exceed the content bounds.
-        x = Math.min x, contentOffset.left * -scale
-        x = Math.max x, contentOffset.left * -scale - contentOffset.width * scale + 100
-        y = Math.min y, contentOffset.top * -scale
-        y = Math.max y, contentOffset.top * -scale - contentOffset.height * scale + 100
+        if options.bounds isnt false
+            x = Math.min x, contentOffset.left * -scale
+            x = Math.max x, contentOffset.left * -scale - contentOffset.width * scale + 100
+            y = Math.min y, contentOffset.top * -scale
+            y = Math.max y, contentOffset.top * -scale - contentOffset.height * scale + 100
 
         # Account for the page spreads left of the active one.
         x -= activePageSpread.getLeft() * scale
@@ -271,11 +273,10 @@ class Verso
 
     # https://github.com/shopgun/verso-browser/blob/master/lib/zoom.coffee#L273
     doubleTap: (e) ->
-        activePageSpread = @getActivePageSpread()
-        maxZoomScale = activePageSpread.getMaxZoomScale()
+        maxZoomScale = @getActivePageSpread().getMaxZoomScale()
 
         if maxZoomScale > 1
-            @zoomTo
+            @zoom
                 x: e.center.x
                 y: e.center.y
                 scale: if @transform.scale is 1 then maxZoomScale else 1
@@ -284,12 +285,29 @@ class Verso
         return
 
     pinchStart: (e) ->
+        @transform.pinchStartScale = @transform.scale
+
         return
 
     pinchMove: (e) ->
+        @zoom
+            x: e.center.x
+            y: e.center.y
+            scale: @transform.pinchStartScale * e.scale
+            bounds: false
+
         return
 
     pinchEnd: (e) ->
+        maxZoomScale = @getActivePageSpread().getMaxZoomScale()
+        scale = Math.max 1, Math.min(@transform.scale, maxZoomScale)
+
+        @zoom
+            x: e.center.x
+            y: e.center.y
+            scale: scale
+            duration: 100
+
         return
 
 MicroEvent.mixin Verso
