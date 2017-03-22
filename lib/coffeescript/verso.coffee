@@ -51,11 +51,17 @@ class Verso
 
         @
 
+    first: (options) ->
+        @navigateTo 0, options
+
     prev: (options) ->
         @navigateTo @position - 1, options
 
     next: (options) ->
         @navigateTo @position + 1, options
+
+    last: (options) ->
+        @navigateTo @getPageSpreadCount() - 1, options
 
     navigateTo: (position, options = {}) ->
         return if position is @position or position < 0 or position > @getPageSpreadCount() - 1
@@ -70,6 +76,7 @@ class Verso
         carousel.visible.forEach (pageSpread) -> pageSpread.position().setVisibility 'visible'
 
         @transform.left = @getLeftTransformFromPageSpread position, activePageSpread
+        @transform.scale = 1
         @position = position
 
         @trigger 'beforeNavigation', currentPosition: currentPosition, newPosition: position
@@ -78,8 +85,7 @@ class Verso
             x: "#{@transform.left}%"
             duration: duration
         , =>
-            activePageSpread = @getActivePageSpread()
-            carousel = @getCarouselFromPageSpread activePageSpread
+            carousel = @getCarouselFromPageSpread @getActivePageSpread()
 
             carousel.gone.forEach (pageSpread) -> pageSpread.setVisibility 'gone'
 
@@ -171,7 +177,7 @@ class Verso
         for pageSpread, idx in @pageSpreads
             return idx if pageSpread.options.pageIds.indexOf(pageId) > -1
 
-    zoom: (options = {}) ->
+    zoomTo: (options = {}) ->
         scale = options.scale
         activePageSpread = @getActivePageSpread()
         width = activePageSpread.el.offsetWidth
@@ -276,7 +282,7 @@ class Verso
         maxZoomScale = @getActivePageSpread().getMaxZoomScale()
 
         if maxZoomScale > 1
-            @zoom
+            @zoomTo
                 x: e.center.x
                 y: e.center.y
                 scale: if @transform.scale is 1 then maxZoomScale else 1
@@ -285,28 +291,34 @@ class Verso
         return
 
     pinchStart: (e) ->
-        @transform.pinchStartScale = @transform.scale
+        maxZoomScale = @getActivePageSpread().getMaxZoomScale()
+
+        if maxZoomScale > 1
+            @transform.pinchStartScale = @transform.scale
 
         return
 
     pinchMove: (e) ->
-        @zoom
-            x: e.center.x
-            y: e.center.y
-            scale: @transform.pinchStartScale * e.scale
-            bounds: false
+        maxZoomScale = @getActivePageSpread().getMaxZoomScale()
+
+        if maxZoomScale > 1
+            @zoomTo
+                x: e.center.x
+                y: e.center.y
+                scale: @transform.pinchStartScale * e.scale
+                bounds: false
 
         return
 
     pinchEnd: (e) ->
         maxZoomScale = @getActivePageSpread().getMaxZoomScale()
-        scale = Math.max 1, Math.min(@transform.scale, maxZoomScale)
 
-        @zoom
-            x: e.center.x
-            y: e.center.y
-            scale: scale
-            duration: 100
+        if maxZoomScale > 1
+            @zoomTo
+                x: e.center.x
+                y: e.center.y
+                scale: Math.max 1, Math.min(@transform.scale, maxZoomScale)
+                duration: 100
 
         return
 
