@@ -1,6 +1,7 @@
 module.exports = class PageSpread
     constructor: (@el, @options = {}) ->
         @visibility = 'gone'
+        @active = false
         @positioned = false
         @width = @options.width
         @left = @options.left
@@ -31,6 +32,12 @@ module.exports = class PageSpread
             @el.style.display = if visibility is 'visible' then 'block' else 'none'
 
             @visibility = visibility
+
+        @
+
+    setActive: (isActive = false) ->
+        @active = isActive
+        @el.dataset.active = isActive
 
         @
 

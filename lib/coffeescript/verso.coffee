@@ -24,6 +24,8 @@ class Verso
         @hammer = new Hammer.Manager @scrollerEl,
             touchAction: 'auto'
             enable: false
+            # Prefer touch input if possible since Android acts weird when using pointer events.
+            inputClass: if 'ontouchstart' of window then Hammer.TouchInput else null
 
         @hammer.add new Hammer.Pan direction: Hammer.DIRECTION_ALL
         @hammer.add new Hammer.Tap event: 'doubletap', taps: 2, posThreshold: 50
@@ -70,11 +72,15 @@ class Verso
         return if position is @position or position < 0 or position > @getPageSpreadCount() - 1
 
         currentPosition = @position
+        currentPageSpread = @getPageSpreadFromPosition currentPosition
         activePageSpread = @getPageSpreadFromPosition position
         carousel = @getCarouselFromPageSpread activePageSpread
         velocity = options.velocity ? 1
         duration = options.duration ? @navigationDuration
         duration = duration / Math.abs(velocity)
+
+        currentPageSpread.setActive false if currentPageSpread?
+        activePageSpread.setActive true
 
         carousel.visible.forEach (pageSpread) -> pageSpread.position().setVisibility 'visible'
 
@@ -203,14 +209,14 @@ class Verso
 
         y
 
-    zoomTo: (options = {}) ->
+    zoomTo: (options = {}, callback) ->
         scale = options.scale
         activePageSpread = @getActivePageSpread()
         pageSpreadBounds = @getPageSpreadBounds activePageSpread
-        x = options.x ? 0
-        y = options.y ? 0
         carouselOffset = activePageSpread.getLeft()
         carouselScaledOffset = carouselOffset * @transform.scale
+        x = options.x ? 0
+        y = options.y ? 0
 
         if scale isnt 1
             x -= pageSpreadBounds.pageSpreadRect.left
@@ -241,6 +247,7 @@ class Verso
             scale: scale
             easing: options.easing
             duration: options.duration
+        , callback
 
         return
 
@@ -251,18 +258,19 @@ class Verso
         return
 
     panMove: (e) ->
-        e.preventDefault()
-
         return if @pinching is true
 
         if @transform.scale > 1
             activePageSpread = @getActivePageSpread()
+            carouselOffset = activePageSpread.getLeft()
+            carouselScaledOffset = carouselOffset * @transform.scale
             pageSpreadBounds = @getPageSpreadBounds activePageSpread
             scale = @transform.scale
-            x = @startTransform.left + e.deltaX / @scrollerEl.offsetWidth * 100
+            x = @startTransform.left + carouselScaledOffset + e.deltaX / @scrollerEl.offsetWidth * 100
             y = @startTransform.top + e.deltaY / @scrollerEl.offsetHeight * 100
             x = @clipLeftFromPageSpreadBounds x, scale, pageSpreadBounds
             y = @clipTopFromPageSpreadBounds y, scale, pageSpreadBounds
+            x -= carouselScaledOffset
 
             @transform.left = x
             @transform.top = y
@@ -282,8 +290,6 @@ class Verso
         return
 
     panEnd: (e) ->
-        e.preventDefault()
-
         return if @transform.scale > 1 or @pinching is true
 
         position = @position
@@ -308,36 +314,43 @@ class Verso
         return
 
     pinchStart: (e) ->
+        return if not @getActivePageSpread().isZoomable()
+
         @pinching = true
-        @startTransform.scale = @transform.scale if @getActivePageSpread().isZoomable()
+        @el.dataset.pinching = true
+        @startTransform.scale = @transform.scale
 
         return
 
     pinchMove: (e) ->
-        if @getActivePageSpread().isZoomable()
-            @zoomTo
-                x: e.center.x
-                y: e.center.y
-                scale: @startTransform.scale * e.scale
-                bounds: false
-                easing: 'linear'
+        return if not @getActivePageSpread().isZoomable()
+
+        @zoomTo
+            x: e.center.x
+            y: e.center.y
+            scale: @startTransform.scale * e.scale
+            bounds: false
+            easing: 'linear'
 
         return
 
     pinchEnd: (e) ->
+        return if not @pinching
+
         activePageSpread = @getActivePageSpread()
+        maxZoomScale = activePageSpread.getMaxZoomScale()
+        scale = Math.max 1, Math.min(@transform.scale, maxZoomScale)
 
-        if activePageSpread.isZoomable()
-            maxZoomScale = activePageSpread.getMaxZoomScale()
-            scale = Math.max 1, Math.min(@transform.scale, maxZoomScale)
+        @zoomTo
+            x: e.center.x
+            y: e.center.y
+            scale: scale
+            duration: @zoomDuration
+        , =>
+            @pinching = false
+            @el.dataset.pinching = false
 
-            @zoomTo
-                x: e.center.x
-                y: e.center.y
-                scale: scale
-                duration: @zoomDuration
-
-        @pinching = false
+            return
 
         return
 

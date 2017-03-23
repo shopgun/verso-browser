@@ -30,14 +30,6 @@
                 padding-top: 50vh;
             }
 
-            #spread0 .verso-page-spread__content {
-                background-color: #4AACE9;
-                background-image: url('https://d3ikkoqs9ddhdl.cloudfront.net/img/catalog/view/25bb1Nq-1.jpg?m=om59z5');
-                background-repeat: no-repeat;
-                background-position: center center;
-                background-size: contain;
-            }
-
             #spread1 { background: #3498db; }
             #spread2 { background: #e74c3c; }
             #spread3 { background: #f39c12; }
@@ -55,8 +47,8 @@
     <body>
         <div class="verso">
             <div class="verso__scroller">
-                <div id="spread0" class="verso__page-spread" data-width="100" data-max-zoom-scale="4">
-                    <div class="verso-page-spread__content" style="top: 10%; left: 10%; width: 80%; height: 80%;">
+                <div id="spread0" class="verso__page-spread" data-width="80">
+                    <div class="verso-page-spread__content">
                         <div class="verso__page">intro</div>
                     </div>
                 </div>
@@ -94,7 +86,9 @@
 
         <script src="../verso.js"></script>
         <script>
-            var verso = new Verso(document.querySelector('.verso'));
+            var verso = new Verso(document.querySelector('.verso'), {
+                pageId: 1
+            });
 
             ['beforeNavigation', 'afterNavigation', 'overlaysClicked'].forEach(function (eventType) {
                 verso.bind(eventType, function (e) { console.log(eventType, e); });
