@@ -1,8 +1,9 @@
 module.exports = class PageSpread
     constructor: (@el, @options = {}) ->
         @visibility = 'gone'
-        @active = false
         @positioned = false
+        @active = false
+        @pageIds = @options.pageIds
         @width = @options.width
         @left = @options.left
         @maxZoomScale = @options.maxZoomScale
@@ -14,6 +15,9 @@ module.exports = class PageSpread
 
     getContentEl: ->
         @el.querySelector '.verso-page-spread__content'
+
+    getPageIds: ->
+        @pageIds
 
     getWidth: ->
         @width
@@ -35,12 +39,6 @@ module.exports = class PageSpread
 
         @
 
-    setActive: (isActive = false) ->
-        @active = isActive
-        @el.dataset.active = isActive
-
-        @
-
     position: ->
         if @positioned is false
             @el.style.left = "#{@getLeft()}%"
@@ -48,3 +46,15 @@ module.exports = class PageSpread
             @positioned = true
 
         @
+
+    activate: ->
+        @active = true
+        @el.dataset.active = true
+
+        return
+
+    deactivate: ->
+        @active = true
+        @el.dataset.active = true
+
+        return

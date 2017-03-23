@@ -79,14 +79,18 @@ class Verso
         duration = options.duration ? @navigationDuration
         duration = duration / Math.abs(velocity)
 
-        currentPageSpread.setActive false if currentPageSpread?
-        activePageSpread.setActive true
+        currentPageSpread.deactivate() if currentPageSpread?
+        activePageSpread.activate()
 
         carousel.visible.forEach (pageSpread) -> pageSpread.position().setVisibility 'visible'
 
         @transform.left = @getLeftTransformFromPageSpread position, activePageSpread
-        @transform.scale = 1
         @position = position
+
+        if @transform.scale > 1
+            @transform.scale = 1
+
+            @trigger 'zoomedOut', position: currentPosition
 
         @trigger 'beforeNavigation', currentPosition: currentPosition, newPosition: position
 
@@ -341,6 +345,11 @@ class Verso
         maxZoomScale = activePageSpread.getMaxZoomScale()
         scale = Math.max 1, Math.min(@transform.scale, maxZoomScale)
 
+        if @startTransform.scale is 1 and scale > 1
+            @trigger 'zoomedIn', position: @position
+        else if @startTransform.scale > 1 and scale is 1
+            @trigger 'zoomedOut', position: @position
+
         @zoomTo
             x: e.center.x
             y: e.center.y
@@ -376,7 +385,11 @@ class Verso
 
         if activePageSpread.isZoomable()
             maxZoomScale = activePageSpread.getMaxZoomScale()
-            scale = if @transform.scale is 1 then maxZoomScale else 1
+            zoomedIn = @transform.scale > 1
+            scale = if zoomedIn then 1 else maxZoomScale
+            zoomEvent = if zoomedIn then 'zoomedOut' else 'zoomedIn'
+
+            @trigger zoomEvent, position: @position
 
             @zoomTo
                 x: e.center.x

@@ -86,11 +86,9 @@
 
         <script src="../verso.js"></script>
         <script>
-            var verso = new Verso(document.querySelector('.verso'), {
-                pageId: 1
-            });
+            var verso = new Verso(document.querySelector('.verso'));
 
-            ['beforeNavigation', 'afterNavigation', 'overlaysClicked'].forEach(function (eventType) {
+            ['beforeNavigation', 'afterNavigation', 'overlaysClicked', 'zoomedIn', 'zoomedOut'].forEach(function (eventType) {
                 verso.bind(eventType, function (e) { console.log(eventType, e); });
             });
 
