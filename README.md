@@ -2,7 +2,6 @@
 
 ## TODO
 
-- Pinching.
-- Zoom panning.
+- Zoom visibility.
 - Zoom events.
 - Appear/disappear events.

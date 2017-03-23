@@ -12,7 +12,9 @@ class Verso
         @zoomDuration = @options.zoomDuration ? 200
 
         @position = -1
-        @transform = left: 0, top: 0, scale: 1, pinchStartScale: 1
+        @pinching = false
+        @transform = left: 0, top: 0, scale: 1
+        @startTransform = left: 0, top: 0, scale: 1
 
         @scrollerEl = @el.querySelector '.verso__scroller'
         @pageSpreadEls = @el.querySelectorAll '.verso__page-spread'
@@ -23,12 +25,13 @@ class Verso
             touchAction: 'auto'
             enable: false
 
-        @hammer.add new Hammer.Pan direction: Hammer.DIRECTION_HORIZONTAL
-        @hammer.add new Hammer.Tap event: 'doubletap', taps: 2
+        @hammer.add new Hammer.Pan direction: Hammer.DIRECTION_ALL
+        @hammer.add new Hammer.Tap event: 'doubletap', taps: 2, posThreshold: 50
         @hammer.add new Hammer.Tap event: 'singletap'
         @hammer.add new Hammer.Pinch()
         @hammer.get('doubletap').recognizeWith 'singletap'
         @hammer.get('singletap').requireFailure 'doubletap'
+        @hammer.on 'panstart', @panStart.bind @
         @hammer.on 'panmove', @panMove.bind @
         @hammer.on 'panend', @panEnd.bind @
         @hammer.on 'singletap', @singleTap.bind @
@@ -177,42 +180,56 @@ class Verso
         for pageSpread, idx in @pageSpreads
             return idx if pageSpread.options.pageIds.indexOf(pageId) > -1
 
+    getPageSpreadBounds: (pageSpread) ->
+        pageSpreadRect = pageSpread.el.getBoundingClientRect()
+        pageSpreadContentRect = pageSpread.getContentEl().getBoundingClientRect()
+
+        left: (pageSpreadContentRect.left - pageSpreadRect.left) / pageSpreadRect.width * 100
+        top: (pageSpreadContentRect.top - pageSpreadRect.top) / pageSpreadRect.height * 100
+        width: pageSpreadContentRect.width / pageSpreadRect.width * 100
+        height: pageSpreadContentRect.height / pageSpreadRect.height * 100
+        pageSpreadRect: pageSpreadRect
+        pageSpreadContentRect: pageSpreadContentRect
+
+    clipLeftFromPageSpreadBounds: (x, scale, pageSpreadBounds) ->
+        x = Math.min x, pageSpreadBounds.left * -scale
+        x = Math.max x, pageSpreadBounds.left * -scale - pageSpreadBounds.width * scale + 100
+
+        x
+
+    clipTopFromPageSpreadBounds: (y, scale, pageSpreadBounds) ->
+        y = Math.min y, pageSpreadBounds.top * -scale
+        y = Math.max y, pageSpreadBounds.top * -scale - pageSpreadBounds.height * scale + 100
+
+        y
+
     zoomTo: (options = {}) ->
         scale = options.scale
         activePageSpread = @getActivePageSpread()
-        width = activePageSpread.el.offsetWidth
-        height = activePageSpread.el.offsetHeight
-        contentEl = activePageSpread.getContentEl()
-        contentRect = contentEl.getBoundingClientRect()
-        contentOffset =
-            top: contentRect.top / height * 100
-            left: contentRect.left / width * 100
-            width: contentRect.width / width * 100
-            height: contentRect.height / height * 100
+        pageSpreadBounds = @getPageSpreadBounds activePageSpread
         x = options.x ? 0
         y = options.y ? 0
+        carouselOffset = activePageSpread.getLeft()
+        carouselScaledOffset = carouselOffset * @transform.scale
 
-        # Convert to relative numbers.
-        x = x / width * 100
-        y = y / height * 100
+        if scale isnt 1
+            x -= pageSpreadBounds.pageSpreadRect.left
+            y -= pageSpreadBounds.pageSpreadRect.top
+            x = x / (pageSpreadBounds.pageSpreadRect.width / @transform.scale) * 100
+            y = y / (pageSpreadBounds.pageSpreadRect.height / @transform.scale) * 100
+            x = @transform.left + carouselScaledOffset + x - (x * scale / @transform.scale)
+            y = @transform.top + y - (y * scale / @transform.scale)
 
-        # Account for the new scale.
-        x = -(x * scale)
-        y = -(y * scale)
-
-        # Scale towards the origin.
-        x -= x / scale
-        y -= y / scale
-
-        # Make sure the animation doesn't exceed the content bounds.
-        if options.bounds isnt false
-            x = Math.min x, contentOffset.left * -scale
-            x = Math.max x, contentOffset.left * -scale - contentOffset.width * scale + 100
-            y = Math.min y, contentOffset.top * -scale
-            y = Math.max y, contentOffset.top * -scale - contentOffset.height * scale + 100
+            # Make sure the animation doesn't exceed the content bounds.
+            if options.bounds isnt false and scale > 1
+                x = @clipLeftFromPageSpreadBounds x, scale, pageSpreadBounds
+                y = @clipTopFromPageSpreadBounds y, scale, pageSpreadBounds
+        else
+            x = 0
+            y = 0
 
         # Account for the page spreads left of the active one.
-        x -= activePageSpread.getLeft() * scale
+        x -= carouselOffset * scale
 
         @transform.left = x
         @transform.top = y
@@ -222,22 +239,52 @@ class Verso
             x: "#{x}%"
             y: "#{y}%"
             scale: scale
+            easing: options.easing
             duration: options.duration
+
+        return
+
+    panStart: (e) ->
+        @startTransform.left = @transform.left
+        @startTransform.top = @transform.top
 
         return
 
     panMove: (e) ->
         e.preventDefault()
 
-        totalWidth = @scrollerEl.offsetWidth
-        deltaX = @transform.left + e.deltaX / totalWidth * 100
+        return if @pinching is true
 
-        @animation.animate x: "#{deltaX}%", easing: 'linear'
+        if @transform.scale > 1
+            activePageSpread = @getActivePageSpread()
+            pageSpreadBounds = @getPageSpreadBounds activePageSpread
+            scale = @transform.scale
+            x = @startTransform.left + e.deltaX / @scrollerEl.offsetWidth * 100
+            y = @startTransform.top + e.deltaY / @scrollerEl.offsetHeight * 100
+            x = @clipLeftFromPageSpreadBounds x, scale, pageSpreadBounds
+            y = @clipTopFromPageSpreadBounds y, scale, pageSpreadBounds
+
+            @transform.left = x
+            @transform.top = y
+
+            @animation.animate
+                x: "#{x}%"
+                y: "#{y}%"
+                scale: scale
+                easing: 'linear'
+        else
+            x = @transform.left + e.deltaX / @scrollerEl.offsetWidth * 100
+
+            @animation.animate
+                x: "#{x}%"
+                easing: 'linear'
 
         return
 
     panEnd: (e) ->
         e.preventDefault()
+
+        return if @transform.scale > 1 or @pinching is true
 
         position = @position
         velocity = e.overallVelocityX
@@ -257,6 +304,40 @@ class Verso
             @animation.animate
                 x: "#{@transform.left}%"
                 duration: @navigationPanDuration
+
+        return
+
+    pinchStart: (e) ->
+        @pinching = true
+        @startTransform.scale = @transform.scale if @getActivePageSpread().isZoomable()
+
+        return
+
+    pinchMove: (e) ->
+        if @getActivePageSpread().isZoomable()
+            @zoomTo
+                x: e.center.x
+                y: e.center.y
+                scale: @startTransform.scale * e.scale
+                bounds: false
+                easing: 'linear'
+
+        return
+
+    pinchEnd: (e) ->
+        activePageSpread = @getActivePageSpread()
+
+        if activePageSpread.isZoomable()
+            maxZoomScale = activePageSpread.getMaxZoomScale()
+            scale = Math.max 1, Math.min(@transform.scale, maxZoomScale)
+
+            @zoomTo
+                x: e.center.x
+                y: e.center.y
+                scale: scale
+                duration: @zoomDuration
+
+        @pinching = false
 
         return
 
@@ -289,36 +370,6 @@ class Verso
                 y: e.center.y
                 scale: scale
                 duration: @zoomDuration
-
-        return
-
-    pinchStart: (e) ->
-        @transform.pinchStartScale = @transform.scale if @getActivePageSpread().isZoomable()
-
-        return
-
-    pinchMove: (e) ->
-        if @getActivePageSpread().isZoomable()
-            @zoomTo
-                x: e.center.x
-                y: e.center.y
-                scale: @transform.pinchStartScale * e.scale
-                bounds: false
-
-        return
-
-    pinchEnd: (e) ->
-        activePageSpread = @getActivePageSpread()
-
-        if activePageSpread.isZoomable()
-            maxZoomScale = activePageSpread.getMaxZoomScale()
-            scale = Math.max 1, Math.min(@transform.scale, maxZoomScale)
-
-            @zoomTo
-                x: e.center.x
-                y: e.center.y
-                scale: scale
-                duration: 100
 
         return
 

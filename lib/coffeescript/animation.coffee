@@ -34,6 +34,8 @@ module.exports = class Animation
 
             @transform x, y, scale
         else
+            el.style.transition = 'none'
+            
             @transform x, y, scale
 
             callback() if typeof callback is 'function'
