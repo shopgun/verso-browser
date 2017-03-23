@@ -167,8 +167,8 @@ class Verso
     buildPageIds: (pageSpreads) ->
         pageIds = {}
 
-        pageSpreads.forEach (pageSpread, i) =>
-            pageSpread.options.pageIds.forEach (pageId) =>
+        pageSpreads.forEach (pageSpread, i) ->
+            pageSpread.options.pageIds.forEach (pageId) ->
                 pageIds[pageId] = pageSpread
 
                 return
