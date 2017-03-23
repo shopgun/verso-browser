@@ -54,7 +54,7 @@ module.exports = class PageSpread
         return
 
     deactivate: ->
-        @active = true
-        @el.dataset.active = true
+        @active = false
+        @el.dataset.active = false
 
         return
