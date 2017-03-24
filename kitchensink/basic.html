@@ -85,18 +85,27 @@
 
         <script src="../verso.js"></script>
         <script>
-            var verso = new Verso(document.querySelector('.verso'));
-
-            ['beforeNavigation', 'afterNavigation', 'overlaysClicked', 'zoomedIn', 'zoomedOut'].forEach(function (eventType) {
-                verso.bind(eventType, function (e) { console.log(eventType, e); });
+            // Point Verso to the right element.
+            var verso = new Verso(document.querySelector('.verso'), {
+                pageId: 6
             });
 
+            // Listen to events coming from Verso and act accordingly.
+            ['beforeNavigation', 'afterNavigation', 'overlaysClicked', 'zoomedIn', 'zoomedOut'].forEach(function (eventType) {
+                verso.bind(eventType, function (e) {
+                    console.log(eventType, e);
+                });
+            });
+
+            // Fire it up.
             verso.start();
 
+            // Prevent the document from scrolling vertically on touch devices.
             document.addEventListener('touchstart', function (e) {
                 if (e.target.tagName !== 'A') e.preventDefault();
             });
 
+            // Add some simple keyboard interactions.
             document.addEventListener('keydown', function (e) {
                 if (e.keyCode === 39 || e.keyCode === 32) {
                     verso.next();

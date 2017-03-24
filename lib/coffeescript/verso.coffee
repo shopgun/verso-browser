@@ -13,6 +13,7 @@ class Verso
 
         @position = -1
         @pinching = false
+        @panning = false
         @transform = left: 0, top: 0, scale: 1
         @startTransform = left: 0, top: 0, scale: 1
 
@@ -28,7 +29,7 @@ class Verso
             inputClass: if 'ontouchstart' of window then Hammer.TouchInput else null
 
         @hammer.add new Hammer.Pan direction: Hammer.DIRECTION_ALL
-        @hammer.add new Hammer.Tap event: 'doubletap', taps: 2, posThreshold: 50, interval: 200
+        @hammer.add new Hammer.Tap event: 'doubletap', taps: 2, threshold: 16, posThreshold: 25
         @hammer.add new Hammer.Tap event: 'singletap'
         @hammer.add new Hammer.Pinch()
         @hammer.get('doubletap').recognizeWith 'singletap'
@@ -36,11 +37,13 @@ class Verso
         @hammer.on 'panstart', @panStart.bind @
         @hammer.on 'panmove', @panMove.bind @
         @hammer.on 'panend', @panEnd.bind @
+        @hammer.on 'pancancel', @panEnd.bind @
         @hammer.on 'singletap', @singleTap.bind @
         @hammer.on 'doubletap', @doubleTap.bind @
         @hammer.on 'pinchstart', @pinchStart.bind @
         @hammer.on 'pinchmove', @pinchMove.bind @
         @hammer.on 'pinchend', @pinchEnd.bind @
+        @hammer.on 'pinchcancel', @pinchEnd.bind @
 
         return
 
@@ -256,13 +259,21 @@ class Verso
         return
 
     panStart: (e) ->
-        @startTransform.left = @transform.left
-        @startTransform.top = @transform.top
+        x = e.center.x
+        edgeThreshold = 30
+        width = @scrollerEl.offsetWidth
+
+        # Prevent panning when edge-swiping on iOS.
+        if x > edgeThreshold and x < width - edgeThreshold 
+            @startTransform.left = @transform.left
+            @startTransform.top = @transform.top
+
+            @panning = true
 
         return
 
     panMove: (e) ->
-        return if @pinching is true
+        return if @pinching is true or @panning is false
 
         if @transform.scale > 1
             activePageSpread = @getActivePageSpread()
@@ -294,26 +305,29 @@ class Verso
         return
 
     panEnd: (e) ->
-        return if @transform.scale > 1 or @pinching is true
+        return if @panning is false
 
-        position = @position
-        velocity = e.overallVelocityX
+        if @transform.scale is 1 and @pinching is false
+            position = @position
+            velocity = e.overallVelocityX
 
-        if Math.abs(velocity) >= @swipeVelocity
-            if Math.abs(e.deltaX) >= @swipeThreshold
-                if e.offsetDirection is Hammer.DIRECTION_LEFT
-                    @next
-                        velocity: velocity
-                        duration: @navigationPanDuration
-                else if e.offsetDirection is Hammer.DIRECTION_RIGHT
-                    @prev
-                        velocity: velocity
-                        duration: @navigationPanDuration
+            if Math.abs(velocity) >= @swipeVelocity
+                if Math.abs(e.deltaX) >= @swipeThreshold
+                    if e.offsetDirection is Hammer.DIRECTION_LEFT
+                        @next
+                            velocity: velocity
+                            duration: @navigationPanDuration
+                    else if e.offsetDirection is Hammer.DIRECTION_RIGHT
+                        @prev
+                            velocity: velocity
+                            duration: @navigationPanDuration
 
-        if position is @position
-            @animation.animate
-                x: "#{@transform.left}%"
-                duration: @navigationPanDuration
+            if position is @position
+                @animation.animate
+                    x: "#{@transform.left}%"
+                    duration: @navigationPanDuration
+
+        @panning = false
 
         return
 
@@ -327,7 +341,7 @@ class Verso
         return
 
     pinchMove: (e) ->
-        return if not @getActivePageSpread().isZoomable()
+        return if @pinching is false
 
         @zoomTo
             x: e.center.x
@@ -339,7 +353,7 @@ class Verso
         return
 
     pinchEnd: (e) ->
-        return if not @pinching
+        return if @pinching is false
 
         activePageSpread = @getActivePageSpread()
         maxZoomScale = activePageSpread.getMaxZoomScale()
