@@ -4,40 +4,35 @@ module.exports = class Animation
 
         return
 
-    transform: (x, y, scale) ->
-        @el.style.transform = "translate3d(#{x}, #{y}, 0) scale3d(#{scale}, #{scale}, 1)"
-
-        @
-
-    animate: (options = {}, callback) ->
-        el = @el
+    animate: (options = {}, callback = ->) ->
         x = options.x ? 0
         y = options.y ? 0
         scale = options.scale ? 1
         easing = options.easing ? 'ease'
         duration = options.duration ? 0
         run = ++@run
+        transform = "translate3d(#{x}, #{y}, 0px) scale3d(#{scale}, #{scale}, 1)"
 
-        completed = =>
-            return if run isnt @run
+        if @el.style.transform is transform
+            callback()
+        else if duration > 0
+            @el.addEventListener 'transitionend', =>
+                return if run isnt @run
 
-            el.removeEventListener 'transitionend', completed
-            el.style.transition = 'none'
+                @el.removeEventListener 'transitionend'
+                @el.style.transition = 'none'
 
-            callback() if typeof callback is 'function'
+                callback()
 
-            return
+                return
+            , false
 
-        if duration > 0
-            el.addEventListener 'transitionend', completed, false
-            el.style.transition = "transform #{easing} #{duration}ms"
-
-            @transform x, y, scale
+            @el.style.transition = "transform #{easing} #{duration}ms"
+            @el.style.transform = transform
         else
-            el.style.transition = 'none'
+            @el.style.transition = 'none'
+            @el.style.transform = transform
 
-            @transform x, y, scale
-
-            callback() if typeof callback is 'function'
+            callback()
 
         @

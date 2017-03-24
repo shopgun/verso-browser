@@ -28,7 +28,7 @@ class Verso
             inputClass: if 'ontouchstart' of window then Hammer.TouchInput else null
 
         @hammer.add new Hammer.Pan direction: Hammer.DIRECTION_ALL
-        @hammer.add new Hammer.Tap event: 'doubletap', taps: 2, posThreshold: 50
+        @hammer.add new Hammer.Tap event: 'doubletap', taps: 2, posThreshold: 50, interval: 200
         @hammer.add new Hammer.Tap event: 'singletap'
         @hammer.add new Hammer.Pinch()
         @hammer.get('doubletap').recognizeWith 'singletap'
