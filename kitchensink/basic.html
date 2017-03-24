@@ -86,9 +86,7 @@
         <script src="../verso.js"></script>
         <script>
             // Point Verso to the right element.
-            var verso = new Verso(document.querySelector('.verso'), {
-                pageId: 6
-            });
+            var verso = new Verso(document.querySelector('.verso'));
 
             // Listen to events coming from Verso and act accordingly.
             ['beforeNavigation', 'afterNavigation', 'overlaysClicked', 'zoomedIn', 'zoomedOut'].forEach(function (eventType) {
