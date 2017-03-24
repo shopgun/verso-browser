@@ -87,9 +87,10 @@
         <script>
             // Point Verso to the right element.
             var verso = new Verso(document.querySelector('.verso'));
+            var events = ['beforeNavigation', 'afterNavigation', 'overlaysClicked', 'overlaysPressed', 'zoomedIn', 'zoomedOut'];
 
             // Listen to events coming from Verso and act accordingly.
-            ['beforeNavigation', 'afterNavigation', 'overlaysClicked', 'zoomedIn', 'zoomedOut'].forEach(function (eventType) {
+            events.forEach(function (eventType) {
                 verso.bind(eventType, function (e) {
                     console.log(eventType, e);
                 });
