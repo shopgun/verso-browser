@@ -32,6 +32,7 @@ class Verso
         @hammer.add new Hammer.Tap event: 'doubletap', taps: 2, threshold: 16, posThreshold: 25
         @hammer.add new Hammer.Tap event: 'singletap'
         @hammer.add new Hammer.Pinch()
+        @hammer.add new Hammer.Press time: 500
         @hammer.get('doubletap').recognizeWith 'singletap'
         @hammer.get('singletap').requireFailure 'doubletap'
         @hammer.on 'panstart', @panStart.bind @
@@ -44,6 +45,7 @@ class Verso
         @hammer.on 'pinchmove', @pinchMove.bind @
         @hammer.on 'pinchend', @pinchEnd.bind @
         @hammer.on 'pinchcancel', @pinchEnd.bind @
+        @hammer.on 'press', @press.bind @
 
         return
 
@@ -179,6 +181,18 @@ class Verso
             return
 
         pageIds
+
+    getOverlayElementsFromPoint: (els, x, y) ->
+        overlayEls = []
+
+        for el in els
+            if el.classList? and el.classList.contains 'verso-page-spread__overlay'
+                rect = el.getBoundingClientRect()
+
+                if x >= rect.left and x <= rect.right and y >= rect.top and y <= rect.bottom
+                    overlayEls.push el
+
+        overlayEls
 
     getPageSpreadCount: ->
         @pageSpreads.length
@@ -377,18 +391,15 @@ class Verso
 
         return
 
+    press: (e) ->
+        overlayEls = @getOverlayElementsFromPoint e.target.parentNode.childNodes, e.center.x, e.center.y
+
+        @trigger 'overlaysPressed', overlayEls: overlayEls if overlayEls.length > 0
+
+        return
+
     singleTap: (e) ->
-        els = e.target.parentNode.childNodes
-        overlayEls = []
-        x = e.center.x
-        y = e.center.y
-
-        for el in els
-            if el.classList? and el.classList.contains 'verso-page-spread__overlay'
-                rect = el.getBoundingClientRect()
-
-                if x >= rect.left and x <= rect.right and y >= rect.top and y <= rect.bottom
-                    overlayEls.push el
+        overlayEls = @getOverlayElementsFromPoint e.target.parentNode.childNodes, e.center.x, e.center.y
 
         @trigger 'overlaysClicked', overlayEls: overlayEls if overlayEls.length > 0
 
