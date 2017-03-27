@@ -152,7 +152,7 @@ class Verso
 
         for el in els
             pageIds = el.getAttribute 'data-page-ids'
-            pageIds = if pageIds? then pageIds.split(',').map (i) -> +i else []
+            pageIds = if pageIds? then pageIds.split(',').map (i) -> i else []
             maxZoomScale = el.getAttribute 'data-max-zoom-scale'
             maxZoomScale = if maxZoomScale? then +maxZoomScale else 1
             width = el.getAttribute 'data-width'
