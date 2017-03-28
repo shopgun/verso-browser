@@ -3,6 +3,7 @@ module.exports = class PageSpread
         @visibility = 'gone'
         @positioned = false
         @active = false
+        @id = @options.id
         @pageIds = @options.pageIds
         @width = @options.width
         @left = @options.left
@@ -15,6 +16,9 @@ module.exports = class PageSpread
 
     getContentEl: ->
         @el.querySelector '.verso-page-spread__content'
+
+    getId: ->
+        @id
 
     getPageIds: ->
         @pageIds
