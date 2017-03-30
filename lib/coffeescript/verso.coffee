@@ -93,6 +93,7 @@ class Verso
         @position = position
 
         if @transform.scale > 1
+            @transform.top = 0
             @transform.scale = 1
 
             @trigger 'zoomedOut', position: currentPosition
@@ -280,7 +281,7 @@ class Verso
         width = @scrollerEl.offsetWidth
 
         # Prevent panning when edge-swiping on iOS.
-        if x > edgeThreshold and x < width - edgeThreshold 
+        if x > edgeThreshold and x < width - edgeThreshold
             @startTransform.left = @transform.left
             @startTransform.top = @transform.top
 
