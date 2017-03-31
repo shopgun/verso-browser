@@ -287,6 +287,8 @@ class Verso
 
             @panning = true
 
+            @trigger 'panning'
+
         return
 
     panMove: (e) ->
