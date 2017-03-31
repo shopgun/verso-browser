@@ -287,7 +287,7 @@ class Verso
 
             @panning = true
 
-            @trigger 'panning'
+            @trigger 'panStart'
 
         return
 
@@ -326,6 +326,9 @@ class Verso
     panEnd: (e) ->
         return if @panning is false
 
+        @panning = false
+        @trigger 'panEnd'
+
         if @transform.scale is 1 and @pinching is false
             position = @position
             velocity = e.overallVelocityX
@@ -345,8 +348,6 @@ class Verso
                 @animation.animate
                     x: "#{@transform.left}%"
                     duration: @navigationPanDuration
-
-        @panning = false
 
         return
 
