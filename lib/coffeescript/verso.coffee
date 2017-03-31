@@ -7,7 +7,7 @@ class Verso
     constructor: (@el, @options = {}) ->
         @swipeVelocity = @options.swipeVelocity ? 0.3
         @swipeThreshold = @options.swipeThreshold ? 10
-        @navigationDuration = @options.navigationDuration ? 200
+        @navigationDuration = @options.navigationDuration ? 260
         @navigationPanDuration = @options.navigationPanDuration ? 200
         @zoomDuration = @options.zoomDuration ? 200
 
