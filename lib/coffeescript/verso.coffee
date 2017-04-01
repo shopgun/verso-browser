@@ -275,6 +275,15 @@ class Verso
 
         return
 
+    refresh: (position = 0) ->
+        @pageSpreadEls = @el.querySelectorAll '.verso__page-spread'
+        @pageSpreads = @traversePageSpreads @pageSpreadEls
+        @pageIds = @buildPageIds @pageSpreads
+
+        @navigateTo position
+
+        @
+
     panStart: (e) ->
         x = e.center.x
         edgeThreshold = 30
