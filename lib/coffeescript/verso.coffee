@@ -275,12 +275,10 @@ class Verso
 
         return
 
-    refresh: (position = 0) ->
+    refresh: ->
         @pageSpreadEls = @el.querySelectorAll '.verso__page-spread'
         @pageSpreads = @traversePageSpreads @pageSpreadEls
         @pageIds = @buildPageIds @pageSpreads
-
-        @navigateTo position
 
         @
 
