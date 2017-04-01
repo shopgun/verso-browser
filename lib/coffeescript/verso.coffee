@@ -74,7 +74,7 @@ class Verso
         @navigateTo @getPageSpreadCount() - 1, options
 
     navigateTo: (position, options = {}) ->
-        return if position is @position or position < 0 or position > @getPageSpreadCount() - 1
+        return if position < 0 or position > @getPageSpreadCount() - 1
 
         currentPosition = @position
         currentPageSpread = @getPageSpreadFromPosition currentPosition
