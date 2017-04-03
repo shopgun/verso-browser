@@ -209,8 +209,8 @@ class Verso
         for el in pageEls
             els.page = el if @isPointWithinElement(x, y, el)
 
-        x: adjustedX
-        y: adjustedY
+        x: x / contentRect.width * 100
+        y: y / contentRect.height * 100
         contentRect: contentRect
         isWithin: isWithin
         els: els
