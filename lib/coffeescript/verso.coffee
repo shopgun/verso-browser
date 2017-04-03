@@ -16,6 +16,10 @@ class Verso
         @panning = false
         @transform = left: 0, top: 0, scale: 1
         @startTransform = left: 0, top: 0, scale: 1
+        @tap =
+            count: 0
+            delay: 250
+            timeout: null
 
         @scrollerEl = @el.querySelector '.verso__scroller'
         @pageSpreadEls = @el.querySelectorAll '.verso__page-spread'
@@ -29,18 +33,14 @@ class Verso
             inputClass: if 'ontouchstart' of window then Hammer.TouchInput else null
 
         @hammer.add new Hammer.Pan direction: Hammer.DIRECTION_ALL
-        @hammer.add new Hammer.Tap event: 'doubletap', taps: 2, threshold: 16, posThreshold: 25
-        @hammer.add new Hammer.Tap event: 'singletap'
+        @hammer.add new Hammer.Tap event: 'singletap', interval: 0
         @hammer.add new Hammer.Pinch()
         @hammer.add new Hammer.Press time: 500
-        @hammer.get('doubletap').recognizeWith 'singletap'
-        @hammer.get('singletap').requireFailure 'doubletap'
         @hammer.on 'panstart', @panStart.bind @
         @hammer.on 'panmove', @panMove.bind @
         @hammer.on 'panend', @panEnd.bind @
         @hammer.on 'pancancel', @panEnd.bind @
-        @hammer.on 'singletap', @singleTap.bind @
-        @hammer.on 'doubletap', @doubleTap.bind @
+        @hammer.on 'singletap', @singletap.bind @
         @hammer.on 'pinchstart', @pinchStart.bind @
         @hammer.on 'pinchmove', @pinchMove.bind @
         @hammer.on 'pinchend', @pinchEnd.bind @
@@ -208,8 +208,6 @@ class Verso
 
         for el in pageEls
             els.page = el if @isPointWithinElement(x, y, el)
-
-        console.log els
 
         x: adjustedX
         y: adjustedY
@@ -433,35 +431,43 @@ class Verso
 
         return
 
-    singleTap: (e) ->
-        point = @getContentPointInfo e.center.x, e.center.y, @getActivePageSpread()
-
-        @trigger 'clicked', x: point.x, y: point.y, els: point.els if point.isWithin is true
-
-        return
-
-    doubleTap: (e) ->
+    singletap: (e) ->
         activePageSpread = @getActivePageSpread()
         point = @getContentPointInfo e.center.x, e.center.y, activePageSpread
+        isDoubleTap = @tap.count is 1
 
-        @trigger 'doubleClicked', x: point.x, y: point.y, els: point.els
+        clearTimeout @tap.timeout
 
-        if activePageSpread.isZoomable()
-            maxZoomScale = activePageSpread.getMaxZoomScale()
-            zoomedIn = @transform.scale > 1
-            scale = if zoomedIn then 1 else maxZoomScale
-            zoomEvent = if zoomedIn then 'zoomedOut' else 'zoomedIn'
-            position = @position
+        if isDoubleTap
+            @tap.count = 0
 
-            @zoomTo
-                x: e.center.x
-                y: e.center.y
-                scale: scale
-                duration: @zoomDuration
-            , =>
-                @trigger zoomEvent, position: position
+            @trigger 'doubleClicked', x: point.x, y: point.y, els: point.els
+
+            if activePageSpread.isZoomable()
+                maxZoomScale = activePageSpread.getMaxZoomScale()
+                zoomedIn = @transform.scale > 1
+                scale = if zoomedIn then 1 else maxZoomScale
+                zoomEvent = if zoomedIn then 'zoomedOut' else 'zoomedIn'
+                position = @position
+
+                @zoomTo
+                    x: e.center.x
+                    y: e.center.y
+                    scale: scale
+                    duration: @zoomDuration
+                , =>
+                    @trigger zoomEvent, position: position
+
+                    return
+        else
+            @tap.count++
+            @tap.timeout = setTimeout =>
+                @tap.count = 0
+
+                @trigger 'clicked', x: point.x, y: point.y, els: point.els if point.isWithin is true
 
                 return
+            , @tap.delay
 
         return
 
