@@ -16,16 +16,17 @@ module.exports = class Animation
         if @el.style.transform is transform
             callback()
         else if duration > 0
-            @el.addEventListener 'transitionend', =>
+            transitionEnd = =>
                 return if run isnt @run
 
-                @el.removeEventListener 'transitionend'
+                @el.removeEventListener 'transitionend', transitionEnd
                 @el.style.transition = 'none'
 
                 callback()
 
                 return
-            , false
+
+            @el.addEventListener 'transitionend', transitionEnd, false
 
             @el.style.transition = "transform #{easing} #{duration}ms"
             @el.style.transform = transform
