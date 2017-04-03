@@ -185,17 +185,37 @@ class Verso
 
         pageIds
 
-    getOverlayElementsFromPoint: (els, x, y) ->
-        overlayEls = []
+    isPointWithinElement: (x, y, el) ->
+        rect = el.getBoundingClientRect()
 
-        for el in els
-            if el.classList? and el.classList.contains 'verso-page-spread__overlay'
-                rect = el.getBoundingClientRect()
+        x >= rect.left and x <= rect.right and y >= rect.top and y <= rect.bottom
 
-                if x >= rect.left and x <= rect.right and y >= rect.top and y <= rect.bottom
-                    overlayEls.push el
+    getContentPointInfo: (x, y, pageSpread) ->
+        contentRect = pageSpread.getContentEl().getBoundingClientRect()
+        overlayEls = pageSpread.getOverlayEls()
+        pageEls = pageSpread.getPageEls()
+        adjustedX = x - contentRect.left
+        adjustedY = y - contentRect.top
+        isWithinX = adjustedX >= 0 and adjustedX <= contentRect.width
+        isWithinY = adjustedY >= 0 and adjustedY <= contentRect.height
+        isWithin = isWithinX and isWithinY
+        els =
+            overlays: []
+            page: null
 
-        overlayEls
+        for el in overlayEls
+            els.overlays.push el if @isPointWithinElement(x, y, el)
+
+        for el in pageEls
+            els.page = el if @isPointWithinElement(x, y, el)
+
+        console.log els
+
+        x: adjustedX
+        y: adjustedY
+        contentRect: contentRect
+        isWithin: isWithin
+        els: els
 
     getPageSpreadCount: ->
         @pageSpreads.length
@@ -407,35 +427,41 @@ class Verso
         return
 
     press: (e) ->
-        overlayEls = @getOverlayElementsFromPoint e.target.parentNode.childNodes, e.center.x, e.center.y
-
-        @trigger 'overlaysPressed', overlayEls: overlayEls if overlayEls.length > 0
+        point = @getContentPointInfo e.center.x, e.center.y, @getActivePageSpread()
+        
+        @trigger 'pressed', x: point.x, y: point.y, els: point.els if point.isWithin is true
 
         return
 
     singleTap: (e) ->
-        overlayEls = @getOverlayElementsFromPoint e.target.parentNode.childNodes, e.center.x, e.center.y
+        point = @getContentPointInfo e.center.x, e.center.y, @getActivePageSpread()
 
-        @trigger 'overlaysClicked', overlayEls: overlayEls if overlayEls.length > 0
+        @trigger 'clicked', x: point.x, y: point.y, els: point.els if point.isWithin is true
 
         return
 
     doubleTap: (e) ->
         activePageSpread = @getActivePageSpread()
+        point = @getContentPointInfo e.center.x, e.center.y, activePageSpread
+
+        @trigger 'doubleClicked', x: point.x, y: point.y, els: point.els
 
         if activePageSpread.isZoomable()
             maxZoomScale = activePageSpread.getMaxZoomScale()
             zoomedIn = @transform.scale > 1
             scale = if zoomedIn then 1 else maxZoomScale
             zoomEvent = if zoomedIn then 'zoomedOut' else 'zoomedIn'
-
-            @trigger zoomEvent, position: @position
+            position = @position
 
             @zoomTo
                 x: e.center.x
                 y: e.center.y
                 scale: scale
                 duration: @zoomDuration
+            , =>
+                @trigger zoomEvent, position: position
+
+                return
 
         return
 

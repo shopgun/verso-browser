@@ -17,6 +17,12 @@ module.exports = class PageSpread
     getContentEl: ->
         @el.querySelector '.verso-page-spread__content'
 
+    getOverlayEls: ->
+        @el.querySelectorAll '.verso-page-spread__overlay'
+
+    getPageEls: ->
+        @el.querySelectorAll '.verso__page'
+
     getId: ->
         @id
 

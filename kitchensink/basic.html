@@ -47,11 +47,11 @@
     <body>
         <div class="verso">
             <div class="verso__scroller">
-                <div id="spread0" class="verso__page-spread" data-id="intro" data-width="80">
+<!--                 <div id="spread0" class="verso__page-spread" data-id="intro" data-width="80">
                     <div class="verso-page-spread__content">
                         <div class="verso__page">intro</div>
                     </div>
-                </div>
+                </div> -->
                 <div id="spread1" class="verso__page-spread" data-width="100" data-page-ids="1" data-max-zoom-scale="4">
                     <div class="verso-page-spread__content">
                         <div class="verso__page">page 1</div>
@@ -87,7 +87,12 @@
         <script>
             // Point Verso to the right element.
             var verso = new Verso(document.querySelector('.verso'));
-            var events = ['beforeNavigation', 'afterNavigation', 'attemptedNavigation', 'overlaysClicked', 'overlaysPressed', 'zoomedIn', 'zoomedOut', 'panStart', 'panEnd'];
+            var events = [
+                'beforeNavigation', 'afterNavigation', 'attemptedNavigation',
+                'clicked', 'doubleClicked', 'pressed',
+                'zoomedIn', 'zoomedOut',
+                'panStart', 'panEnd'
+            ];
 
             // Listen to events coming from Verso and act accordingly.
             events.forEach(function (eventType) {
