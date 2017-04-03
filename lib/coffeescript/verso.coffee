@@ -356,6 +356,8 @@ class Verso
                     x: "#{@transform.left}%"
                     duration: @navigationPanDuration
 
+                @trigger 'attemptedNavigation', position: @position
+
         return
 
     pinchStart: (e) ->
