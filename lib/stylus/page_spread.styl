@@ -5,6 +5,7 @@
     width 100%
     height 100%
     display none
+    perspective 1000 // Ensures scale3d is smooth in Chrome
     transform translate3d(0, 0, 0) // Avoid flicker
 
     for $percentage in (1..100)
