@@ -65,10 +65,10 @@ class Verso
         @navigateTo 0, options
 
     prev: (options) ->
-        @navigateTo @position - 1, options
+        @navigateTo @getPosition() - 1, options
 
     next: (options) ->
-        @navigateTo @position + 1, options
+        @navigateTo @getPosition() + 1, options
 
     last: (options) ->
         @navigateTo @getPageSpreadCount() - 1, options
@@ -76,7 +76,7 @@ class Verso
     navigateTo: (position, options = {}) ->
         return if position < 0 or position > @getPageSpreadCount() - 1
 
-        currentPosition = @position
+        currentPosition = @getPosition()
         currentPageSpread = @getPageSpreadFromPosition currentPosition
         activePageSpread = @getPageSpreadFromPosition position
         carousel = @getCarouselFromPageSpread activePageSpread
@@ -90,7 +90,7 @@ class Verso
         carousel.visible.forEach (pageSpread) -> pageSpread.position().setVisibility 'visible'
 
         @transform.left = @getLeftTransformFromPageSpread position, activePageSpread
-        @position = position
+        @setPosition position
 
         if @transform.scale > 1
             @transform.top = 0
@@ -108,11 +108,19 @@ class Verso
 
             carousel.gone.forEach (pageSpread) -> pageSpread.setVisibility 'gone'
 
-            @trigger 'afterNavigation', newPosition: @position, previousPosition: currentPosition
+            @trigger 'afterNavigation', newPosition: @getPosition(), previousPosition: currentPosition
 
             return
 
         return
+
+    getPosition: ->
+        @position
+
+    setPosition: (position) ->
+        @position = position
+
+        @
 
     getLeftTransformFromPageSpread: (position, pageSpread) ->
         left = 0
@@ -219,7 +227,7 @@ class Verso
         @pageSpreads.length
 
     getActivePageSpread: ->
-        @getPageSpreadFromPosition @position
+        @getPageSpreadFromPosition @getPosition()
 
     getPageSpreadFromPosition: (position) ->
         @pageSpreads[position]
@@ -355,7 +363,7 @@ class Verso
         @trigger 'panEnd'
 
         if @transform.scale is 1 and @pinching is false
-            position = @position
+            position = @getPosition()
             velocity = e.overallVelocityX
 
             if Math.abs(velocity) >= @swipeVelocity
@@ -369,12 +377,12 @@ class Verso
                             velocity: velocity
                             duration: @navigationPanDuration
 
-            if position is @position
+            if position is @getPosition()
                 @animation.animate
                     x: "#{@transform.left}%"
                     duration: @navigationPanDuration
 
-                @trigger 'attemptedNavigation', position: @position
+                @trigger 'attemptedNavigation', position: @getPosition()
 
         return
 
@@ -407,9 +415,9 @@ class Verso
         scale = Math.max 1, Math.min(@transform.scale, maxZoomScale)
 
         if @startTransform.scale is 1 and scale > 1
-            @trigger 'zoomedIn', position: @position
+            @trigger 'zoomedIn', position: @getPosition()
         else if @startTransform.scale > 1 and scale is 1
-            @trigger 'zoomedOut', position: @position
+            @trigger 'zoomedOut', position: @getPosition()
 
         @zoomTo
             x: e.center.x
@@ -448,7 +456,7 @@ class Verso
                 zoomedIn = @transform.scale > 1
                 scale = if zoomedIn then 1 else maxZoomScale
                 zoomEvent = if zoomedIn then 'zoomedOut' else 'zoomedIn'
-                position = @position
+                position = @getPosition()
 
                 @zoomTo
                     x: e.center.x
