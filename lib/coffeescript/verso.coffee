@@ -219,9 +219,9 @@ class Verso
             info.overlayEls.push overlayEl if @isCoordinateInsideElement(x, y, overlayEl)
 
         for pageEl in pageEls
-            info.pageEl = pageEl if @isCoordinateInsideElement(x, y, pageEl)
-
-            break
+            if @isCoordinateInsideElement(x, y, pageEl)
+                info.pageEl = pageEl
+                break
 
         pageRect = pageEl.getBoundingClientRect()
 
