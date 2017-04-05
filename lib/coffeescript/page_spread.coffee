@@ -14,14 +14,44 @@ module.exports = class PageSpread
     isZoomable: ->
         @getMaxZoomScale() > 1
 
-    getContentEl: ->
-        @el.querySelector '.verso-page-spread__content'
+    getEl: ->
+        @el
 
     getOverlayEls: ->
         @el.querySelectorAll '.verso-page-spread__overlay'
 
     getPageEls: ->
         @el.querySelectorAll '.verso__page'
+
+    getRect: ->
+        @getEl().getBoundingClientRect()
+
+    getContentRect: ->
+        pageEls = @getPageEls()
+        rect =
+            top: null
+            left: null
+            right: null
+            bottom: null
+            width: null
+            height: null
+
+        for pageEl in pageEls
+            pageRect = pageEl.getBoundingClientRect()
+
+            rect.top = pageRect.top if pageRect.top < rect.top or not rect.top?
+            rect.left = pageRect.left if pageRect.left < rect.left or not rect.left?
+            rect.right = pageRect.right if pageRect.right > rect.right or not rect.right?
+            rect.bottom = pageRect.bottom if pageRect.bottom > rect.bottom or not rect.bottom?
+
+        rect.top = rect.top ? 0
+        rect.left = rect.left ? 0
+        rect.right = rect.right ? 0
+        rect.bottom = rect.bottom ? 0
+        rect.width = rect.right - rect.left
+        rect.height = rect.bottom - rect.top
+
+        rect
 
     getId: ->
         @id

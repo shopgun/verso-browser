@@ -18,24 +18,27 @@
                 color: white;
                 font-family: system, -apple-system, 'San Francisco', '.SFNSDisplay-Regular', 'Segoe UI', Segoe, 'Segoe WP', 'Helvetica Neue', helvetica, 'Lucida Grande', arial, sans-serif;
                 font-size: 20px;
-                background-color: #34495e;
             }
 
             .verso {
                 height: 100%;
+                background-color: #34495e;
             }
 
             .verso__page {
                 text-align: center;
                 padding-top: 50vh;
+                background-repeat: no-repeat;
+                background-position: center center;
+                background-size: contain;
             }
 
-            #spread1 { background: #3498db; }
-            #spread2 { background: #e74c3c; }
-            #spread3 { background: #f39c12; }
-            #spread4 { background: #2ecc71; }
+            #spread1 .verso__page { background: #3498db; }
+            #spread2 .verso__page { background: #e74c3c; }
+            #spread3 .verso__page { background: #f39c12; }
+            #spread4 .verso__page { background: #2ecc71; }
 
-            #spread4 .verso-page-spread__overlay {
+            #spread4 .verso__overlay {
                 top: 10%;
                 left: 10%;
                 width: 30%;
@@ -48,37 +51,25 @@
         <div class="verso">
             <div class="verso__scroller">
                 <div id="spread0" class="verso__page-spread" data-id="intro" data-width="80">
-                    <div class="verso-page-spread__content">
-                        <div class="verso__page">intro</div>
-                    </div>
+                    <div class="verso__page">intro</div>
                 </div>
                 <div id="spread1" class="verso__page-spread" data-width="100" data-page-ids="1" data-max-zoom-scale="4">
-                    <div class="verso-page-spread__content">
-                        <div class="verso__page">page 1</div>
-                    </div>
+                    <div class="verso__page">page 1</div>
                 </div>
                 <div id="spread2" class="verso__page-spread" data-width="100" data-page-ids="2,3" data-max-zoom-scale="4">
-                    <div class="verso-page-spread__content">
-                        <div class="verso__page">page 2</div>
-                        <div class="verso__page">page 3</div>
-                    </div>
+                    <div class="verso__page verso-page--verso">page 2</div>
+                    <div class="verso__page verso-page--recto">page 3</div>
                 </div>
                 <div id="spread3" class="verso__page-spread" data-width="100" data-page-ids="4,5" data-max-zoom-scale="4">
-                    <div class="verso-page-spread__content">
-                        <div class="verso__page">page 4</div>
-                        <div class="verso__page">page 5</div>
-                    </div>
+                    <div class="verso__page verso-page--verso">page 4</div>
+                    <div class="verso__page verso-page--recto">page 5</div>
                 </div>
                 <div id="spread4" class="verso__page-spread" data-width="100" data-page-ids="6" data-max-zoom-scale="4">
-                    <div class="verso-page-spread__content">
-                        <div class="verso__page">page 6 with overlay</div>
-                    </div>
-                    <div class="verso-page-spread__overlay"></div>
+                    <div class="verso__page">page 6 with overlay</div>
+                    <div class="verso__overlay"></div>
                 </div>
                 <div id="spread5" class="verso__page-spread" data-id="outro" data-width="80">
-                    <div class="verso-page-spread__content">
-                        <div class="verso__page">outro</div>
-                    </div>
+                    <div class="verso__page">outro</div>
                 </div>
             </div>
         </div>
@@ -94,7 +85,7 @@
                 'panStart', 'panEnd'
             ];
 
-            // Listen to events coming from Verso and act accordingly.
+            Listen to events coming from Verso and act accordingly.
             events.forEach(function (eventType) {
                 verso.bind(eventType, function (e) {
                     console.log(eventType, e);

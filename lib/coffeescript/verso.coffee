@@ -7,7 +7,7 @@ class Verso
     constructor: (@el, @options = {}) ->
         @swipeVelocity = @options.swipeVelocity ? 0.3
         @swipeThreshold = @options.swipeThreshold ? 10
-        @navigationDuration = @options.navigationDuration ? 260
+        @navigationDuration = @options.navigationDuration ? 240
         @navigationPanDuration = @options.navigationPanDuration ? 200
         @zoomDuration = @options.zoomDuration ? 200
 
@@ -193,35 +193,49 @@ class Verso
 
         pageIds
 
-    isPointWithinElement: (x, y, el) ->
+    isCoordinateInsideElement: (x, y, el) ->
         rect = el.getBoundingClientRect()
 
         x >= rect.left and x <= rect.right and y >= rect.top and y <= rect.bottom
 
-    getContentPointInfo: (x, y, pageSpread) ->
-        contentRect = pageSpread.getContentEl().getBoundingClientRect()
+    getCoordinateInfo: (x, y, pageSpread) ->
+        info =
+            x: x
+            y: y
+            contentX: 0
+            contentY: 0
+            pageX: 0
+            pageY: 0
+            overlayEls: []
+            pageEl: null
+            isInsidePageX: false
+            isInsidePageY: false
+            isInsidePage: false
+        contentRect = pageSpread.getContentRect()
         overlayEls = pageSpread.getOverlayEls()
         pageEls = pageSpread.getPageEls()
-        adjustedX = x - contentRect.left
-        adjustedY = y - contentRect.top
-        isWithinX = adjustedX >= 0 and adjustedX <= contentRect.width
-        isWithinY = adjustedY >= 0 and adjustedY <= contentRect.height
-        isWithin = isWithinX and isWithinY
-        els =
-            overlays: []
-            page: null
 
-        for el in overlayEls
-            els.overlays.push el if @isPointWithinElement(x, y, el)
+        for overlayEl in overlayEls
+            info.overlayEls.push overlayEl if @isCoordinateInsideElement(x, y, overlayEl)
 
-        for el in pageEls
-            els.page = el if @isPointWithinElement(x, y, el)
+        for pageEl in pageEls
+            info.pageEl = pageEl if @isCoordinateInsideElement(x, y, pageEl)
 
-        x: x / contentRect.width
-        y: y / contentRect.height
-        contentRect: contentRect
-        isWithin: isWithin
-        els: els
+            break
+
+        pageRect = pageEl.getBoundingClientRect()
+
+        info.contentX = (x - contentRect.left) / contentRect.width
+        info.contentY = (y - contentRect.top) / contentRect.height
+
+        if info.pageEl?
+            info.pageX = (x - pageRect.left) / pageRect.width
+            info.pageY = (y - pageRect.top) / pageRect.height
+            info.isInsidePageX = info.pageX >= 0 and info.pageX <= pageRect.width
+            info.isInsidePageY = info.pageY >= 0 and info.pageY <= pageRect.height
+            info.isInsidePage = info.isInsidePageX and info.isInsidePageY
+
+        info
 
     getPageSpreadCount: ->
         @pageSpreads.length
@@ -237,8 +251,8 @@ class Verso
             return idx if pageSpread.options.pageIds.indexOf(pageId) > -1
 
     getPageSpreadBounds: (pageSpread) ->
-        pageSpreadRect = pageSpread.el.getBoundingClientRect()
-        pageSpreadContentRect = pageSpread.getContentEl().getBoundingClientRect()
+        pageSpreadRect = pageSpread.getRect()
+        pageSpreadContentRect = pageSpread.getContentRect()
 
         left: (pageSpreadContentRect.left - pageSpreadRect.left) / pageSpreadRect.width * 100
         top: (pageSpreadContentRect.top - pageSpreadRect.top) / pageSpreadRect.height * 100
@@ -433,15 +447,13 @@ class Verso
         return
 
     press: (e) ->
-        point = @getContentPointInfo e.center.x, e.center.y, @getActivePageSpread()
-        
-        @trigger 'pressed', x: point.x, y: point.y, els: point.els if point.isWithin is true
+        @trigger 'pressed', @getCoordinateInfo(e.center.x, e.center.y, @getActivePageSpread())
 
         return
 
     singletap: (e) ->
         activePageSpread = @getActivePageSpread()
-        point = @getContentPointInfo e.center.x, e.center.y, activePageSpread
+        coordinateInfo = @getCoordinateInfo e.center.x, e.center.y, activePageSpread
         isDoubleTap = @tap.count is 1
 
         clearTimeout @tap.timeout
@@ -449,7 +461,7 @@ class Verso
         if isDoubleTap
             @tap.count = 0
 
-            @trigger 'doubleClicked', x: point.x, y: point.y, els: point.els
+            @trigger 'doubleClicked', coordinateInfo
 
             if activePageSpread.isZoomable()
                 maxZoomScale = activePageSpread.getMaxZoomScale()
@@ -472,7 +484,7 @@ class Verso
             @tap.timeout = setTimeout =>
                 @tap.count = 0
 
-                @trigger 'clicked', x: point.x, y: point.y, els: point.els if point.isWithin is true
+                @trigger 'clicked', coordinateInfo
 
                 return
             , @tap.delay

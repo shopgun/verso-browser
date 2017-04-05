@@ -6,6 +6,10 @@
     overflow hidden
     box-sizing border-box
 
+    &[data-pinching="true"]
+        .verso__page-spread:not([data-active="true"])
+            visibility hidden
+
     *,
     *:before,
     *:after
@@ -16,5 +20,6 @@
     right 0
     bottom 0
     transform-origin 0 0
+    transform-style preserve-3d
 
 @require 'page_spread'
