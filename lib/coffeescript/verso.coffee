@@ -427,11 +427,12 @@ class Verso
         activePageSpread = @getActivePageSpread()
         maxZoomScale = activePageSpread.getMaxZoomScale()
         scale = Math.max 1, Math.min(@transform.scale, maxZoomScale)
+        position = @getPosition()
 
         if @startTransform.scale is 1 and scale > 1
-            @trigger 'zoomedIn', position: @getPosition()
+            @trigger 'zoomedIn', position: position
         else if @startTransform.scale > 1 and scale is 1
-            @trigger 'zoomedOut', position: @getPosition()
+            @trigger 'zoomedOut', position: position
 
         @zoomTo
             x: e.center.x
