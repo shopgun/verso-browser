@@ -142,9 +142,9 @@ class Verso
             visible = false
 
             if pageSpread.getLeft() <= pageSpreadSubject.getLeft()
-                visible = true if pageSpread.getLeft() + pageSpread.getWidth() >= pageSpreadSubject.getLeft() - 100
+                visible = true if pageSpread.getLeft() + pageSpread.getWidth() > pageSpreadSubject.getLeft() - 100
             else
-                visible = true if pageSpread.getLeft() - pageSpread.getWidth() <= pageSpreadSubject.getLeft() + 100
+                visible = true if pageSpread.getLeft() - pageSpread.getWidth() < pageSpreadSubject.getLeft() + 100
 
             if visible is true
                 carousel.visible.push pageSpread
