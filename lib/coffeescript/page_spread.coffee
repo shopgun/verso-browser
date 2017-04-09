@@ -18,16 +18,15 @@ module.exports = class PageSpread
         @el
 
     getOverlayEls: ->
-        @el.querySelectorAll '.verso-page-spread__overlay'
+        @getEl().querySelectorAll '.verso-page-spread__overlay'
 
     getPageEls: ->
-        @el.querySelectorAll '.verso__page'
+        @getEl().querySelectorAll '.verso__page'
 
     getRect: ->
         @getEl().getBoundingClientRect()
 
     getContentRect: ->
-        pageEls = @getPageEls()
         rect =
             top: null
             left: null
@@ -35,8 +34,8 @@ module.exports = class PageSpread
             bottom: null
             width: null
             height: null
-
-        for pageEl in pageEls
+            
+        for pageEl in @getPageEls()
             pageRect = pageEl.getBoundingClientRect()
 
             rect.top = pageRect.top if pageRect.top < rect.top or not rect.top?
@@ -73,7 +72,7 @@ module.exports = class PageSpread
 
     setVisibility: (visibility) ->
         if @visibility isnt visibility
-            @el.style.display = if visibility is 'visible' then 'block' else 'none'
+            @getEl().style.display = if visibility is 'visible' then 'block' else 'none'
 
             @visibility = visibility
 
@@ -81,7 +80,7 @@ module.exports = class PageSpread
 
     position: ->
         if @positioned is false
-            @el.style.left = "#{@getLeft()}%"
+            @getEl().style.left = "#{@getLeft()}%"
 
             @positioned = true
 
@@ -89,12 +88,12 @@ module.exports = class PageSpread
 
     activate: ->
         @active = true
-        @el.dataset.active = true
+        @getEl().dataset.active = true
 
         return
 
     deactivate: ->
         @active = false
-        @el.dataset.active = false
+        @getEl().dataset.active = false
 
         return
