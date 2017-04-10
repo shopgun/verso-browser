@@ -167,6 +167,7 @@ class Verso
 
         for el in els
             id = el.getAttribute 'data-id'
+            type = el.getAttribute 'data-type'
             pageIds = el.getAttribute 'data-page-ids'
             pageIds = if pageIds? then pageIds.split(',').map (i) -> i else []
             maxZoomScale = el.getAttribute 'data-max-zoom-scale'
@@ -175,6 +176,7 @@ class Verso
             width = if width? then +width else 100
             pageSpread = new PageSpread el,
                 id: id
+                type: type
                 pageIds: pageIds
                 maxZoomScale: maxZoomScale
                 width: width

@@ -4,6 +4,7 @@ module.exports = class PageSpread
         @positioned = false
         @active = false
         @id = @options.id
+        @type = @options.type
         @pageIds = @options.pageIds
         @width = @options.width
         @left = @options.left
@@ -54,6 +55,9 @@ module.exports = class PageSpread
 
     getId: ->
         @id
+
+    getType: ->
+        @type
 
     getPageIds: ->
         @pageIds
