@@ -270,14 +270,20 @@ class Verso
         pageSpreadContentRect: pageSpreadContentRect
 
     clipLeftFromPageSpreadBounds: (x, scale, pageSpreadBounds) ->
-        x = Math.min x, pageSpreadBounds.left * -scale
-        x = Math.max x, pageSpreadBounds.left * -scale - pageSpreadBounds.width * scale + 100
+        if pageSpreadBounds.width * scale < 100
+            x = pageSpreadBounds.left * -scale + 50 - (pageSpreadBounds.width * scale / 2)
+        else
+            x = Math.min x, pageSpreadBounds.left * -scale
+            x = Math.max x, pageSpreadBounds.left * -scale - pageSpreadBounds.width * scale + 100
 
         x
 
     clipTopFromPageSpreadBounds: (y, scale, pageSpreadBounds) ->
-        y = Math.min y, pageSpreadBounds.top * -scale
-        y = Math.max y, pageSpreadBounds.top * -scale - pageSpreadBounds.height * scale + 100
+        if pageSpreadBounds.height * scale < 100
+            y = pageSpreadBounds.top * -scale + 50 - (pageSpreadBounds.height * scale / 2)
+        else
+            y = Math.min y, pageSpreadBounds.top * -scale
+            y = Math.max y, pageSpreadBounds.top * -scale - pageSpreadBounds.height * scale + 100
 
         y
 
