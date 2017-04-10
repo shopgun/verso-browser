@@ -54,10 +54,16 @@ class Verso
 
         @navigateTo @getPageSpreadPositionFromPageId(@options.pageId) ? 0, duration: 0
 
+        @resizeListener = @resize.bind @
+
+        window.addEventListener 'resize', @resizeListener, false
+
         return
 
     destroy: ->
         @hammer.destroy()
+
+        window.removeEventListener 'resize', @resizeListener
 
         @
 
@@ -489,6 +495,25 @@ class Verso
 
                 return
             , @tap.delay
+
+        return
+
+    resize: ->
+        if @transform.scale > 1
+            position = @getPosition()
+            activePageSpread = @getActivePageSpread()
+
+            @transform.left = @getLeftTransformFromPageSpread position, activePageSpread
+            @transform.top = 0
+            @transform.scale = 1
+
+            @zoomTo
+                x: @transform.left
+                y: @transform.top
+                scale: @transform.scale
+                duration: 0
+
+            @trigger 'zoomedOut', position: position
 
         return
 
