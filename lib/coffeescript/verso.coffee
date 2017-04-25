@@ -216,9 +216,9 @@ class Verso
             pageY: 0
             overlayEls: []
             pageEl: null
-            isInsidePageX: false
-            isInsidePageY: false
-            isInsidePage: false
+            isInsideContentX: false
+            isInsideContentY: false
+            isInsideContent: false
         contentRect = pageSpread.getContentRect()
         overlayEls = pageSpread.getOverlayEls()
         pageEls = pageSpread.getPageEls()
@@ -231,17 +231,13 @@ class Verso
                 info.pageEl = pageEl
                 break
 
-        pageRect = pageEl.getBoundingClientRect()
-
         info.contentX = (x - contentRect.left) / contentRect.width
         info.contentY = (y - contentRect.top) / contentRect.height
 
         if info.pageEl?
-            info.pageX = (x - pageRect.left) / pageRect.width
-            info.pageY = (y - pageRect.top) / pageRect.height
-            info.isInsidePageX = info.pageX >= 0 and info.pageX <= pageRect.width
-            info.isInsidePageY = info.pageY >= 0 and info.pageY <= pageRect.height
-            info.isInsidePage = info.isInsidePageX and info.isInsidePageY
+            info.isInsideContentX = info.contentX >= 0 and info.contentX <= contentRect.width
+            info.isInsideContentY = info.contentY >= 0 and info.contentY <= contentRect.height
+            info.isInsideContent = info.isInsideContentX and info.isInsideContentY
 
         info
 
