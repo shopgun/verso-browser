@@ -235,8 +235,8 @@ class Verso
         info.contentY = (y - contentRect.top) / contentRect.height
 
         if info.pageEl?
-            info.isInsideContentX = info.contentX >= 0 and info.contentX <= contentRect.width
-            info.isInsideContentY = info.contentY >= 0 and info.contentY <= contentRect.height
+            info.isInsideContentX = info.contentX >= 0 and info.contentX <= 1
+            info.isInsideContentY = info.contentY >= 0 and info.contentY <= 1
             info.isInsideContent = info.isInsideContentX and info.isInsideContentY
 
         info
