@@ -6,35 +6,39 @@
     height 100%
     display none
     perspective 1000 // Ensures scale3d is smooth in Chrome
-    transform translate3d(0, 0, 0) // Avoid flicker in Safari/Chrome
+    transform translateZ(0) // Avoid flicker in Safari/Chrome
     transform-style preserve-3d // Avoid flicker in Firefox
 
     for $percentage in (1..100)
         &[data-width=\"{$percentage}\"]
             width ($percentage)%
     
-    > .verso__page
-        absolute top left
-        bottom 0
-        width 100%
-        transform translate3d(0, 0, 0) // Avoid flicker
-        background-repeat no-repeat
-        background-position center center
-        
-    > .verso-page--verso
-            background-position right center
-            width 50%
-        
-    > .verso-page--recto
-            background-position left center
-            left 50%
-            width 50%
+.verso__page
+    absolute top left
+    bottom 0
+    width 100%
+    overflow hidden
+    box-shadow none
+    transform translateZ(0) // Avoid flicker in Firefox
+    background-repeat no-repeat
+    background-position center center
+    
+// Position verso and recto using translateX to ensure subpixel rendering.
+.verso-page--verso
+    background-position right center
+    transform translateX(0)
+    width 50%
 
-    > .verso__overlay
-        absolute top left
-        width 0%
-        height 0%
-        z-index 2
-        transform translate3d(0, 0, 0) // Avoid flicker
-        display block
-        cursor pointer
+.verso-page--recto
+    background-position left center
+    transform translateX(100%)
+    width 50%
+
+.verso__overlay
+    absolute top left
+    width 0%
+    height 0%
+    z-index 2
+    transform translateZ(0) // Avoid flicker
+    display block
+    cursor pointer

@@ -44,11 +44,11 @@
   -moz-perspective: 1000;
   -ms-perspective: 1000;
   perspective: 1000;
-  -webkit-transform: translate3d(0, 0, 0);
-  -moz-transform: translate3d(0, 0, 0);
-  -o-transform: translate3d(0, 0, 0);
-  -ms-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
   -webkit-transform-style: preserve-3d;
   -moz-transform-style: preserve-3d;
   -o-transform-style: preserve-3d;
@@ -355,41 +355,53 @@
 .verso__page-spread[data-width="100"] {
   width: 100%;
 }
-.verso__page-spread > .verso__page {
+.verso__page {
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   width: 100%;
-  -webkit-transform: translate3d(0, 0, 0);
-  -moz-transform: translate3d(0, 0, 0);
-  -o-transform: translate3d(0, 0, 0);
-  -ms-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
+  overflow: hidden;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
   background-repeat: no-repeat;
   background-position: center center;
 }
-.verso__page-spread > .verso-page--verso {
+.verso-page--verso {
   background-position: right center;
+  -webkit-transform: translateX(0);
+  -moz-transform: translateX(0);
+  -o-transform: translateX(0);
+  -ms-transform: translateX(0);
+  transform: translateX(0);
   width: 50%;
 }
-.verso__page-spread > .verso-page--recto {
+.verso-page--recto {
   background-position: left center;
-  left: 50%;
+  -webkit-transform: translateX(100%);
+  -moz-transform: translateX(100%);
+  -o-transform: translateX(100%);
+  -ms-transform: translateX(100%);
+  transform: translateX(100%);
   width: 50%;
 }
-.verso__page-spread > .verso__overlay {
+.verso__overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 0%;
   height: 0%;
   z-index: 2;
-  -webkit-transform: translate3d(0, 0, 0);
-  -moz-transform: translate3d(0, 0, 0);
-  -o-transform: translate3d(0, 0, 0);
-  -ms-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
   display: block;
   cursor: pointer;
 }
