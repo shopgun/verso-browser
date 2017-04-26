@@ -50,9 +50,10 @@ class Verso
         return
 
     start: ->
-        @hammer.set enable: true
+        pageId = @getPageSpreadPositionFromPageId(@options.pageId) ? 0
 
-        @navigateTo @getPageSpreadPositionFromPageId(@options.pageId) ? 0, duration: 0
+        @hammer.set enable: true
+        @navigateTo pageId, duration: 0
 
         @resizeListener = @resize.bind @
 
@@ -104,7 +105,9 @@ class Verso
 
             @trigger 'zoomedOut', position: currentPosition
 
-        @trigger 'beforeNavigation', currentPosition: currentPosition, newPosition: position
+        @trigger 'beforeNavigation',
+            currentPosition: currentPosition
+            newPosition: position
 
         @animation.animate
             x: "#{@transform.left}%"
@@ -114,7 +117,9 @@ class Verso
 
             carousel.gone.forEach (pageSpread) -> pageSpread.setVisibility 'gone'
 
-            @trigger 'afterNavigation', newPosition: @getPosition(), previousPosition: currentPosition
+            @trigger 'afterNavigation',
+                newPosition: @getPosition()
+                previousPosition: currentPosition
 
             return
 
@@ -265,23 +270,14 @@ class Verso
         pageSpreadRect: pageSpreadRect
         pageSpreadContentRect: pageSpreadContentRect
 
-    clipLeftFromPageSpreadBounds: (x, scale, pageSpreadBounds) ->
-        if pageSpreadBounds.width * scale < 100
-            x = pageSpreadBounds.left * -scale + 50 - (pageSpreadBounds.width * scale / 2)
+    clipCoordinate: (coordinate, scale, size, offset) ->
+        if size * scale < 100
+            coordinate = offset * -scale + 50 - (size * scale / 2)
         else
-            x = Math.min x, pageSpreadBounds.left * -scale
-            x = Math.max x, pageSpreadBounds.left * -scale - pageSpreadBounds.width * scale + 100
+            coordinate = Math.min coordinate, offset * -scale
+            coordinate = Math.max coordinate, offset * -scale - size * scale + 100
 
-        x
-
-    clipTopFromPageSpreadBounds: (y, scale, pageSpreadBounds) ->
-        if pageSpreadBounds.height * scale < 100
-            y = pageSpreadBounds.top * -scale + 50 - (pageSpreadBounds.height * scale / 2)
-        else
-            y = Math.min y, pageSpreadBounds.top * -scale
-            y = Math.max y, pageSpreadBounds.top * -scale - pageSpreadBounds.height * scale + 100
-
-        y
+        coordinate
 
     zoomTo: (options = {}, callback) ->
         scale = options.scale
@@ -302,8 +298,8 @@ class Verso
 
             # Make sure the animation doesn't exceed the content bounds.
             if options.bounds isnt false and scale > 1
-                x = @clipLeftFromPageSpreadBounds x, scale, pageSpreadBounds
-                y = @clipTopFromPageSpreadBounds y, scale, pageSpreadBounds
+                x = @clipCoordinate x, scale, pageSpreadBounds.width, pageSpreadBounds.left
+                y = @clipCoordinate y, scale, pageSpreadBounds.height, pageSpreadBounds.top
         else
             x = 0
             y = 0
@@ -359,8 +355,8 @@ class Verso
             scale = @transform.scale
             x = @startTransform.left + carouselScaledOffset + e.deltaX / @scrollerEl.offsetWidth * 100
             y = @startTransform.top + e.deltaY / @scrollerEl.offsetHeight * 100
-            x = @clipLeftFromPageSpreadBounds x, scale, pageSpreadBounds
-            y = @clipTopFromPageSpreadBounds y, scale, pageSpreadBounds
+            x = @clipCoordinate x, scale, pageSpreadBounds.width, pageSpreadBounds.left
+            y = @clipCoordinate y, scale, pageSpreadBounds.height, pageSpreadBounds.top
             x -= carouselScaledOffset
 
             @transform.left = x
