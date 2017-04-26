@@ -361,9 +361,6 @@
   left: 0;
   bottom: 0;
   width: 100%;
-  overflow: hidden;
-  -webkit-box-shadow: none;
-  box-shadow: none;
   -webkit-transform: translateZ(0);
   -moz-transform: translateZ(0);
   -o-transform: translateZ(0);
