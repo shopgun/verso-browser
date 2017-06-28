@@ -1,8 +1,8 @@
 {
   "name": "verso",
   "version": "1.0.0",
-  "description": "A library for laying out book-like content.",
-  "main": "verso.js",
+  "description": "A multi-paged viewer for browsers.",
+  "main": "dist/verso.js",
   "watch": {
     "build-coffee": {
       "patterns": [

@@ -1,3 +1,3 @@
 # Verso
 
-A library for layout out book-like content. See `kitchensink/example1.html` for how it works.
+A multi-paged viewer for browsers. See `kitchensink/example1.html` for how it works.
