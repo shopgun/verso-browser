@@ -32,7 +32,7 @@
     "type": "git",
     "url": "git+https://github.com/shopgun/verso-browser.git"
   },
-  "author": "Morten Bo Rønsholdt",
+  "author": "Morten Bo Rønsholdt <mr@shopgun.com> (https://shopgun.com/)",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/shopgun/verso-browser/issues"
