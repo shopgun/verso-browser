@@ -1,0 +1,17 @@
+{
+  "name": "verso-browser",
+  "description": "A multi-paged viewer for browsers.",
+  "main": "dist/verso.js",
+  "authors": [
+    "Morten Bo Rønsholdt <mr@shopgun.com> (https://shopgun.com/)"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/shopgun/verso-browser",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
