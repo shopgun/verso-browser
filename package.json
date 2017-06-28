@@ -22,11 +22,11 @@
     }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build-coffee": "browserify lib/coffeescript/verso.coffee -t coffeeify -p browserify-derequire -s Verso --extension=coffee -o verso.js -d",
-    "build-styl": "stylus lib/stylus/verso.styl -u nib -o verso.css",
+    "test": "./node_modules/coffeelint/bin/coffeelint lib/coffeescript/ -r lib/coffeescript/",
+    "build-coffee": "browserify lib/coffeescript/verso.coffee -t coffeeify -p browserify-derequire -s Verso --extension=coffee -o dist/verso.js -d",
+    "build-styl": "stylus lib/stylus/verso.styl -u nib -o dist/verso.css",
     "watch": "npm-watch",
-    "start": "python -m SimpleHTTPServer 8001"
+    "server": "python -m SimpleHTTPServer 8001"
   },
   "repository": {
     "type": "git",
@@ -39,7 +39,7 @@
   },
   "homepage": "https://github.com/shopgun/verso-browser#readme",
   "dependencies": {
-    "browserify": "^14.1.0",
+    "browserify": "^14.4.0",
     "browserify-derequire": "^0.9.4",
     "coffeeify": "^2.1.0",
     "coffeelint": "^1.16.0",
@@ -47,7 +47,7 @@
     "hammerjs": "^2.0.8",
     "microevent": "^1.0.0",
     "nib": "^1.1.2",
-    "npm-watch": "^0.1.8",
+    "npm-watch": "^0.2.0",
     "stylus": "^0.54.5"
   }
 }
