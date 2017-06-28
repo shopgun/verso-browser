@@ -1,5 +1,5 @@
 {
-  "name": "verso",
+  "name": "verso-browser",
   "version": "1.0.0",
   "description": "A multi-paged viewer for browsers.",
   "main": "dist/verso.js",
