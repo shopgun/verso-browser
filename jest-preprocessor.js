@@ -1,9 +1,9 @@
-const coffee = require('coffee-script');
+var coffee = require('coffee-script');
 
 module.exports = {
-    process(src, path) {
+    process: function (src, path) {
         if (path.endsWith('.coffee')) {
-            const js = coffee.compile(src, { bare: true });
+            var js = coffee.compile(src, { bare: true });
 
             return js;
         }
