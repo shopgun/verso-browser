@@ -22,12 +22,24 @@
     }
   },
   "scripts": {
-    "test": "./node_modules/coffeelint/bin/coffeelint lib/coffeescript/ -r lib/coffeescript/",
+    "test": "./node_modules/coffeelint/bin/coffeelint lib/coffeescript/ -r lib/coffeescript/ && jest",
     "build-coffee": "browserify lib/coffeescript/verso.coffee -t coffeeify -p browserify-derequire -s Verso --extension=coffee -o dist/verso.js -d",
     "build-styl": "stylus lib/stylus/verso.styl -u nib -o dist/verso.css",
     "watch": "npm-watch",
     "server": "python -m SimpleHTTPServer 8001"
   },
+  "jest": {
+    "moduleFileExtensions": [
+      "coffee",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(coffee)$": "<rootDir>/jest-preprocessor.js"
+    },
+    "testMatch": [
+      "**/__tests__/*.(coffee|js)"
+    ]
+  }, 
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shopgun/verso-browser.git"
@@ -38,7 +50,7 @@
     "url": "https://github.com/shopgun/verso-browser/issues"
   },
   "homepage": "https://github.com/shopgun/verso-browser#readme",
-  "dependencies": {
+  "devDependencies": {
     "browserify": "^14.4.0",
     "browserify-derequire": "^0.9.4",
     "coffeeify": "^2.1.0",
@@ -48,6 +60,8 @@
     "microevent": "^1.0.0",
     "nib": "^1.1.2",
     "npm-watch": "^0.2.0",
-    "stylus": "^0.54.5"
+    "stylus": "^0.54.5",
+    "coffee-script": "^1.12.6",
+    "jest": "^20.0.4"
   }
 }
