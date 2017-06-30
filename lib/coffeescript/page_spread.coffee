@@ -13,7 +13,7 @@ module.exports = class PageSpread
         return
 
     isZoomable: ->
-        @getMaxZoomScale() > 1 and @getEl().dataset.zoomable isnt 'false'
+        @getMaxZoomScale() > 1 and @getEl().getAttribute('data-zoomable') isnt 'false'
 
     getEl: ->
         @el
@@ -92,12 +92,12 @@ module.exports = class PageSpread
 
     activate: ->
         @active = true
-        @getEl().dataset.active = true
+        @getEl().setAttribute 'data-active', @active
 
         return
 
     deactivate: ->
         @active = false
-        @getEl().dataset.active = false
+        @getEl().setAttribute 'data-active', @active
 
         return
