@@ -59,7 +59,7 @@ class Verso
 
         window.addEventListener 'resize', @resizeListener, false
 
-        return
+        @
 
     destroy: ->
         @hammer.destroy()
