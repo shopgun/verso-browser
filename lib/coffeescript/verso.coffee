@@ -410,7 +410,7 @@ class Verso
         return if not @getActivePageSpread().isZoomable()
 
         @pinching = true
-        @el.dataset.pinching = true
+        @el.setAttribute 'data-pinching', true
         @startTransform.scale = @transform.scale
 
         return
@@ -447,7 +447,7 @@ class Verso
             duration: @zoomDuration
         , =>
             @pinching = false
-            @el.dataset.pinching = false
+            @el.setAttribute 'data-pinching', false
 
             return
 

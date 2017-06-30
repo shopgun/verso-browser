@@ -26,7 +26,7 @@
     "build-coffee": "browserify lib/coffeescript/verso.coffee -t coffeeify -p browserify-derequire -s Verso --extension=coffee -o dist/verso.js -d",
     "build-styl": "stylus lib/stylus/verso.styl -u nib -o dist/verso.css",
     "watch": "npm-watch",
-    "server": "python -m SimpleHTTPServer 8001"
+    "dev": "python -m SimpleHTTPServer 8001"
   },
   "jest": {
     "moduleFileExtensions": [

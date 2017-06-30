@@ -13,7 +13,7 @@ module.exports = class PageSpread
         return
 
     isZoomable: ->
-        @getMaxZoomScale() > 1 and @getEl().dataset.zoomable isnt 'false'
+        @getMaxZoomScale() > 1 and @getEl().getAttribute('data-zoomable') isnt 'false'
 
     getEl: ->
         @el
