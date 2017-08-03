@@ -335,7 +335,8 @@ class Verso
         @
 
     panStart: (e) ->
-        # Only allow panning if zoomed in or doing a horizontal pan to ensure vertical scrolling works for scrollable page spreads.
+        # Only allow panning if zoomed in or doing a horizontal pan.
+        # This ensures vertical scrolling works for scrollable page spreads.
         if @transform.scale > 1 or (e.direction is Hammer.DIRECTION_LEFT or e.direction is Hammer.DIRECTION_RIGHT)
             x = e.center.x
             edgeThreshold = 30
