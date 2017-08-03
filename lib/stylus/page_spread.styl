@@ -20,6 +20,10 @@
     transform translateZ(0) // Avoid flicker in Firefox
     background-repeat no-repeat
     background-position center center
+
+.verso--scrollable
+    overflow-y auto
+    -webkit-overflow-scrolling touch
     
 // Position verso and recto using translateX to ensure subpixel rendering.
 .verso-page--verso

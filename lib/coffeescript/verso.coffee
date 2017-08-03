@@ -27,7 +27,8 @@ class Verso
         @pageIds = @buildPageIds @pageSpreads
         @animation = new Animation @scrollerEl
         @hammer = new Hammer.Manager @scrollerEl,
-            touchAction: 'auto'
+            preventDefault: true
+            touchAction: 'pan-y'
             enable: false
             # Prefer touch input if possible since Android acts weird when using pointer events.
             inputClass: if 'ontouchstart' of window then Hammer.TouchInput else null
@@ -56,6 +57,9 @@ class Verso
         @navigateTo pageId, duration: 0
 
         @resizeListener = @resize.bind @
+        @touchStartListener = @touchStart.bind @
+
+        @el.addEventListener 'touchstart', @touchStartListener, false
 
         window.addEventListener 'resize', @resizeListener, false
 
@@ -63,6 +67,8 @@ class Verso
 
     destroy: ->
         @hammer.destroy()
+
+        @el.removeEventListener 'touchstart', @touchStartListener
 
         window.removeEventListener 'resize', @resizeListener
 
@@ -329,18 +335,20 @@ class Verso
         @
 
     panStart: (e) ->
-        x = e.center.x
-        edgeThreshold = 30
-        width = @scrollerEl.offsetWidth
+        # Only allow panning if zoomed in or doing a horizontal pan to ensure vertical scrolling works for scrollable page spreads.
+        if @transform.scale > 1 or (e.direction is Hammer.DIRECTION_LEFT or e.direction is Hammer.DIRECTION_RIGHT)
+            x = e.center.x
+            edgeThreshold = 30
+            width = @scrollerEl.offsetWidth
 
-        # Prevent panning when edge-swiping on iOS.
-        if x > edgeThreshold and x < width - edgeThreshold
-            @startTransform.left = @transform.left
-            @startTransform.top = @transform.top
+            # Prevent panning when edge-swiping on iOS.
+            if x > edgeThreshold and x < width - edgeThreshold
+                @startTransform.left = @transform.left
+                @startTransform.top = @transform.top
 
-            @panning = true
+                @panning = true
 
-            @trigger 'panStart'
+                @trigger 'panStart'
 
         return
 
@@ -495,6 +503,13 @@ class Verso
 
                 return
             , @tap.delay
+
+        return
+
+    touchStart: (e) ->
+        pageSpread = @getPageSpreadFromPosition @getPosition()
+
+        e.preventDefault() if pageSpread.el.classList.contains('verso--scrollable') is false
 
         return
 
