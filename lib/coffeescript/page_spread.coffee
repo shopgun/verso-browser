@@ -46,6 +46,9 @@ module.exports = class PageSpread
                 width: pageEl.offsetWidth
                 height: pageEl.offsetHeight
 
+            pageRect.right = pageRect.left + pageRect.width
+            pageRect.bottom = pageRect.top + pageRect.height
+
             rect.top = pageRect.top if pageRect.top < rect.top or not rect.top?
             rect.left = pageRect.left if pageRect.left < rect.left or not rect.left?
             rect.right = pageRect.right if pageRect.right > rect.right or not rect.right?
