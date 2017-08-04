@@ -6,8 +6,10 @@
     height 100%
     display none
     perspective 1000 // Ensures scale3d is smooth in Chrome
-    transform translateZ(0) // Avoid flicker in Safari/Chrome
     transform-style preserve-3d // Avoid flicker in Firefox
+
+    // Left out for now as it causes flickering on mobile Safari.
+    //transform translateZ(0) // Avoid flicker in Safari/Chrome
 
     for $percentage in (1..100)
         &[data-width=\"{$percentage}\"]
