@@ -1,6 +1,6 @@
 {
   "name": "verso-browser",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A multi-paged viewer for browsers.",
   "main": "dist/verso.js",
   "watch": {

@@ -15,6 +15,9 @@ module.exports = class PageSpread
     isZoomable: ->
         @getMaxZoomScale() > 1 and @getEl().getAttribute('data-zoomable') isnt 'false'
 
+    isScrollable: ->
+        @getEl().classList.contains 'verso--scrollable'
+
     getEl: ->
         @el
 

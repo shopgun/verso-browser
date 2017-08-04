@@ -33,20 +33,20 @@ class Verso
             # Prefer touch input if possible since Android acts weird when using pointer events.
             inputClass: if 'ontouchstart' of window then Hammer.TouchInput else null
 
-        @hammer.add new Hammer.Pan direction: Hammer.DIRECTION_ALL
-        @hammer.add new Hammer.Tap event: 'singletap', interval: 0
+        @hammer.add new Hammer.Pan(direction: Hammer.DIRECTION_ALL)
+        @hammer.add new Hammer.Tap(event: 'singletap', interval: 0)
         @hammer.add new Hammer.Pinch()
-        @hammer.add new Hammer.Press time: 500
-        @hammer.on 'panstart', @panStart.bind @
-        @hammer.on 'panmove', @panMove.bind @
-        @hammer.on 'panend', @panEnd.bind @
-        @hammer.on 'pancancel', @panEnd.bind @
-        @hammer.on 'singletap', @singletap.bind @
-        @hammer.on 'pinchstart', @pinchStart.bind @
-        @hammer.on 'pinchmove', @pinchMove.bind @
-        @hammer.on 'pinchend', @pinchEnd.bind @
-        @hammer.on 'pinchcancel', @pinchEnd.bind @
-        @hammer.on 'press', @press.bind @
+        @hammer.add new Hammer.Press(time: 500)
+        @hammer.on 'panstart', @panStart.bind(@)
+        @hammer.on 'panmove', @panMove.bind(@)
+        @hammer.on 'panend', @panEnd.bind(@)
+        @hammer.on 'pancancel', @panEnd.bind(@)
+        @hammer.on 'singletap', @singletap.bind(@)
+        @hammer.on 'pinchstart', @pinchStart.bind(@)
+        @hammer.on 'pinchmove', @pinchMove.bind(@)
+        @hammer.on 'pinchend', @pinchEnd.bind(@)
+        @hammer.on 'pinchcancel', @pinchEnd.bind(@)
+        @hammer.on 'press', @press.bind(@)
 
         return
 
@@ -96,11 +96,14 @@ class Verso
         velocity = options.velocity ? 1
         duration = options.duration ? @navigationDuration
         duration = duration / Math.abs(velocity)
+        touchAction = if activePageSpread.isScrollable() then 'pan-y' else 'none'
 
         currentPageSpread.deactivate() if currentPageSpread?
         activePageSpread.activate()
 
         carousel.visible.forEach (pageSpread) -> pageSpread.position().setVisibility 'visible'
+
+        @hammer.set touchAction: touchAction
 
         @transform.left = @getLeftTransformFromPageSpread position, activePageSpread
         @setPosition position
@@ -242,8 +245,8 @@ class Verso
                 info.pageEl = pageEl
                 break
 
-        info.contentX = (x - contentRect.left) / contentRect.width
-        info.contentY = (y - contentRect.top) / contentRect.height
+        info.contentX = (x - contentRect.left) / Math.max(1, contentRect.width)
+        info.contentY = (y - contentRect.top) / Math.max(1, contentRect.height)
 
         if info.pageEl?
             info.isInsideContentX = info.contentX >= 0 and info.contentX <= 1
@@ -509,8 +512,12 @@ class Verso
 
     touchStart: (e) ->
         pageSpread = @getPageSpreadFromPosition @getPosition()
+        isScrollable = pageSpread.isScrollable()
 
-        e.preventDefault() if pageSpread.el.classList.contains('verso--scrollable') is false
+        return
+
+        if isScrollable
+            e.stopPropagation()
 
         return
 
