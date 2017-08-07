@@ -38,16 +38,10 @@ module.exports = class PageSpread
             bottom: null
             width: null
             height: null
-            
-        for pageEl in @getPageEls()
-            pageRect =
-                top: pageEl.offsetTop
-                left: pageEl.offsetLeft
-                width: pageEl.offsetWidth
-                height: pageEl.offsetHeight
+        parentRect = @getEl().getBoundingClientRect()
 
-            pageRect.right = pageRect.left + pageRect.width
-            pageRect.bottom = pageRect.top + pageRect.height
+        for pageEl in @getPageEls()
+            pageRect = pageEl.getBoundingClientRect()
 
             rect.top = pageRect.top if pageRect.top < rect.top or not rect.top?
             rect.left = pageRect.left if pageRect.left < rect.left or not rect.left?

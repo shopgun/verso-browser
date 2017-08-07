@@ -27,26 +27,25 @@ class Verso
         @pageIds = @buildPageIds @pageSpreads
         @animation = new Animation @scrollerEl
         @hammer = new Hammer.Manager @scrollerEl,
-            preventDefault: true
-            touchAction: 'pan-y'
+            touchAction: 'none'
             enable: false
             # Prefer touch input if possible since Android acts weird when using pointer events.
             inputClass: if 'ontouchstart' of window then Hammer.TouchInput else null
 
-        @hammer.add new Hammer.Pan(direction: Hammer.DIRECTION_ALL)
-        @hammer.add new Hammer.Tap(event: 'singletap', interval: 0)
+        @hammer.add new Hammer.Pan threshold: 5, direction: Hammer.DIRECTION_ALL
+        @hammer.add new Hammer.Tap event: 'singletap', interval: 0
         @hammer.add new Hammer.Pinch()
-        @hammer.add new Hammer.Press(time: 500)
-        @hammer.on 'panstart', @panStart.bind(@)
-        @hammer.on 'panmove', @panMove.bind(@)
-        @hammer.on 'panend', @panEnd.bind(@)
-        @hammer.on 'pancancel', @panEnd.bind(@)
-        @hammer.on 'singletap', @singletap.bind(@)
-        @hammer.on 'pinchstart', @pinchStart.bind(@)
-        @hammer.on 'pinchmove', @pinchMove.bind(@)
-        @hammer.on 'pinchend', @pinchEnd.bind(@)
-        @hammer.on 'pinchcancel', @pinchEnd.bind(@)
-        @hammer.on 'press', @press.bind(@)
+        @hammer.add new Hammer.Press time: 500
+        @hammer.on 'panstart', @panStart.bind @
+        @hammer.on 'panmove', @panMove.bind @
+        @hammer.on 'panend', @panEnd.bind @
+        @hammer.on 'pancancel', @panEnd.bind @
+        @hammer.on 'singletap', @singletap.bind @
+        @hammer.on 'pinchstart', @pinchStart.bind @
+        @hammer.on 'pinchmove', @pinchMove.bind @
+        @hammer.on 'pinchend', @pinchEnd.bind @
+        @hammer.on 'pinchcancel', @pinchEnd.bind @
+        @hammer.on 'press', @press.bind @
 
         return
 
@@ -58,8 +57,10 @@ class Verso
 
         @resizeListener = @resize.bind @
         @touchStartListener = @touchStart.bind @
+        @touchEndListener = @touchEnd.bind @
 
         @el.addEventListener 'touchstart', @touchStartListener, false
+        @el.addEventListener 'touchend', @touchEndListener, false
 
         window.addEventListener 'resize', @resizeListener, false
 
@@ -69,6 +70,7 @@ class Verso
         @hammer.destroy()
 
         @el.removeEventListener 'touchstart', @touchStartListener
+        @el.removeEventListener 'touchend', @touchEndListener
 
         window.removeEventListener 'resize', @resizeListener
 
@@ -511,13 +513,12 @@ class Verso
         return
 
     touchStart: (e) ->
-        pageSpread = @getPageSpreadFromPosition @getPosition()
-        isScrollable = pageSpread.isScrollable()
+        e.preventDefault() if not @getActivePageSpread().isScrollable()
 
         return
 
-        if isScrollable
-            e.stopPropagation()
+    touchEnd: (e) ->
+        e.preventDefault()
 
         return
 
