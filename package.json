@@ -50,6 +50,7 @@
     "url": "https://github.com/shopgun/verso-browser/issues"
   },
   "homepage": "https://github.com/shopgun/verso-browser#readme",
+  "dependencies": {},
   "devDependencies": {
     "browserify": "^14.4.0",
     "browserify-derequire": "^0.9.4",
