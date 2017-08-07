@@ -223,6 +223,8 @@ class Verso
         x >= rect.left and x <= rect.right and y >= rect.top and y <= rect.bottom
 
     getCoordinateInfo: (x, y, pageSpread) ->
+        x -= @el.offsetLeft
+        y -= @el.offsetTop
         info =
             x: x
             y: y
