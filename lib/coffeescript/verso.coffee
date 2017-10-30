@@ -47,6 +47,8 @@ class Verso
         @hammer.on 'pinchcancel', @pinchEnd.bind @
         @hammer.on 'press', @press.bind @
 
+        @scrollerEl.addEventListener 'contextmenu', @contextmenu.bind @
+
         return
 
     start: ->
@@ -473,6 +475,13 @@ class Verso
         @trigger 'pressed', @getCoordinateInfo(e.center.x, e.center.y, @getActivePageSpread())
 
         return
+
+    contextmenu: (e) ->
+        e.preventDefault()
+
+        @trigger 'contextmenu', @getCoordinateInfo(e.clientX, e.clientY, @getActivePageSpread())
+
+        false
 
     singletap: (e) ->
         activePageSpread = @getActivePageSpread()
