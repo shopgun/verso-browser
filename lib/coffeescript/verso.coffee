@@ -20,9 +20,6 @@ class Verso
         @tap =
             count: 0
             delay: @doubleTapDelay
-        @contextmenu =
-            count: 0
-            delay: @doubleTapDelay
 
         @scrollerEl = @el.querySelector '.verso__scroller'
         @pageSpreadEls = @el.querySelectorAll '.verso__page-spread'
@@ -487,32 +484,7 @@ class Verso
     onContextmenu: (e) ->
         e.preventDefault()
 
-        clearTimeout @contextmenu.timeout
-
-        if @contextmenu.count is 1
-            @contextmenu.count = 0
-
-            if @getActivePageSpread().isZoomable() and @transform.scale > 1
-                position = @getPosition()
-
-                @zoomTo
-                    x: e.clientX
-                    y: e.clientY
-                    scale: 1
-                    duration: @zoomDuration
-                , =>
-                    @trigger 'zoomedOut', position: position
-
-                    return
-
-            @trigger 'doubleContextmenu', @getCoordinateInfo(e.clientX, e.clientY, @getActivePageSpread())
-        else
-            @contextmenu.count++
-            @contextmenu.timeout = setTimeout =>
-                @contextmenu.count = 0
-
-                @trigger 'contextmenu', @getCoordinateInfo(e.clientX, e.clientY, @getActivePageSpread())
-            , @contextmenu.delay
+        @trigger 'contextmenu', @getCoordinateInfo(e.clientX, e.clientY, @getActivePageSpread())
 
         false
 
