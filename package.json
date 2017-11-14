@@ -1,6 +1,6 @@
 {
   "name": "verso-browser",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A multi-paged viewer for browsers.",
   "main": "dist/verso.js",
   "watch": {
@@ -52,17 +52,17 @@
   "homepage": "https://github.com/shopgun/verso-browser#readme",
   "dependencies": {},
   "devDependencies": {
-    "browserify": "^14.4.0",
+    "browserify": "^14.5.0",
     "browserify-derequire": "^0.9.4",
-    "coffeeify": "^2.1.0",
-    "coffeelint": "^1.16.0",
+    "coffeeify": "^3.0.1",
+    "coffeelint": "^2.0.7",
+    "coffeescript": "^2.0.2",
     "derequire": "^2.0.6",
     "hammerjs": "^2.0.8",
+    "jest": "^21.2.1",
     "microevent": "^1.0.0",
     "nib": "^1.1.2",
-    "npm-watch": "^0.2.0",
-    "stylus": "^0.54.5",
-    "coffee-script": "^1.12.7",
-    "jest": "^20.0.4"
+    "npm-watch": "^0.3.0",
+    "stylus": "^0.54.5"
   }
 }

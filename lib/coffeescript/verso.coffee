@@ -10,6 +10,7 @@ class Verso
         @navigationDuration = @options.navigationDuration ? 240
         @navigationPanDuration = @options.navigationPanDuration ? 200
         @zoomDuration = @options.zoomDuration ? 200
+        @doubleTapDelay = @options.doubleTapDelay ? 250
 
         @position = -1
         @pinching = false
@@ -18,8 +19,10 @@ class Verso
         @startTransform = left: 0, top: 0, scale: 1
         @tap =
             count: 0
-            delay: 250
-            timeout: null
+            delay: @doubleTapDelay
+        @contextmenu =
+            count: 0
+            delay: @doubleTapDelay
 
         @scrollerEl = @el.querySelector '.verso__scroller'
         @pageSpreadEls = @el.querySelectorAll '.verso__page-spread'
@@ -36,18 +39,18 @@ class Verso
         @hammer.add new Hammer.Tap event: 'singletap', interval: 0
         @hammer.add new Hammer.Pinch()
         @hammer.add new Hammer.Press time: 500
-        @hammer.on 'panstart', @panStart.bind @
-        @hammer.on 'panmove', @panMove.bind @
-        @hammer.on 'panend', @panEnd.bind @
-        @hammer.on 'pancancel', @panEnd.bind @
-        @hammer.on 'singletap', @singletap.bind @
-        @hammer.on 'pinchstart', @pinchStart.bind @
-        @hammer.on 'pinchmove', @pinchMove.bind @
-        @hammer.on 'pinchend', @pinchEnd.bind @
-        @hammer.on 'pinchcancel', @pinchEnd.bind @
-        @hammer.on 'press', @press.bind @
+        @hammer.on 'panstart', @onPanStart.bind @
+        @hammer.on 'panmove', @onPanMove.bind @
+        @hammer.on 'panend', @onPanEnd.bind @
+        @hammer.on 'pancancel', @onPanEnd.bind @
+        @hammer.on 'singletap', @onSingletap.bind @
+        @hammer.on 'pinchstart', @onPinchStart.bind @
+        @hammer.on 'pinchmove', @onPinchMove.bind @
+        @hammer.on 'pinchend', @onPinchEnd.bind @
+        @hammer.on 'pinchcancel', @onPinchEnd.bind @
+        @hammer.on 'press', @onPress.bind @
 
-        @scrollerEl.addEventListener 'contextmenu', @contextmenu.bind @
+        @scrollerEl.addEventListener 'contextmenu', @onContextmenu.bind @
 
         return
 
@@ -57,9 +60,9 @@ class Verso
         @hammer.set enable: true
         @navigateTo pageId, duration: 0
 
-        @resizeListener = @resize.bind @
-        @touchStartListener = @touchStart.bind @
-        @touchEndListener = @touchEnd.bind @
+        @resizeListener = @onResize.bind @
+        @touchStartListener = @onTouchStart.bind @
+        @touchEndListener = @onTouchEnd.bind @
 
         @el.addEventListener 'touchstart', @touchStartListener, false
         @el.addEventListener 'touchend', @touchEndListener, false
@@ -296,20 +299,21 @@ class Verso
 
     zoomTo: (options = {}, callback) ->
         scale = options.scale
+        curScale = @transform.scale
         activePageSpread = @getActivePageSpread()
         pageSpreadBounds = @getPageSpreadBounds activePageSpread
         carouselOffset = activePageSpread.getLeft()
-        carouselScaledOffset = carouselOffset * @transform.scale
+        carouselScaledOffset = carouselOffset * curScale
         x = options.x ? 0
         y = options.y ? 0
 
         if scale isnt 1
             x -= pageSpreadBounds.pageSpreadRect.left
             y -= pageSpreadBounds.pageSpreadRect.top
-            x = x / (pageSpreadBounds.pageSpreadRect.width / @transform.scale) * 100
-            y = y / (pageSpreadBounds.pageSpreadRect.height / @transform.scale) * 100
-            x = @transform.left + carouselScaledOffset + x - (x * scale / @transform.scale)
-            y = @transform.top + y - (y * scale / @transform.scale)
+            x = x / (pageSpreadBounds.pageSpreadRect.width / curScale) * 100
+            y = y / (pageSpreadBounds.pageSpreadRect.height / curScale) * 100
+            x = @transform.left + carouselScaledOffset + x - (x * scale / curScale)
+            y = @transform.top + y - (y * scale / curScale)
 
             # Make sure the animation doesn't exceed the content bounds.
             if options.bounds isnt false and scale > 1
@@ -343,7 +347,11 @@ class Verso
 
         @
 
-    panStart: (e) ->
+    ##############
+    ### Events ###
+    ##############
+
+    onPanStart: (e) ->
         # Only allow panning if zoomed in or doing a horizontal pan.
         # This ensures vertical scrolling works for scrollable page spreads.
         if @transform.scale > 1 or (e.direction is Hammer.DIRECTION_LEFT or e.direction is Hammer.DIRECTION_RIGHT)
@@ -362,7 +370,7 @@ class Verso
 
         return
 
-    panMove: (e) ->
+    onPanMove: (e) ->
         return if @pinching is true or @panning is false
 
         if @transform.scale > 1
@@ -394,7 +402,7 @@ class Verso
 
         return
 
-    panEnd: (e) ->
+    onPanEnd: (e) ->
         return if @panning is false
 
         @panning = false
@@ -424,7 +432,7 @@ class Verso
 
         return
 
-    pinchStart: (e) ->
+    onPinchStart: (e) ->
         return if not @getActivePageSpread().isZoomable()
 
         @pinching = true
@@ -433,7 +441,7 @@ class Verso
 
         return
 
-    pinchMove: (e) ->
+    onPinchMove: (e) ->
         return if @pinching is false
 
         @zoomTo
@@ -445,7 +453,7 @@ class Verso
 
         return
 
-    pinchEnd: (e) ->
+    onPinchEnd: (e) ->
         return if @pinching is false
 
         activePageSpread = @getActivePageSpread()
@@ -471,26 +479,50 @@ class Verso
 
         return
 
-    press: (e) ->
+    onPress: (e) ->
         @trigger 'pressed', @getCoordinateInfo(e.center.x, e.center.y, @getActivePageSpread())
 
         return
 
-    contextmenu: (e) ->
+    onContextmenu: (e) ->
         e.preventDefault()
 
-        @trigger 'contextmenu', @getCoordinateInfo(e.clientX, e.clientY, @getActivePageSpread())
+        clearTimeout @contextmenu.timeout
+
+        if @contextmenu.count is 1
+            @contextmenu.count = 0
+
+            if @getActivePageSpread().isZoomable() and @transform.scale > 1
+                position = @getPosition()
+
+                @zoomTo
+                    x: e.clientX
+                    y: e.clientY
+                    scale: 1
+                    duration: @zoomDuration
+                , =>
+                    @trigger 'zoomedOut', position: position
+
+                    return
+
+            @trigger 'doubleContextmenu', @getCoordinateInfo(e.clientX, e.clientY, @getActivePageSpread())
+        else
+            @contextmenu.count++
+            @contextmenu.timeout = setTimeout =>
+                @contextmenu.count = 0
+
+                @trigger 'contextmenu', @getCoordinateInfo(e.clientX, e.clientY, @getActivePageSpread())
+            , @contextmenu.delay
 
         false
 
-    singletap: (e) ->
+    onSingletap: (e) ->
         activePageSpread = @getActivePageSpread()
         coordinateInfo = @getCoordinateInfo e.center.x, e.center.y, activePageSpread
-        isDoubleTap = @tap.count is 1
 
         clearTimeout @tap.timeout
 
-        if isDoubleTap
+        if @tap.count is 1
             @tap.count = 0
 
             @trigger 'doubleClicked', coordinateInfo
@@ -523,17 +555,17 @@ class Verso
 
         return
 
-    touchStart: (e) ->
+    onTouchStart: (e) ->
         e.preventDefault() if not @getActivePageSpread().isScrollable()
 
         return
 
-    touchEnd: (e) ->
+    onTouchEnd: (e) ->
         e.preventDefault()
 
         return
 
-    resize: ->
+    onResize: ->
         if @transform.scale > 1
             position = @getPosition()
             activePageSpread = @getActivePageSpread()
