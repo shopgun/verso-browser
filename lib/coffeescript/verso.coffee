@@ -533,7 +533,7 @@ class Verso
         return
 
     onTouchEnd: (e) ->
-        e.preventDefault()
+        e.preventDefault() if not @getActivePageSpread().isScrollable()
 
         return
 
