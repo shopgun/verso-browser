@@ -25,7 +25,7 @@
     "test": "./node_modules/coffeelint/bin/coffeelint lib/coffeescript/ -r lib/coffeescript/ && jest",
     "build-coffee": "browserify lib/coffeescript/verso.coffee -t coffeeify -p browserify-derequire -s Verso --extension=coffee -o dist/verso.js -d",
     "build-styl": "stylus lib/stylus/verso.styl -u nib -o dist/verso.css",
-    "build": "npm run build-coffee && npm run build-styl",
+    "build": "run-p -l build-coffee build-styl",
     "dev": "npm-watch",
     "serve": "python -m SimpleHTTPServer 8001",
     "prepublishOnly": "npm run build"
@@ -64,6 +64,7 @@
     "jest": "^22.1.1",
     "microevent": "^1.0.0",
     "nib": "^1.1.2",
+    "npm-run-all": "^4.1.2",
     "npm-watch": "^0.3.0",
     "stylus": "^0.54.5"
   }
