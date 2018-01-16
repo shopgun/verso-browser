@@ -1,6 +1,6 @@
 {
   "name": "verso-browser",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A multi-paged viewer for browsers.",
   "main": "dist/verso.js",
   "watch": {
@@ -25,9 +25,10 @@
     "test": "./node_modules/coffeelint/bin/coffeelint lib/coffeescript/ -r lib/coffeescript/ && jest",
     "build-coffee": "browserify lib/coffeescript/verso.coffee -t coffeeify -p browserify-derequire -s Verso --extension=coffee -o dist/verso.js -d",
     "build-styl": "stylus lib/stylus/verso.styl -u nib -o dist/verso.css",
+    "build": "npm run build-coffee && npm run build-styl",
     "dev": "npm-watch",
     "serve": "python -m SimpleHTTPServer 8001",
-    "prepublishOnly": "npm run build-coffee && npm run build-styl"
+    "prepublishOnly": "npm run build"
   },
   "jest": {
     "moduleFileExtensions": [
