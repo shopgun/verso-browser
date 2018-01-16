@@ -1,10 +1,10 @@
 {
   "name": "verso-browser",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "A multi-paged viewer for browsers.",
   "main": "dist/verso.js",
   "watch": {
-    "build-coffee": {
+    "build:js": {
       "patterns": [
         "lib/coffeescript"
       ],
@@ -12,7 +12,7 @@
         "coffee"
       ]
     },
-    "build-styl": {
+    "build:css": {
       "patterns": [
         "lib/stylus"
       ],
@@ -23,9 +23,9 @@
   },
   "scripts": {
     "test": "./node_modules/coffeelint/bin/coffeelint lib/coffeescript/ -r lib/coffeescript/ && jest",
-    "build-coffee": "browserify lib/coffeescript/verso.coffee -t coffeeify -p browserify-derequire -s Verso --extension=coffee -o dist/verso.js -d",
-    "build-styl": "stylus lib/stylus/verso.styl -u nib -o dist/verso.css",
-    "build": "run-p -l build-coffee build-styl",
+    "build:js": "browserify lib/coffeescript/verso.coffee -t coffeeify -t [ babelify --extensions .coffee --presets [ es2015 ] ] -p browserify-derequire -s Verso --extension=coffee -o dist/verso.js -d",
+    "build:css": "stylus lib/stylus/verso.styl -u nib -o dist/verso.css",
+    "build": "run-p -l build:js build:css",
     "dev": "npm-watch",
     "serve": "python -m SimpleHTTPServer 8001",
     "prepublishOnly": "npm run build"
@@ -54,11 +54,14 @@
   "homepage": "https://github.com/shopgun/verso-browser#readme",
   "dependencies": {},
   "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^8.0.0",
     "browserify": "^15.2.0",
     "browserify-derequire": "^0.9.4",
     "coffeeify": "^3.0.1",
     "coffeelint": "^2.0.7",
-    "coffeescript": "^1.12.7",
+    "coffeescript": "^2.1.1",
     "derequire": "^2.0.6",
     "hammerjs": "^2.0.8",
     "jest": "^22.1.1",
