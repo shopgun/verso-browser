@@ -29,8 +29,7 @@ class Verso
         @hammer = new Hammer.Manager @scrollerEl,
             touchAction: 'none'
             enable: false
-            # Prefer touch input if possible since Android acts weird when using pointer events.
-            inputClass: if 'ontouchstart' of window then Hammer.TouchInput else null
+            inputClass: @getHammerInputClass()
 
         @hammer.add new Hammer.Pan threshold: 5, direction: Hammer.DIRECTION_ALL
         @hammer.add new Hammer.Tap event: 'singletap', interval: 0
@@ -343,6 +342,12 @@ class Verso
         @pageIds = @buildPageIds @pageSpreads
 
         @
+    
+    getHammerInputClass: ->
+        mobileRegex = /mobile|tablet|ip(ad|hone|od)|android/i
+        supportTouch = 'ontouchstart' of window
+
+        if supportTouch and mobileRegex.test(navigator.userAgent) then Hammer.TouchInput else null
 
     ##############
     ### Events ###
