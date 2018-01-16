@@ -27,7 +27,7 @@
     "build-styl": "stylus lib/stylus/verso.styl -u nib -o dist/verso.css",
     "dev": "npm-watch",
     "serve": "python -m SimpleHTTPServer 8001",
-    "prepublishOnly": "npm run build-coffee && npm run build-stylus"
+    "prepublishOnly": "npm run build-coffee && npm run build-styl"
   },
   "jest": {
     "moduleFileExtensions": [
