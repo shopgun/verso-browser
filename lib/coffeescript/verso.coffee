@@ -10,7 +10,7 @@ class Verso
         @navigationDuration = @options.navigationDuration ? 240
         @navigationPanDuration = @options.navigationPanDuration ? 200
         @zoomDuration = @options.zoomDuration ? 200
-        @doubleTapDelay = @options.doubleTapDelay ? 250
+        @doubleTapDelay = @options.doubleTapDelay ? 300
 
         @position = -1
         @pinching = false
