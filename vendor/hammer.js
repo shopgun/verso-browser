@@ -1194,7 +1194,6 @@ var TOUCH_ACTION_MANIPULATION = 'manipulation'; // not implemented
 var TOUCH_ACTION_NONE = 'none';
 var TOUCH_ACTION_PAN_X = 'pan-x';
 var TOUCH_ACTION_PAN_Y = 'pan-y';
-var TOUCH_ACTION_MAP = getTouchActionProps();
 
 /**
  * Touch Action
@@ -1219,6 +1218,7 @@ TouchAction.prototype = {
             value = this.compute();
         }
 
+        var TOUCH_ACTION_MAP = getTouchActionProps();
         if (NATIVE_TOUCH_ACTION() && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
             this.manager.element.style[PREFIXED_TOUCH_ACTION()] = value;
         }
@@ -1261,6 +1261,7 @@ TouchAction.prototype = {
         }
 
         var actions = this.actions;
+        var TOUCH_ACTION_MAP = getTouchActionProps();
         var hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
         var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
         var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
