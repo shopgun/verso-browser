@@ -18,7 +18,7 @@ var outputs = {
   UMDMin: path.join(__dirname, "dist", "verso.min.js"),
 };
 
-const configs = [
+let configs = [
   {
     input,
     output: {
