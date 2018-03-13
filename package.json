@@ -9,19 +9,19 @@
   "bundlesize": [
     {
       "path": "./dist/verso.js",
-      "maxSize": "50 kB"
+      "maxSize": "30 kB"
     },
     {
       "path": "./dist/verso.min.js",
-      "maxSize": "25 kB"
+      "maxSize": "15 kB"
     },
     {
       "path": "./dist/verso.cjs.js",
-      "maxSize": "10 kB"
+      "maxSize": "25 kB"
     },
     {
       "path": "./dist/verso.es.js",
-      "maxSize": "10 kB"
+      "maxSize": "25 kB"
     }
   ],
   "scripts": {
