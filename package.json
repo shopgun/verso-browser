@@ -62,7 +62,6 @@
   },
   "homepage": "https://github.com/shopgun/verso-browser#readme",
   "dependencies": {
-    "hammerjs": "^2.0.8",
     "microevent": "^1.0.0"
   },
   "devDependencies": {
