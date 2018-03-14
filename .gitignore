@@ -2,5 +2,5 @@ node_modules/
 npm-debug.log
 .DS_Store
 *.swp
-dist/verso.js
-dist/verso.css
+dist/*
+!dist/.gitkeep

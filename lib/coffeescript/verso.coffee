@@ -1,4 +1,4 @@
-Hammer = require 'hammerjs'
+Hammer = require './../../vendor/hammer.js'
 MicroEvent = require 'microevent'
 PageSpread = require './page_spread'
 Animation = require './animation'
