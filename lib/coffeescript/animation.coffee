@@ -11,7 +11,7 @@ module.exports = class Animation
         easing = options.easing ? 'ease-out'
         duration = options.duration ? 0
         run = ++@run
-        transform = "translate3d(#{x}, #{y}, 0px) scale3d(#{scale}, #{scale}, 1)"
+        transform = "translateX(#{x}) translateY(#{y}) scale(#{scale})"
 
         if @el.style.transform is transform
             callback()
