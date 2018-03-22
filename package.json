@@ -1,6 +1,6 @@
 {
   "name": "verso-browser",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "A multi-paged viewer for browsers.",
   "main": "dist/verso.cjs.js",
   "browser": "dist/verso.js",
@@ -9,7 +9,7 @@
   "bundlesize": [
     {
       "path": "./dist/verso.js",
-      "maxSize": "30 kB"
+      "maxSize": "150 kB"
     },
     {
       "path": "./dist/verso.min.js",
@@ -65,19 +65,19 @@
     "microevent": "^1.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.0.0-beta.40",
-    "@babel/preset-env": "^7.0.0-beta.40",
-    "bundlesize": "^0.15.3",
-    "coffeelint": "^2.0.7",
-    "jest": "^21.2.1",
+    "@babel/core": "^7.0.0-beta.42",
+    "@babel/preset-env": "^7.0.0-beta.42",
+    "bundlesize": "^0.16.0",
+    "coffeelint": "^2.1.0",
+    "jest": "^22.4.3",
     "nib": "^1.1.2",
     "npm-run-all": "^4.1.2",
-    "rollup": "^0.56.5",
+    "rollup": "^0.57.1",
     "rollup-plugin-babel": "^4.0.0-beta.2",
     "rollup-plugin-coffee-script": "^2.0.0",
     "rollup-plugin-commonjs": "^9.1.0",
-    "rollup-plugin-node-globals": "^1.1.0",
-    "rollup-plugin-node-resolve": "^3.2.0",
+    "rollup-plugin-node-globals": "^1.2.0",
+    "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-uglify": "^3.0.0",
     "serve": "^6.5.3",
     "stylus": "^0.54.5",

@@ -46,7 +46,8 @@ class Verso
         @hammer.on 'pinchcancel', @onPinchEnd.bind @
         @hammer.on 'press', @onPress.bind @
 
-        @scrollerEl.addEventListener 'contextmenu', @onContextmenu.bind @
+        @scrollerEl.addEventListener 'contextmenu', @onContextmenu.bind(@), false
+        @scrollerEl.addEventListener 'wheel', @onWheel.bind(@), false
 
         return
 
@@ -492,6 +493,39 @@ class Verso
         @trigger 'contextmenu', @getCoordinateInfo(e.clientX, e.clientY, @getActivePageSpread())
 
         false
+    
+    onWheel: (e) ->
+        activePageSpread = @getActivePageSpread()
+
+        return if activePageSpread.isZoomable() is false
+
+        if e.deltaY > 0 and @transform.scale is 1
+            scale = activePageSpread.getMaxZoomScale()
+            position = @getPosition()
+
+            @zoomTo
+                x: e.clientX
+                y: e.clientY
+                scale: scale
+                duration: @zoomDuration
+            , =>
+                @trigger 'zoomedIn', position: position
+
+                return
+        else if e.deltaY < 0 and @transform.scale > 1
+            position = @getPosition()
+
+            @zoomTo
+                x: e.clientX
+                y: e.clientY
+                scale: 1
+                duration: @zoomDuration
+            , =>
+                @trigger 'zoomedOut', position: position
+
+                return
+
+        return
 
     onSingletap: (e) ->
         activePageSpread = @getActivePageSpread()
