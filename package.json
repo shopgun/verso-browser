@@ -13,7 +13,7 @@
     },
     {
       "path": "./dist/verso.min.js",
-      "maxSize": "15 kB"
+      "maxSize": "18 kB"
     },
     {
       "path": "./dist/verso.cjs.js",
