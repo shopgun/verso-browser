@@ -1,6 +1,6 @@
 {
   "name": "verso-browser",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "A multi-paged viewer for browsers.",
   "main": "dist/verso.cjs.js",
   "browser": "dist/verso.js",
@@ -36,7 +36,7 @@
     "dev:js": "rollup -c -m inline --no-treeshake --environment NODE_ENV:development --watch",
     "dev:css": "stylus lib/stylus/verso.styl -o dist/verso.css --include-css --sourcemap-inline --watch",
     "dev": "run-p -l dev:js dev:css serve",
-    "serve": "serve --port 8001",
+    "serve": "serve",
     "prepublishOnly": "npm run build"
   },
   "jest": {
@@ -62,24 +62,24 @@
   },
   "homepage": "https://github.com/shopgun/verso-browser#readme",
   "dependencies": {
-    "microevent": "^1.0.0"
+    "microevent": "^1.0.0",
+    "rollup-plugin-terser": "^3.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.0.0-beta.42",
-    "@babel/preset-env": "^7.0.0-beta.42",
-    "bundlesize": "^0.16.0",
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.0",
+    "bundlesize": "^0.17.0",
     "coffeelint": "^2.1.0",
-    "jest": "^22.4.3",
+    "jest": "^23.6.0",
     "nib": "^1.1.2",
-    "npm-run-all": "^4.1.2",
-    "rollup": "^0.57.1",
-    "rollup-plugin-babel": "^4.0.0-beta.2",
+    "npm-run-all": "^4.1.5",
+    "rollup": "^0.68.0",
+    "rollup-plugin-babel": "^4.1.0",
     "rollup-plugin-coffee-script": "^2.0.0",
-    "rollup-plugin-commonjs": "^9.1.0",
-    "rollup-plugin-node-globals": "^1.2.0",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "rollup-plugin-uglify": "^3.0.0",
-    "serve": "^6.5.3",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "serve": "^10.1.1",
     "stylus": "^0.54.5",
     "uglify-es": "^3.3.10"
   }
