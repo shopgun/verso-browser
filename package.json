@@ -82,7 +82,6 @@
     "rollup-plugin-node-resolve": "^4.0.1",
     "rollup-plugin-terser": "^4.0.4",
     "serve": "^10.1.2",
-    "stylus": "^0.54.5",
-    "uglify-es": "^3.3.10"
+    "stylus": "^0.54.5"
   }
 }
