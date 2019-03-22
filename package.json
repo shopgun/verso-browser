@@ -63,8 +63,7 @@
   "homepage": "https://github.com/shopgun/verso-browser#readme",
   "dependencies": {
     "core-js": "^3.0.0",
-    "microevent": "^1.0.0",
-    "rollup-plugin-terser": "^3.0.0"
+    "microevent": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",
