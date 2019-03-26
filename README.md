@@ -4,6 +4,9 @@ A multi-paged viewer for browsers. See `kitchensink/example1.html` for how it wo
 
 # Changelog
 
+## Version 1.0.25
+* Revert to core-js 2 for now
+
 ## Version 1.0.24
 * Fix duplicate dev/runtime dependency on rollup-terser-plugin
 
