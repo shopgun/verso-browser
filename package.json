@@ -62,7 +62,7 @@
   },
   "homepage": "https://github.com/shopgun/verso-browser#readme",
   "dependencies": {
-    "core-js": "^3.0.0",
+    "core-js": "^2.6.5",
     "microevent": "^1.0.0"
   },
   "devDependencies": {
