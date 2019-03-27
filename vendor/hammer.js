@@ -993,11 +993,9 @@ var TOUCH_ACTION_PAN_Y = 'pan-y';
  * @param {String} value
  * @constructor
  */
-class TouchAction {
-    constructor(manager, value) {
-        this.manager = manager;
-        this.set(value);
-    }
+function TouchAction(manager, value) {
+    this.manager = manager;
+    this.set(value);
 }
 
 TouchAction.prototype = {
