@@ -96,6 +96,12 @@
 
             // Fire it up.
             verso.start();
+            setTimeout(function(){
+                verso.destroy();
+                setTimeout(function(){
+                    verso.start();
+                },200)
+            },200)
 
             // Add some simple keyboard interactions.
             document.addEventListener('keydown', function (e) {
