@@ -3,6 +3,9 @@
 A multi-paged viewer for browsers. See `kitchensink/example1.html` for how it works.
 
 # Changelog
+## Version ?.?.?
+* Use new mainFields option for rollup-plugin-node-resolve
+
 ## Version 1.0.27
 * Update dependencies.
 

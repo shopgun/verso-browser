@@ -1,7 +1,7 @@
 import coffeescript from 'rollup-plugin-coffee-script';
 import commonjs from 'rollup-plugin-commonjs';
 import resolve from 'rollup-plugin-node-resolve';
-import { terser } from 'rollup-plugin-terser';
+import {terser} from 'rollup-plugin-terser';
 import path from 'path';
 import babel from 'rollup-plugin-babel';
 import globals from 'rollup-plugin-node-globals';
@@ -62,8 +62,7 @@ let configs = [
         plugins: [
             coffeescript(),
             resolve({
-                jsnext: true,
-                main: true,
+                mainFields: ['jsnext:main', 'main'],
                 browser: true,
                 preferBuiltins: false
             }),
@@ -84,8 +83,7 @@ let configs = [
         plugins: [
             coffeescript(),
             resolve({
-                jsnext: true,
-                main: true,
+                mainFields: ['jsnext:main', 'main'],
                 browser: true,
                 preferBuiltins: false
             }),
