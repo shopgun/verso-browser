@@ -21,6 +21,9 @@ class Verso
             count: 0
             delay: @doubleTapDelay
 
+        return
+
+    start: ->
         @scrollerEl = @el.querySelector '.verso__scroller'
         @pageSpreadEls = @el.querySelectorAll '.verso__page-spread'
         @pageSpreads = @traversePageSpreads @pageSpreadEls
@@ -48,10 +51,6 @@ class Verso
 
         @scrollerEl.addEventListener 'contextmenu', @onContextmenu.bind(@), false
         @scrollerEl.addEventListener 'wheel', @onWheel.bind(@), false
-
-        return
-
-    start: ->
         pageId = @getPageSpreadPositionFromPageId(@options.pageId) ? 0
 
         @hammer.set enable: true
