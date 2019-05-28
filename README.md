@@ -3,6 +3,8 @@
 A multi-paged viewer for browsers. See `kitchensink/example1.html` for how it works.
 
 # Changelog
+## Version 1.0.26
+* Fix bug where doing `viewer.start(); viewer.destroy(); viewer.start();` would break the viewer.
 
 ## Version 1.0.25
 * Revert to core-js 2 for now
