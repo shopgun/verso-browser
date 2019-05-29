@@ -19,6 +19,8 @@ export default class Verso
         @tap =
             count: 0
             delay: @doubleTapDelay
+        @started = false
+        @destroyed = false
         @_events = {}
 
         return
@@ -65,6 +67,8 @@ export default class Verso
         pageId = @getPageSpreadPositionFromPageId(@options.pageId) ? 0
 
         @hammer.set enable: true
+        @started = true
+        @destroyed = false
         @navigateTo pageId, duration: 0
 
         @resizeListener = @onResize.bind @
@@ -75,17 +79,28 @@ export default class Verso
         @el.addEventListener 'touchend', @touchEndListener, false
 
         window.addEventListener 'resize', @resizeListener, false
-
         @
 
     destroy: ->
+        if not @started
+            return console.warn """
+                You've called .destroy() on a viewer that was not started yet, this is a no-op.
+            """
+        if @destroyed
+            return console.warn """
+                You've called .destroy() on a viewer that has already been destroyed and not restarted, this is a no-op.
+            """
+        @scrollerEl.removeEventListener 'contextmenu', @onContextmenu.bind(@)
+        @scrollerEl.removeEventListener 'wheel', @onWheel.bind(@)
+
         @hammer.destroy()
 
         @el.removeEventListener 'touchstart', @touchStartListener
         @el.removeEventListener 'touchend', @touchEndListener
 
         window.removeEventListener 'resize', @resizeListener
-
+        @started = false
+        @destroyed = true
         @
 
     first: (options) ->
@@ -101,6 +116,23 @@ export default class Verso
         @navigateTo @getPageSpreadCount() - 1, options
 
     navigateTo: (position, options = {}) ->
+        if @destroyed
+            return console.warn """
+                You've called a navigation method on a viewer that was previously destroyed, this is a no-op.
+                Please call viewer.start() again, if you want to reuse this Viewer instance.
+
+                You might have forgotten to remove an event handler that
+                calls first/prev/next/last/navigateTo on the viewer.
+            """
+        if not @started
+            return console.warn """
+                You've called a navigation method on a viewer that hasn't been started yet, this is a no-op.
+                Please call viewer.start() first.
+
+                You might have forgotten to remove an event handler that
+                calls .first()/.prev()/.next()/.last()/.navigateTo() on the viewer.
+            """
+
         return if position < 0 or position > @getPageSpreadCount() - 1
 
         currentPosition = @getPosition()
