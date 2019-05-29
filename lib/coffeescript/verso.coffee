@@ -1,9 +1,8 @@
-Hammer = require './../../vendor/hammer.js'
-MicroEvent = require 'microevent'
-PageSpread = require './page_spread'
-Animation = require './animation'
+import Hammer from './../../vendor/hammer'
+import PageSpread from './page_spread'
+import Animation from './animation'
 
-class Verso
+export default class Verso
     constructor: (@el, @options = {}) ->
         @swipeVelocity = @options.swipeVelocity ? 0.3
         @swipeThreshold = @options.swipeThreshold ? 10
@@ -20,8 +19,20 @@ class Verso
         @tap =
             count: 0
             delay: @doubleTapDelay
+        @_events = {}
 
         return
+    bind: (event, fn) ->
+        @_events[event] = @_events[event] or []
+        @_events[event].push fn
+
+    unbind: (event, fn) ->
+        if @_events[event]
+            @_events[event].splice(@_events[event].indexOf(fn), 1)
+
+    trigger: (event) ->
+        if @_events[event]
+            @_events[event].map (e) -> e.apply(this, Array.prototype.slice.call(arguments, 1))
 
     start: ->
         @scrollerEl = @el.querySelector '.verso__scroller'
@@ -593,7 +604,3 @@ class Verso
             @trigger 'zoomedOut', position: position
 
         return
-
-MicroEvent.mixin Verso
-
-module.exports = Verso

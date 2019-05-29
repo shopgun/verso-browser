@@ -1,4 +1,4 @@
-Verso = require '../lib/coffeescript/verso'
+import Verso from '../lib/coffeescript/verso'
 verso = null
 
 beforeEach ->

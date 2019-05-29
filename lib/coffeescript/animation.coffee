@@ -1,4 +1,4 @@
-module.exports = class Animation
+export default class Animation
     constructor: (@el) ->
         @run = 0
 

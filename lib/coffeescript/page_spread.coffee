@@ -1,4 +1,4 @@
-module.exports = class PageSpread
+export default class PageSpread
     constructor: (@el, @options = {}) ->
         @visibility = 'gone'
         @positioned = false

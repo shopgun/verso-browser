@@ -5,6 +5,8 @@ A multi-paged viewer for browsers. See `kitchensink/example1.html` for how it wo
 # Changelog
 ## Version ?.?.?
 * Use new mainFields option for rollup-plugin-node-resolve
+* Internal refactor for ES6 modules
+* Skip some unnecessary polyfill bundling
 
 ## Version 1.0.27
 * Update dependencies.

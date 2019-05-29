@@ -62,12 +62,12 @@
   },
   "homepage": "https://github.com/shopgun/verso-browser#readme",
   "dependencies": {
-    "core-js": "^2.6.5",
-    "microevent": "^1.0.0"
+    "core-js": "^2.6.5"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
     "@babel/preset-env": "^7.4.5",
+    "babel-jest": "^24.8.0",
     "bundlesize": "^0.17.2",
     "coffeelint": "^2.1.0",
     "jest": "^24.8.0",

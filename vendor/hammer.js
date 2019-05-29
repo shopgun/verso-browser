@@ -1174,7 +1174,7 @@ var STATE_FAILED = 32;
  * @param {Object} options
  */
 function Recognizer(options) {
-    this.options = Object.assign({}, this.defaults, options || {});
+    this.options = {...this.defaults, ...options};
 
     this.id = uniqueId();
 
@@ -1353,7 +1353,7 @@ Recognizer.prototype = {
     recognize(inputData) {
         // make a new copy of the inputData
         // so we can change the inputData without messing up the other recognizers
-        var inputDataClone = Object.assign({}, inputData);
+        var inputDataClone = {...inputData};
 
         // is is enabled and allow recognizing?
         if (!boolOrFn(this.options.enable, [this, inputDataClone])) {
@@ -2040,7 +2040,7 @@ var FORCED_STOP = 2;
  * @constructor
  */
 function Manager(element, options) {
-    this.options = Object.assign({}, Hammer.defaults, options || {});
+    this.options = {...Hammer.defaults, ...options};
 
     this.options.inputTarget = this.options.inputTarget || element;
 
