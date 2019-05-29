@@ -3,7 +3,7 @@
 A multi-paged viewer for browsers. See `kitchensink/example1.html` for how it works.
 
 # Changelog
-## Version ?.?.?
+## Version 1.0.29
 * Fixed bug where arguments were not being passed to external event handlers.
 
 ## Version 1.0.28
