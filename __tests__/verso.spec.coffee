@@ -50,3 +50,11 @@ test 'Navigation to next page', ->
     expect(document.querySelector('[data-id=page3]').style.left).toBe '180%'
 
     return
+
+test 'Navigation to next page triggers beforeNavigation with proper data', (done) ->
+    beforeNavigationCallback = (data) ->
+        expect(data).toEqual { currentPosition: 0, newPosition: 1 }
+        done()
+    
+    verso.bind "beforeNavigation", beforeNavigationCallback
+    verso.next()

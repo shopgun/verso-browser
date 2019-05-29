@@ -34,7 +34,7 @@ export default class Verso
 
     trigger: (event) ->
         if @_events[event]
-            @_events[event].map (e) -> e.apply(this, Array.prototype.slice.call(arguments, 1))
+            @_events[event].map (e) => e.apply(@, Array.prototype.slice.call(arguments, 1))
 
     start: ->
         @scrollerEl = @el.querySelector '.verso__scroller'

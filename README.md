@@ -3,6 +3,9 @@
 A multi-paged viewer for browsers. See `kitchensink/example1.html` for how it works.
 
 # Changelog
+## Version ?.?.?
+* Fixed bug where arguments were not being passed to external event handlers.
+
 ## Version 1.0.28
 * Use new mainFields option for rollup-plugin-node-resolve.
 * Internal refactor for ES6 modules.
