@@ -7,7 +7,7 @@
 'use strict';
 
 var VENDOR_PREFIXES = ['', 'webkit', 'Moz', 'MS', 'ms', 'o'];
-var TEST_ELEMENT = () => document.createElement('div');
+var TEST_ELEMENT = () => typeof document != 'undefined' && document.createElement('div');
 
 var TYPE_FUNCTION = 'function';
 
@@ -198,7 +198,7 @@ function prefixed(obj, property) {
  * get a unique id
  * @returns {number} uniqueId
  */
-var _uniqueId = 1;
+let _uniqueId = 1;
 const uniqueId = () => _uniqueId++;
 
 /**
@@ -208,13 +208,14 @@ const uniqueId = () => _uniqueId++;
  */
 function getWindowForElement(element) {
     var doc = element.ownerDocument || element;
-    return doc.defaultView || doc.parentWindow || window;
+    return doc.defaultView || doc.parentWindow || (typeof window !== 'undefined' && window);
 }
 
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
 
-var SUPPORT_TOUCH = () => 'ontouchstart' in window;
-var SUPPORT_POINTER_EVENTS = () => prefixed(window, 'PointerEvent') !== undefined;
+var SUPPORT_TOUCH = () => typeof window !== 'undefined' && 'ontouchstart' in window;
+var SUPPORT_POINTER_EVENTS = () =>
+    typeof window !== 'undefined' && prefixed(window, 'PointerEvent') !== undefined;
 var SUPPORT_ONLY_TOUCH = () => SUPPORT_TOUCH() && MOBILE_REGEX.test(navigator.userAgent);
 
 var INPUT_TYPE_TOUCH = 'touch';
@@ -975,7 +976,10 @@ function isSyntheticEvent({srcEvent: {clientX, clientY}}) {
     );
 }
 
-var PREFIXED_TOUCH_ACTION = () => prefixed(TEST_ELEMENT().style, 'touchAction');
+var PREFIXED_TOUCH_ACTION = () => {
+    const te = TEST_ELEMENT();
+    if (te) return prefixed(te.style, 'touchAction');
+};
 var NATIVE_TOUCH_ACTION = () => PREFIXED_TOUCH_ACTION() !== undefined;
 
 // magical touchAction value
@@ -1120,16 +1124,17 @@ function cleanTouchActions(actions) {
     return TOUCH_ACTION_AUTO;
 }
 
+const touchVals = ['auto', 'manipulation', 'pan-y', 'pan-x', 'pan-x pan-y', 'none'];
 function getTouchActionProps() {
     if (!NATIVE_TOUCH_ACTION()) return false;
-    var touchMap = {};
-    var cssSupports = () => window.CSS && window.CSS.supports;
-    ['auto', 'manipulation', 'pan-y', 'pan-x', 'pan-x pan-y', 'none'].forEach(val => {
+    var cssSupports = typeof window !== 'undefined' && window.CSS && window.CSS.supports;
+    return touchVals.reduce((touchMap, val) => {
         // If css.supports is not supported but there is native touch-action assume it supports
         // all values. This is the case for IE 10 and 11.
-        touchMap[val] = cssSupports() ? window.CSS.supports('touch-action', val) : true;
-    });
-    return touchMap;
+        touchMap[val] = cssSupports ? window.CSS.supports('touch-action', val) : true;
+
+        return touchMap;
+    }, {});
 }
 
 /**

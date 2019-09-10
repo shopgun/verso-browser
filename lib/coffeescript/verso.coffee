@@ -78,7 +78,7 @@ export default class Verso
         @el.addEventListener 'touchstart', @touchStartListener, false
         @el.addEventListener 'touchend', @touchEndListener, false
 
-        window.addEventListener 'resize', @resizeListener, false
+        window?.addEventListener 'resize', @resizeListener, false
         @
 
     destroy: ->
@@ -388,7 +388,7 @@ export default class Verso
     
     getHammerInputClass: ->
         mobileRegex = /mobile|tablet|ip(ad|hone|od)|android/i
-        supportTouch = 'ontouchstart' of window
+        supportTouch = typeof window != 'undefined' and 'ontouchstart' of window
 
         if supportTouch and mobileRegex.test(navigator.userAgent) then Hammer.TouchInput else null
 
