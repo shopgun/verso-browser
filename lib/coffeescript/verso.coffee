@@ -543,6 +543,7 @@ export default class Verso
 
         # see https://stackoverflow.com/a/23668035
         deltaY = e.deltaY
+
         if event.webkitDirectionInvertedFromDevice
             deltaY = -deltaY
 
