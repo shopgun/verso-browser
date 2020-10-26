@@ -541,7 +541,12 @@ export default class Verso
 
         return if activePageSpread.isZoomable() is false
 
-        if e.deltaY > 0 and @transform.scale is 1
+        # see https://stackoverflow.com/a/23668035
+        deltaY = e.deltaY
+        if event.webkitDirectionInvertedFromDevice
+            deltaY = -deltaY
+
+        if deltaY > 0 and @transform.scale is 1
             scale = activePageSpread.getMaxZoomScale()
             position = @getPosition()
 
@@ -554,7 +559,7 @@ export default class Verso
                 @trigger 'zoomedIn', position: position
 
                 return
-        else if e.deltaY < 0 and @transform.scale > 1
+        else if deltaY < 0 and @transform.scale > 1
             position = @getPosition()
 
             @zoomTo
