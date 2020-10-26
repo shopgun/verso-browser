@@ -4,6 +4,9 @@ A multi-paged viewer for browsers. See `kitchensink/example1.html` for how it wo
 
 # Changelog
 ## Version NEXT
+* 
+
+## Version 1.0.30
 * Support webkitDirectionInvertedFromDevice(ie. "natural scroll" on OS X)
 
 ## Version 1.0.29
