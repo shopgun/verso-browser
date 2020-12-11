@@ -1,4 +1,3 @@
-import coffeescript from 'rollup-plugin-coffee-script';
 import commonjs from 'rollup-plugin-commonjs';
 import resolve from 'rollup-plugin-node-resolve';
 import {terser} from 'rollup-plugin-terser';
@@ -6,7 +5,7 @@ import path from 'path';
 import babel from 'rollup-plugin-babel';
 import globals from 'rollup-plugin-node-globals';
 
-var input = path.join(__dirname, 'lib', 'coffeescript', 'verso.coffee');
+var input = path.join(__dirname, 'lib', 'verso.js');
 
 var outputs = {
     // Exclusive bundles(external `require`s untouched), for node, webpack etc.
@@ -20,7 +19,7 @@ var outputs = {
 const getBabelPlugin = () =>
     babel({
         exclude: ['node_modules/**'],
-        extensions: ['.js', '.jsx', '.es6', '.es', '.mjs', '.coffee']
+        extensions: ['.js', '.jsx', '.es6', '.es', '.mjs']
     });
 
 let configs = [
@@ -31,9 +30,8 @@ let configs = [
             format: 'cjs'
         },
         plugins: [
-            coffeescript(),
             commonjs({
-                extensions: ['.js', '.coffee']
+                extensions: ['.js']
             }),
             getBabelPlugin()
         ]
@@ -45,9 +43,8 @@ let configs = [
             format: 'es'
         },
         plugins: [
-            coffeescript(),
             commonjs({
-                extensions: ['.js', '.coffee']
+                extensions: ['.js']
             }),
             getBabelPlugin()
         ]
@@ -60,14 +57,13 @@ let configs = [
             name: 'Verso'
         },
         plugins: [
-            coffeescript(),
             resolve({
                 mainFields: ['jsnext:main', 'main'],
                 browser: true,
                 preferBuiltins: false
             }),
             commonjs({
-                extensions: ['.js', '.coffee']
+                extensions: ['.js']
             }),
             globals(),
             getBabelPlugin()
@@ -81,14 +77,13 @@ let configs = [
             name: 'Verso'
         },
         plugins: [
-            coffeescript(),
             resolve({
                 mainFields: ['jsnext:main', 'main'],
                 browser: true,
                 preferBuiltins: false
             }),
             commonjs({
-                extensions: ['.js', '.coffee']
+                extensions: ['.js']
             }),
             globals(),
             getBabelPlugin(),
