@@ -25,7 +25,8 @@
     }
   ],
   "scripts": {
-    "test": "npm run test:ci && npm run test:size",
+    "test": "npm run test:lint && test:ci && npm run test:size",
+    "test:lint": "eslint lib __tests__",
     "test:ci": "jest --ci",
     "test:size": "bundlesize",
     "build:js": "rollup -c -m --environment NODE_ENV:production",
@@ -58,6 +59,8 @@
     "@babel/preset-env": "^7.12.10",
     "babel-jest": "^26.6.3",
     "bundlesize": "^0.18.0",
+    "eslint": "^7.15.0",
+    "eslint-config-prettier": "^7.0.0",
     "jest": "^26.6.3",
     "jest-cli": "^26.6.3",
     "jsdom": "^16.4.0",
