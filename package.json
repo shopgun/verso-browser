@@ -1,6 +1,6 @@
 {
   "name": "verso-browser",
-  "version": "1.1.0-beta.0",
+  "version": "1.1.0",
   "description": "A multi-paged viewer for browsers.",
   "main": "dist/verso.cjs.js",
   "browser": "dist/verso.js",
