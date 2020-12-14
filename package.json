@@ -1,6 +1,6 @@
 {
   "name": "verso-browser",
-  "version": "1.0.30",
+  "version": "1.1.0-beta.0",
   "description": "A multi-paged viewer for browsers.",
   "main": "dist/verso.cjs.js",
   "browser": "dist/verso.js",
@@ -25,8 +25,8 @@
     }
   ],
   "scripts": {
-    "test": "npm run test:lint && npm run test:ci && npm run test:size",
-    "test:lint": "coffeelint lib/coffeescript __tests__",
+    "test": "npm run test:lint && test:ci && npm run test:size",
+    "test:lint": "eslint lib __tests__",
     "test:ci": "jest --ci",
     "test:size": "bundlesize",
     "build:js": "rollup -c -m --environment NODE_ENV:production",
@@ -39,18 +39,6 @@
     "serve": "serve",
     "prepublishOnly": "npm run build"
   },
-  "jest": {
-    "moduleFileExtensions": [
-      "coffee",
-      "js"
-    ],
-    "transform": {
-      "^.+\\.(coffee)$": "<rootDir>/jest-preprocessor.js"
-    },
-    "testMatch": [
-      "**/__tests__/*.(coffee|js)"
-    ]
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shopgun/verso-browser.git"
@@ -62,27 +50,29 @@
   },
   "homepage": "https://github.com/shopgun/verso-browser#readme",
   "dependencies": {
-    "core-js": "^2.6.5"
+    "core-js": "^3.8.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.5",
-    "@babel/preset-env": "^7.4.5",
-    "babel-jest": "^24.8.0",
-    "bundlesize": "^0.17.2",
-    "coffeelint": "^2.1.0",
-    "jest": "^24.8.0",
-    "jest-cli": "^24.8.0",
-    "jsdom": "^15.1.1",
+    "@babel/core": "^7.12.10",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.12.1",
+    "@babel/plugin-proposal-optional-chaining": "^7.12.7",
+    "@babel/preset-env": "^7.12.10",
+    "babel-jest": "^26.6.3",
+    "bundlesize": "^0.18.0",
+    "eslint": "^7.15.0",
+    "eslint-config-prettier": "^7.0.0",
+    "jest": "^26.6.3",
+    "jest-cli": "^26.6.3",
+    "jsdom": "^16.4.0",
     "nib": "^1.1.2",
     "npm-run-all": "^4.1.5",
-    "rollup": "^1.12.4",
-    "rollup-plugin-babel": "^4.3.2",
-    "rollup-plugin-coffee-script": "^2.0.0",
-    "rollup-plugin-commonjs": "^10.0.0",
+    "rollup": "^2.34.2",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-globals": "^1.4.0",
-    "rollup-plugin-node-resolve": "^5.0.0",
-    "rollup-plugin-terser": "^5.0.0",
-    "serve": "^11.0.1",
-    "stylus": "^0.54.5"
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "serve": "^11.3.2",
+    "stylus": "^0.54.8"
   }
 }

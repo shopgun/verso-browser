@@ -3,8 +3,10 @@
 A multi-paged viewer for browsers. See `kitchensink/example1.html` for how it works.
 
 # Changelog
-## Version NEXT
-* 
+## Version 1.1.0
+* Internal refactor to vanilla JS
+  
+  No breaking changes anticipated but a minor version bump to avoid automagic patches, just in case.
 
 ## Version 1.0.30
 * Support webkitDirectionInvertedFromDevice(ie. "natural scroll" on OS X)
